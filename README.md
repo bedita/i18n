@@ -31,3 +31,21 @@ Options:
 --quiet, -q    Enable quiet output.
 --verbose, -v  Enable verbose output.
 ```
+
+```
+$ bin/cake gettext update --help
+Create / update i18n files
+`cake gettext update --frontend <frontend path>` will update po/pot file for the frontend
+`cake gettext update --plugin <plugin path>` will update po/pot file for the plugin
+
+Usage:
+cake gettext update [-h] [-q] [-v] [-f] [-p]
+
+Options:
+
+--help, -h      Display this help.
+--quiet, -q     Enable quiet output.
+--verbose, -v   Enable verbose output.
+--frontend, -f  The frontend path, for i18n update.
+--plugin, -p    The plugin path, for i18n update.
+```
