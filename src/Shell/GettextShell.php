@@ -38,13 +38,15 @@ class GettextShell extends Shell
                     '`cake gettext update -frontend <frontend path>` will update po/pot file for the frontend',
                     '`cake gettext update -plugin <plugin path>` will update po/pot file for the plugin',
                 ],
-                'arguments' => [
+                'options' => [
                     'frontend' => [
                         'help' => 'The frontend path, for i18n update.',
+                        'short' => 'f',
                         'required' => false,
                     ],
                     'plugin' => [
                         'help' => 'The plugin path, for i18n update.',
+                        'short' => 'p',
                         'required' => false,
                     ],
                 ]
