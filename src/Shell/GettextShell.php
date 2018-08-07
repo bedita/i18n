@@ -11,7 +11,7 @@
  * See LICENSE.LGPL or <http://gnu.org/licenses/lgpl-3.0.html> for more details.
  */
 
-namespace I18n\Shell;
+namespace BEdita\I18n\Shell;
 
 use Cake\Console\Shell;
 use Cake\Filesystem\File;

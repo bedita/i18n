@@ -11,12 +11,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Documents\\": "src"
+            "BEdita\\I18n\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "I18n\\Test\\": "tests",
+            "BEdita\\I18n\\Test\\": "tests",
             "Cake\\Test\\": "./vendor/cakephp/cakephp/tests"
         }
     }
