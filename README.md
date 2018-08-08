@@ -2,19 +2,19 @@
 
 ## Installation
 
-You can install this plugin into your CakePHP application using [composer](http://getcomposer.org).
+You can install this plugin BEdita4/CakePHP application using [composer](http://getcomposer.org).
 
 The recommended way to install composer packages is:
 
-```
-composer require your-name-here/I18n
+```bash
+composer require bedita/i18n
 ```
 
 ## Use gettext shell
 
-Gettext shell provide util to update i18n locale files in BEdita4 frontend apps and plugins.
+Gettext shell provide util to update i18n locale files in BEdita4 apps and plugins.
 
-```
+```bash
 $ bin/cake gettext --help
 Usage:
 cake gettext [subcommand] [-h] [-q] [-v]
@@ -32,7 +32,7 @@ Options:
 --verbose, -v  Enable verbose output.
 ```
 
-```
+```bash
 $ bin/cake gettext update --help
 Create / update i18n files
 `cake gettext update --frontend <frontend path>` will update po/pot file for the frontend
