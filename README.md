@@ -2,7 +2,7 @@
 
 ## Installation
 
-You can install this plugin BEdita4/CakePHP application using [composer](http://getcomposer.org).
+You can install this BEdita4/CakePHP plugin using [composer](http://getcomposer.org).
 
 The recommended way to install composer packages is:
 
