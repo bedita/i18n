@@ -1,5 +1,5 @@
 {
-    "name": "I18n",
+    "name": "bedita/i18n",
     "description": "Internationalization plugin for BEdita 4 & CakePHP",
     "type": "cakephp-plugin",
     "license": "MIT",
