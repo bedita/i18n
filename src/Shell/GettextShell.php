@@ -165,7 +165,7 @@ class GettextShell extends Shell
             ],
         ];
         foreach ($contents[$type] as $k => $v) {
-            $result .= sprintf('"%s: %s"%s', $k, $v, "\n");
+            $result .= sprintf('"%s: %s \n"', $k, $v) . "\n";
         }
 
         return $result;
