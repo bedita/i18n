@@ -34,13 +34,13 @@ class GettextShell extends Shell
             'help' => 'Update po and pot files',
             'parser' => [
                 'description' => [
-                    'Create / update i18n files',
-                    '`cake gettext update -frontend <frontend path>` will update po/pot file for the frontend',
+                    'Create or update i18n files',
+                    '`cake gettext update -app <app path>` will update po/pot file for the app',
                     '`cake gettext update -plugin <plugin path>` will update po/pot file for the plugin',
                 ],
                 'options' => [
-                    'frontend' => [
-                        'help' => 'The frontend path, for i18n update.',
+                    'app' => [
+                        'help' => 'The app path, for i18n update.',
                         'short' => 'f',
                         'required' => false,
                     ],
@@ -64,32 +64,95 @@ class GettextShell extends Shell
     protected $poResult = [];
 
     /**
+     * The template paths
+     *
+     * @var array
+     */
+    protected $templatePaths = [];
+
+    /**
+     * The locale path
+     *
+     * @var string
+     */
+    protected $localePath = null;
+
+    /**
+     * PO file name
+     *
+     * @var string
+     */
+    protected $poName = 'default.po';
+
+    /**
      * Update gettext po files
      *
      * @return void
      */
     public function update() : void
     {
-        $this->out('update');
-        $templatePath = getcwd() . '/src';
-        $localePath = getcwd() . '/src/Locale';
-        $poName = 'default.po';
-        if (isset($this->params['frontend'])) {
-            $f = new Folder($this->params['frontend']);
-            $templatePath = $f->path . '/src';
-            $localePath = $f->path . '/src/Locale';
+        $resCmd = [];
+        exec('which msgmerge 2>&1', $resCmd);
+        if (empty($resCmd[0])) {
+            $this->out('ERROR: msgmerge not available. Please install gettext utilities.');
+
+            return;
+        }
+        
+        $this->out('Updating .pot and .po files...');
+
+        $this->setupPaths();
+
+        $this->out('Creating master .pot file');
+
+        foreach ($this->templatePaths as $path) {
+            $this->out(sprintf('Search in: %s', $path));
+            $this->parseDir($path);
+        }
+
+        $this->writeMasterPot();
+
+        $this->hr();
+        $this->out('Merging master .pot with current .po files');
+        $this->hr();
+
+        $this->writePoFiles();
+
+        $this->out('Done');
+    }
+
+    /**
+     * Setup template paths and locale path
+     *
+     * @return void
+     */
+    private function setupPaths() : void
+    {
+        $basePath = getcwd();
+        if (isset($this->params['app'])) {
+            $f = new Folder($this->params['app']);
+            $basePath = $f->path;
         } elseif (isset($this->params['plugin'])) {
             $f = new Folder(sprintf('%s/plugins/%s', getcwd(), $this->params['plugin']));
-            $templatePath = $f->path . '/src';
-            $localePath = $f->path . '/src/Locale';
-            $poName = $this->params['plugin'] . ".po";
+            $basePath = $f->path;
+            $this->poName = $this->params['plugin'] . ".po";
         }
-        $this->out('Creating master .po file');
-        $this->out(sprintf('Search in: %s', $templatePath));
-        $this->parseDir($templatePath);
 
-        // write .pot file
-        $potFilename = sprintf('%s/master.pot', $localePath);
+        $this->templatePaths = [
+            $basePath . '/src',
+            $basePath . '/config',
+        ];
+        $this->localePath = $basePath . '/src/Locale';
+    }
+
+    /**
+     * Write `master.pot` file
+     *
+     * @return void
+     */
+    private function writeMasterPot() : void
+    {
+        $potFilename = sprintf('%s/master.pot', $this->localePath);
         $this->out(sprintf('Writing new .pot file: %s', $potFilename));
         $pot = new File($potFilename, true);
         $pot->write($this->header('pot'));
@@ -100,23 +163,23 @@ class GettextShell extends Shell
             }
         }
         $pot->close();
-        $this->hr();
-        $this->out('Merging master.pot with current .po files');
-        $this->hr();
-        $resCmd = [];
-        exec('which msgmerge 2>&1', $resCmd);
-        if (empty($resCmd[0])) {
-            $this->out('ERROR: msgmerge not available. Please install gettext utilities.');
+    }
 
-            return;
-        }
+    /**
+     * Write `.po` files
+     *
+     * @return void
+     */
+    private function writePoFiles() : void
+    {
         $header = $this->header('po');
-        $folder = new Folder($localePath);
+        $potFilename = sprintf('%s/master.pot', $this->localePath);
+        $folder = new Folder($this->localePath);
         $ls = $folder->read();
         foreach ($ls[0] as $loc) {
             if ($loc[0] != '.') { // only "regular" dirs...
                 $this->out(sprintf('Language: %s', $loc));
-                $poFile = sprintf('%s/%s/%s', $localePath, $loc, $poName);
+                $poFile = sprintf('%s/%s/%s', $this->localePath, $loc, $this->poName);
                 if (!file_exists($poFile)) {
                     $newPoFile = new File($poFile, true);
                     $newPoFile->write($header);
@@ -129,7 +192,6 @@ class GettextShell extends Shell
                 $this->hr();
             }
         }
-        $this->out('Done');
     }
 
     /**
@@ -138,7 +200,7 @@ class GettextShell extends Shell
      * @param string $type The file type (can be 'po', 'pot')
      * @return string
      */
-    private static function header(string $type = 'po') : string
+    private function header(string $type = 'po') : string
     {
         $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n\n");
         $contents = [
