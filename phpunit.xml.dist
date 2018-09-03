@@ -13,7 +13,7 @@
 
     <!-- Add any additional test suites you want to run here -->
     <testsuites>
-        <testsuite name="Documents">
+        <testsuite name="BEdita/I18n">
             <directory>./tests/TestCase/</directory>
         </testsuite>
     </testsuites>
