@@ -16,8 +16,8 @@ use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Core\Configure;
 use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
-use Cake\TestSuite\TestCase;
 use Cake\I18n\I18n;
+use Cake\TestSuite\TestCase;
 
 /**
  * {@see \BEdita\I18n\Middleware\I18nMiddleware} Test Case
@@ -220,7 +220,6 @@ class I18nMiddlewareTest extends TestCase
         static::assertEquals(301, $response->getStatusCode());
         static::assertEquals($expected, $response->getHeaderLine('Location'));
     }
-
 
     /**
      * Data provider for `testSetupLocale()`
