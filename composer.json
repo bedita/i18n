@@ -2,12 +2,19 @@
     "name": "bedita/i18n",
     "description": "Internationalization plugin for BEdita 4 & CakePHP",
     "type": "cakephp-plugin",
-    "license": "MIT",
+    "license": "LGPL-3.0-or-later",
+    "support": {
+        "source": "https://github.com/bedita/i18n",
+        "issues": "https://github.com/bedita/i18n/issues"
+    },
     "require": {
-        "cakephp/cakephp": "^3.4"
+        "php": ">=7.1",
+        "cakephp/cakephp": "3.5.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7|^6.0"
+        "cakephp/cakephp-codesniffer": "^3.0.3",
+        "cakephp/plugin-installer": "^1.0",
+        "phpunit/phpunit": "^6.0"
     },
     "autoload": {
         "psr-4": {
@@ -19,5 +26,25 @@
             "BEdita\\I18n\\Test\\": "tests",
             "Cake\\Test\\": "./vendor/cakephp/cakephp/tests"
         }
-    }
+    },
+    "scripts": {
+        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump",
+        "check": [
+            "@test",
+            "@cs-check"
+        ],
+        "cs-setup": [
+            "vendor/bin/phpcs --config-set installed_paths vendor/cakephp/cakephp-codesniffer",
+            "vendor/bin/phpcs --config-set default_standard CakePHP",
+            "vendor/bin/phpcs --config-set colors 1"
+        ],
+        "cs-check": "vendor/bin/phpcs --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests",
+        "cs-fix": "vendor/bin/phpcbf --colors --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests",
+        "test": "vendor/bin/phpunit --colors=always",
+        "update-dev": [
+            "@composer update",
+            "@cs-setup"
+        ]
+    },
+    "prefer-stable": true
 }
