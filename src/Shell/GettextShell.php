@@ -98,7 +98,7 @@ class GettextShell extends Shell
 
             return;
         }
-        
+
         $this->out('Updating .pot and .po files...');
 
         $this->setupPaths();
