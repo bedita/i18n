@@ -41,7 +41,7 @@ class GettextShell extends Shell
                 'options' => [
                     'app' => [
                         'help' => 'The app path, for i18n update.',
-                        'short' => 'f',
+                        'short' => 'a',
                         'required' => false,
                     ],
                     'plugin' => [
