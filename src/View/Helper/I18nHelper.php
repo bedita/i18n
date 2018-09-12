@@ -104,21 +104,22 @@ class I18nHelper extends Helper
 
     /**
      * Translate object field
-     * Return translation (by response, field and language)
+     * Return translation (by response object and included data, field and language)
      *
-     * @param array $response The response for the object to translate
+     * @param array $object The object to translate
+     * @param array $included The included translations data
      * @param string $attribute The attribute name
      * @param string $lang The lang (2 chars string)
      * @param bool $defaultNull Pass true when you want null as default, on missing translation
      * @return string|null
      */
-    public function field(array $response, string $attribute, string $lang, bool $defaultNull = false) : ?string
+    public function field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false) : ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
-            $defaultValue = Hash::get($response, sprintf('data.attributes.%s', $attribute));
+            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute));
         }
-        $returnValue = $this->getTranslatedField($response, $attribute, $lang);
+        $returnValue = $this->getTranslatedField($object, $included, $attribute, $lang);
         if ($returnValue === null) {
             return $defaultValue;
         }
@@ -129,53 +130,53 @@ class I18nHelper extends Helper
     /**
      * Verify that object has translation for the specified attribute and lang
      *
-     * @param array $response The response for the object to translate
+     * @param array $object The object to translate
+     * @param array $included The included translations data
      * @param string $attribute The attribute name
      * @param string $lang The lang (2 chars string)
      * @return string|null
      */
-    public function exists(array $response, string $attribute, string $lang) : bool
+    public function exists(array $object, array $included, string $attribute, string $lang) : bool
     {
-        $val = $this->getTranslatedField($response, $attribute, $lang);
+        $val = $this->getTranslatedField($object, $included, $attribute, $lang);
 
         return ($val !== null);
     }
 
     /**
-     * Return translated field per response, attribute and lang. Null on missing translation.
-     * First time that it's called per object/response, it fills $this->translation data.
+     * Return translated field per response object and included, attribute and lang. Null on missing translation.
+     * First time that it's called per response object and included, it fills $this->translation data.
      * I.e.:
      *
      *     $this->translation[100]['en'] = ['title' => 'Example', 'description' => 'This is an example']
      *     $this->translation[100]['it'] = ['title' => 'Esempio', 'description' => 'Questo è un esempio']
      *     $this->translation[100]['sp'] = ['title' => 'Ejemplo', 'description' => 'Este es un ejemplo']
      *
-     * @param array $response The response for the object to translate
+     * @param array $object The object to translate
+     * @param array $included The included translations data
      * @param string $attribute The attribute name
      * @param string $lang The lang (2 chars string)
      * @return string|null The translation of attribute field per object response and lang
      */
-    private function getTranslatedField(array $response, string $attribute, string $lang) : ?string
+    private function getTranslatedField(array $object, array $included, string $attribute, string $lang) : ?string
     {
-        if (empty($response)) {
+        if (empty($object)) {
             return null;
         }
-        $id = Hash::get($response, 'data.id');
+        $id = Hash::get($object, 'id');
         $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
         if (!Hash::check($this->translation, $path)) {
-            if (Hash::check($response, 'included')) {
-                foreach ($response['included'] as $included) {
-                    if ($included['type'] === 'translations') {
-                        $lang = Hash::get($included, 'attributes.lang');
-                        $this->translation[$id][$lang] = Hash::get($included, 'attributes.translated_fields');
-                        if (!Hash::check($this->translation, sprintf('%s.%s.%s', $id, $lang, $attribute))) { // if field not in translated_fields, set to null
-                            $this->translation[$id][$lang][$attribute] = null;
-                        }
+            foreach ($included as $inc) {
+                if ($inc['type'] === 'translations') {
+                    $lang = Hash::get($inc, 'attributes.lang');
+                    $this->translation[$id][$lang] = Hash::get($inc, 'attributes.translated_fields');
+                    if (!Hash::check($this->translation, sprintf('%s.%s.%s', $id, $lang, $attribute))) { // if field not in translated_fields, set to null
+                        $this->translation[$id][$lang][$attribute] = null;
                     }
                 }
             }
-            $mainLang = Hash::get($response, 'data.attributes.lang');
-            $this->translation[$id][$mainLang] = Hash::get($response, 'data.attributes');
+            $mainLang = Hash::get($object, 'attributes.lang');
+            $this->translation[$id][$mainLang] = Hash::get($object, 'attributes');
         }
 
         return Hash::get($this->translation, $path);

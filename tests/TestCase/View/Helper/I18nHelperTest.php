@@ -156,7 +156,7 @@ class I18nHelperTest extends TestCase
      */
     public function fieldProvider() : array
     {
-        $data = [
+        $object = [
             'id' => 999,
             'attributes' => [
                 'title' => 'Sample',
@@ -178,29 +178,33 @@ class I18nHelperTest extends TestCase
         ];
 
         return [
-            'empty response' => [
-                [], // response
+            'empty object' => [
+                [], // object
+                [], // included
                 'title', // attribute
                 'it', // lang
                 true, // defaultNull
                 null, // expected
             ],
             'translation found' => [
-                compact('data') + compact('included'), // response
+                $object, // object
+                $included, // included
                 'title', // attribute
                 'it', // lang
                 false, // defaultNull
                 'Esempio', // expected
             ],
             'translation missing: default null false' => [
-                compact('data') + compact('included'), // response
+                $object, // object
+                $included, // included
                 'description', // attribute
                 'it', // lang
                 false, // defaultNull
                 'A dummy example', // expected
             ],
             'translation missing: default null true' => [
-                compact('data') + compact('included'), // response
+                $object, // object
+                $included, // included
                 'description', // attribute
                 'it', // lang
                 true, // defaultNull
@@ -210,21 +214,22 @@ class I18nHelperTest extends TestCase
     }
 
     /**
-     * Test `field(array $response, string $attribute, string $lang, bool $defaultNull = false)` method
+     * Test `field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false)` method
      *
      * @dataProvider fieldProvider()
      * @covers ::field()
      *
-     * @param array $response The response representing the resource data
+     * @param array $object The object to translate
+     * @param array $included The included translations data
      * @param string $attribute The attribute to translate
      * @param string $lang The language of translation, 2 chars code
      * @param boolean $defaultNull True if default value should be null; otherwise on missing translation, original field value
      * @param string|null $expected The expected translation
      * @return void
      */
-    public function testField(array $response, string $attribute, string $lang, bool $defaultNull, ?string $expected) : void
+    public function testField(array $object, array $included, string $attribute, string $lang, bool $defaultNull, ?string $expected) : void
     {
-        $actual = $this->I18n->field($response, $attribute, $lang, $defaultNull);
+        $actual = $this->I18n->field($object, $included, $attribute, $lang, $defaultNull);
         static::assertEquals($expected, $actual);
     }
 
@@ -235,7 +240,7 @@ class I18nHelperTest extends TestCase
      */
     public function existsProvider() : array
     {
-        $data = [
+        $object = [
             'id' => 999,
             'attributes' => [
                 'title' => 'Sample',
@@ -257,20 +262,23 @@ class I18nHelperTest extends TestCase
         ];
 
         return [
-            'empty response' => [
-                [], // response
+            'empty object' => [
+                [], // object
+                [], // included
                 'title', // attribute
                 'it', // lang
                 false, // expected
             ],
             'translation found' => [
-                compact('data') + compact('included'), // response
+                $object, // object
+                $included, // included
                 'title', // attribute
                 'it', // lang
                 true, // expected
             ],
             'translation missing' => [
-                compact('data') + compact('included'), // response
+                $object, // object
+                $included, // included
                 'description', // attribute
                 'it', // lang
                 false, // expected
@@ -279,21 +287,22 @@ class I18nHelperTest extends TestCase
     }
 
     /**
-     * Test `exists(array $response, string $attribute, string $lang)` method
+     * Test `exists(array $object, array $included, string $attribute, string $lang)` method
      *
      * @dataProvider existsProvider()
      * @covers ::exists()
      * @covers ::getTranslatedField()
      *
-     * @param array $response The response representing the resource data
+     * @param array $object The object to translate
+     * @param array $included The included translations data
      * @param string $attribute The attribute to translate
      * @param string $lang The language of translation, 2 chars code
      * @param bool $expected The expected result (true => exists, false => does not exist)
      * @return void
      */
-    public function testExists(array $response, string $attribute, string $lang, bool $expected) : void
+    public function testExists(array $object, array $included, string $attribute, string $lang, bool $expected) : void
     {
-        $actual = $this->I18n->exists($response, $attribute, $lang);
+        $actual = $this->I18n->exists($object, $included, $attribute, $lang);
         static::assertEquals($expected, $actual);
     }
 }
