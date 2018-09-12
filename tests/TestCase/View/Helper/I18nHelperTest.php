@@ -148,4 +148,152 @@ class I18nHelperTest extends TestCase
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang));
     }
+
+    /**
+     * Data provider for `testField()`
+     *
+     * @return array
+     */
+    public function fieldProvider() : array
+    {
+        $data = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'empty response' => [
+                [], // response
+                'title', // attribute
+                'it', // lang
+                true, // defaultNull
+                null, // expected
+            ],
+            'translation found' => [
+                compact('data') + compact('included'), // response
+                'title', // attribute
+                'it', // lang
+                false, // defaultNull
+                'Esempio', // expected
+            ],
+            'translation missing: default null false' => [
+                compact('data') + compact('included'), // response
+                'description', // attribute
+                'it', // lang
+                false, // defaultNull
+                'A dummy example', // expected
+            ],
+            'translation missing: default null true' => [
+                compact('data') + compact('included'), // response
+                'description', // attribute
+                'it', // lang
+                true, // defaultNull
+                null, // expected
+            ],
+        ];
+    }
+
+    /**
+     * Test `field(array $response, string $attribute, string $lang, bool $defaultNull = false)` method
+     *
+     * @dataProvider fieldProvider()
+     * @covers ::field()
+     *
+     * @param array $response The response representing the resource data
+     * @param string $attribute The attribute to translate
+     * @param string $lang The language of translation, 2 chars code
+     * @param boolean $defaultNull True if default value should be null; otherwise on missing translation, original field value
+     * @param string|null $expected The expected translation
+     * @return void
+     */
+    public function testField(array $response, string $attribute, string $lang, bool $defaultNull, ?string $expected) : void
+    {
+        $actual = $this->I18n->field($response, $attribute, $lang, $defaultNull);
+        static::assertEquals($expected, $actual);
+    }
+
+    /**
+     * Data provider for `testExists()`
+     *
+     * @return array
+     */
+    public function existsProvider() : array
+    {
+        $data = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'empty response' => [
+                [], // response
+                'title', // attribute
+                'it', // lang
+                false, // expected
+            ],
+            'translation found' => [
+                compact('data') + compact('included'), // response
+                'title', // attribute
+                'it', // lang
+                true, // expected
+            ],
+            'translation missing' => [
+                compact('data') + compact('included'), // response
+                'description', // attribute
+                'it', // lang
+                false, // expected
+            ],
+        ];
+    }
+
+    /**
+     * Test `exists(array $response, string $attribute, string $lang)` method
+     *
+     * @dataProvider existsProvider()
+     * @covers ::exists()
+     * @covers ::getTranslatedField()
+     *
+     * @param array $response The response representing the resource data
+     * @param string $attribute The attribute to translate
+     * @param string $lang The language of translation, 2 chars code
+     * @param bool $expected The expected result (true => exists, false => does not exist)
+     * @return void
+     */
+    public function testExists(array $response, string $attribute, string $lang, bool $expected) : void
+    {
+        $actual = $this->I18n->exists($response, $attribute, $lang);
+        static::assertEquals($expected, $actual);
+    }
 }
