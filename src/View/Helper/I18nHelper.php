@@ -167,7 +167,8 @@ class I18nHelper extends Helper
         $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
         if (!Hash::check($this->translation, $path)) {
             foreach ($included as $inc) {
-                if ($inc['type'] === 'translations') {
+                $incId = Hash::get($inc, 'attributes.object_id');
+                if ($inc['type'] === 'translations' && (string)$incId === (string)$id) {
                     $lang = Hash::get($inc, 'attributes.lang');
                     $this->translation[$id][$lang] = Hash::get($inc, 'attributes.translated_fields');
                     if (!Hash::check($this->translation, sprintf('%s.%s.%s', $id, $lang, $attribute))) { // if field not in translated_fields, set to null
