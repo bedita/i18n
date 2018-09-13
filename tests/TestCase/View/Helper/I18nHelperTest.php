@@ -169,6 +169,7 @@ class I18nHelperTest extends TestCase
                 'id' => 99999,
                 'type' => 'translations',
                 'attributes' => [
+                    'object_id' => 999,
                     'lang' => 'it',
                     'translated_fields' => [
                         'title' => 'Esempio',
@@ -253,6 +254,7 @@ class I18nHelperTest extends TestCase
                 'id' => 99999,
                 'type' => 'translations',
                 'attributes' => [
+                    'object_id' => 999,
                     'lang' => 'it',
                     'translated_fields' => [
                         'title' => 'Esempio',
