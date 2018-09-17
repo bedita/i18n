@@ -24,8 +24,10 @@ use Cake\View\Helper;
 class I18nHelper extends Helper
 {
     /**
-     * Translation data per object and lang internal cache.
-     * If `null` no cache has been created, if `[]` no translations have been found.
+     * Translation data per object and lang (internal cache).
+     * If `null` no cache has been created, if empty array no translations
+     * have been found.
+     *
      * Structure:
      *
      *   translation[<object ID>][<lang>][<field>] = <value>.
