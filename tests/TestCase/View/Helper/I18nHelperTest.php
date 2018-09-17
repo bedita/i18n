@@ -148,4 +148,187 @@ class I18nHelperTest extends TestCase
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang));
     }
+
+    /**
+     * Data provider for `testField()`
+     *
+     * @return array
+     */
+    public function fieldProvider() : array
+    {
+        $objectBase = [
+            'id' => 999,
+            'title' => 'Sample',
+            'description' => 'A dummy example',
+            'lang' => 'en',
+        ];
+        $objectStructured = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'object_id' => 999,
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'empty object' => [
+                [], // object
+                'title', // attribute
+                'it', // lang
+                true, // defaultNull
+                [], // included
+                null, // expected
+            ],
+            'translation found / object base' => [
+                $objectBase, // object
+                'title', // attribute
+                'it', // lang
+                false, // defaultNull
+                $included, // included
+                'Esempio', // expected
+            ],
+            'translation found / object structured' => [
+                $objectStructured, // object
+                'title', // attribute
+                'it', // lang
+                false, // defaultNull
+                $included, // included
+                'Esempio', // expected
+            ],
+            'translation missing: default null false' => [
+                $objectBase, // object
+                'description', // attribute
+                'it', // lang
+                false, // defaultNull
+                $included, // included
+                'A dummy example', // expected
+            ],
+            'translation missing: default null true' => [
+                $objectBase, // object
+                'description', // attribute
+                'it', // lang
+                true, // defaultNull
+                $included, // included
+                null, // expected
+            ],
+        ];
+    }
+
+    /**
+     * Test `field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false)` method
+     *
+     * @dataProvider fieldProvider()
+     * @covers ::field()
+     *
+     * @param array $object The object to translate
+     * @param string $attribute The attribute to translate
+     * @param string $lang The language of translation, 2 chars code
+     * @param boolean $defaultNull True if default value should be null; otherwise on missing translation, original field value
+     * @param array $included The included translations data
+     * @param string|null $expected The expected translation
+     * @return void
+     */
+    public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected) : void
+    {
+        $actual = $this->I18n->field($object, $attribute, $lang, $defaultNull, $included);
+        static::assertEquals($expected, $actual);
+    }
+
+    /**
+     * Data provider for `testExists()`
+     *
+     * @return array
+     */
+    public function existsProvider() : array
+    {
+        $object = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'object_id' => 999,
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'empty object' => [
+                [], // object
+                'title', // attribute
+                'it', // lang
+                [], // included
+                false, // expected
+            ],
+            'translation found' => [
+                $object, // object
+                'title', // attribute
+                'it', // lang
+                $included, // included
+                true, // expected
+            ],
+            'translation missing' => [
+                $object, // object
+                'description', // attribute
+                'it', // lang
+                $included, // included
+                false, // expected
+            ],
+            'lang null' => [
+                $object, // object
+                'description', // attribute
+                null, // lang
+                $included, // included
+                false, // expected
+            ],
+        ];
+    }
+
+    /**
+     * Test `exists(array $object, array $included, string $attribute, string $lang)` method
+     *
+     * @dataProvider existsProvider()
+     * @covers ::exists()
+     * @covers ::getTranslatedField()
+     *
+     * @param array $object The object to translate
+     * @param string $attribute The attribute to translate
+     * @param string|null $lang The language of translation, 2 chars code
+     * @param array|null $included The included translations data
+     * @param bool $expected The expected result (true => exists, false => does not exist)
+     * @return void
+     */
+    public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected) : void
+    {
+        if ($lang == null) {
+            Configure::write('I18n.lang', 'it');
+        }
+        $actual = $this->I18n->exists($object, $attribute, $lang, $included);
+        static::assertEquals($expected, $actual);
+    }
 }
