@@ -24,14 +24,16 @@ use Cake\View\Helper;
 class I18nHelper extends Helper
 {
     /**
-     * Translation data per object and lang.
+     * Translation data per object and lang internal cache.
+     * If `null` no cache has been created, if `[]` no translations have been found.
      * Structure:
      *
      *   translation[<object ID>][<lang>][<field>] = <value>.
      *
-     * @var array
+     *
+     * @var array|null
      */
-    protected $translation = [];
+    protected $translation = null;
 
     /**
      * Proxy to `\Cake\I18n\I18n::getLocale()`.
@@ -110,10 +112,10 @@ class I18nHelper extends Helper
      * @param string $attribute The attribute name
      * @param string|null $lang The lang (2 chars string)
      * @param bool $defaultNull Pass true when you want null as default, on missing translation
-     * @param array|null $included The included translations data
+     * @param array $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, ?array $included = []) : ?string
+    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array &$included = []) : ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
@@ -125,7 +127,7 @@ class I18nHelper extends Helper
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
         }
-        $returnValue = $this->getTranslatedField($object, $included, $attribute, $lang);
+        $returnValue = $this->getTranslatedField($object, $attribute, $lang, $included);
         if ($returnValue === null) {
             return $defaultValue;
         }
@@ -142,7 +144,7 @@ class I18nHelper extends Helper
      * @param array $included The included translations data)
      * @return string|null
      */
-    public function exists(array $object, string $attribute, ?string $lang = null, ?array $included = []) : bool
+    public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []) : bool
     {
         if (empty($included) && !empty($this->getView()->viewVars['included'])) {
             $included = $this->getView()->viewVars['included'];
@@ -150,9 +152,20 @@ class I18nHelper extends Helper
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
         }
-        $val = $this->getTranslatedField($object, $included, $attribute, $lang);
+        $val = $this->getTranslatedField($object, $attribute, $lang, $included);
 
         return ($val !== null);
+    }
+
+    /**
+     * Reset internal translation cache.
+     * To use when `included` array has changed.
+     *
+     * @return void
+     */
+    public function reset() : void
+    {
+        $this->translation = null;
     }
 
     /**
@@ -165,12 +178,12 @@ class I18nHelper extends Helper
      *     $this->translation[100]['sp'] = ['title' => 'Ejemplo', 'description' => 'Este es un ejemplo']
      *
      * @param array $object The object to translate
-     * @param array $included The included translations data
      * @param string $attribute The attribute name
      * @param string $lang The lang (2 chars string)
+     * @param array $included The included translations data
      * @return string|null The translation of attribute field per object response and lang
      */
-    private function getTranslatedField(array $object, array $included, string $attribute, string $lang) : ?string
+    private function getTranslatedField(array $object, string $attribute, string $lang, array &$included) : ?string
     {
         if (empty($object['id'])) {
             return null;
@@ -178,12 +191,13 @@ class I18nHelper extends Helper
 
         $id = $object['id'];
 
-        if (!array_key_exists($id, $this->translation)) {
+        if ($this->translation === null) {
             $translations = Hash::combine($included, '{n}.id', '{n}.attributes', '{n}.type');
-            if (empty($translations['translations'])) {
-                return null;
-            }
-            $this->translation[$id] = Hash::combine($translations, 'translations.{n}.lang', 'translations.{n}.translated_fields');
+            $this->translation = Hash::combine(
+                $translations,
+                'translations.{n}.lang',
+                'translations.{n}.translated_fields',
+                'translations.{n}.object_id');
         }
 
         $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
