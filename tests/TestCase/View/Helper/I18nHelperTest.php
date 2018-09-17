@@ -280,23 +280,30 @@ class I18nHelperTest extends TestCase
         return [
             'empty object' => [
                 [], // object
-                [], // included
                 'title', // attribute
                 'it', // lang
+                [], // included
                 false, // expected
             ],
             'translation found' => [
                 $object, // object
-                $included, // included
                 'title', // attribute
                 'it', // lang
+                $included, // included
                 true, // expected
             ],
             'translation missing' => [
                 $object, // object
-                $included, // included
                 'description', // attribute
                 'it', // lang
+                $included, // included
+                false, // expected
+            ],
+            'lang null' => [
+                $object, // object
+                'description', // attribute
+                null, // lang
+                $included, // included
                 false, // expected
             ],
         ];
@@ -310,15 +317,18 @@ class I18nHelperTest extends TestCase
      * @covers ::getTranslatedField()
      *
      * @param array $object The object to translate
-     * @param array $included The included translations data
      * @param string $attribute The attribute to translate
-     * @param string $lang The language of translation, 2 chars code
+     * @param string|null $lang The language of translation, 2 chars code
+     * @param array|null $included The included translations data
      * @param bool $expected The expected result (true => exists, false => does not exist)
      * @return void
      */
-    public function testExists(array $object, array $included, string $attribute, string $lang, bool $expected) : void
+    public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected) : void
     {
-        $actual = $this->I18n->exists($object, $included, $attribute, $lang);
+        if ($lang == null) {
+            Configure::write('I18n.lang', 'it');
+        }
+        $actual = $this->I18n->exists($object, $attribute, $lang, $included);
         static::assertEquals($expected, $actual);
     }
 }

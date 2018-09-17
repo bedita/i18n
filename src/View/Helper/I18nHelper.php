@@ -108,12 +108,12 @@ class I18nHelper extends Helper
      *
      * @param array $object The object to translate
      * @param string $attribute The attribute name
-     * @param string $lang The lang (2 chars string)
+     * @param string|null $lang The lang (2 chars string)
      * @param bool $defaultNull Pass true when you want null as default, on missing translation
      * @param array|null $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, string $lang, bool $defaultNull = false, ?array $included = []) : ?string
+    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, ?array $included = []) : ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
@@ -121,6 +121,9 @@ class I18nHelper extends Helper
         }
         if (empty($included) && !empty($this->getView()->viewVars['included'])) {
             $included = $this->getView()->viewVars['included'];
+        }
+        if (empty($lang)) {
+            $lang = Configure::read('I18n.lang', '');
         }
         $returnValue = $this->getTranslatedField($object, $included, $attribute, $lang);
         if ($returnValue === null) {
@@ -134,13 +137,19 @@ class I18nHelper extends Helper
      * Verify that object has translation for the specified attribute and lang
      *
      * @param array $object The object to translate
-     * @param array $included The included translations data
      * @param string $attribute The attribute name
-     * @param string $lang The lang (2 chars string)
+     * @param string|null $lang The lang (2 chars string
+     * @param array $included The included translations data)
      * @return string|null
      */
-    public function exists(array $object, array $included, string $attribute, string $lang) : bool
+    public function exists(array $object, string $attribute, ?string $lang = null, ?array $included = []) : bool
     {
+        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
+            $included = $this->getView()->viewVars['included'];
+        }
+        if (empty($lang)) {
+            $lang = Configure::read('I18n.lang', '');
+        }
         $val = $this->getTranslatedField($object, $included, $attribute, $lang);
 
         return ($val !== null);
