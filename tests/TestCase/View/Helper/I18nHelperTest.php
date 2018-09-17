@@ -67,7 +67,6 @@ class I18nHelperTest extends TestCase
         ],
     ];
 
-
     /**
      * {@inheritDoc}
      */
@@ -91,7 +90,6 @@ class I18nHelperTest extends TestCase
             // usually set by middleware
             'lang' => 'en',
         ]);
-
     }
 
     /**

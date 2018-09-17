@@ -199,7 +199,8 @@ class I18nHelper extends Helper
                 $translations,
                 'translations.{n}.lang',
                 'translations.{n}.translated_fields',
-                'translations.{n}.object_id');
+                'translations.{n}.object_id'
+            );
         }
 
         $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
