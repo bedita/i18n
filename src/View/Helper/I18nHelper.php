@@ -107,17 +107,20 @@ class I18nHelper extends Helper
      * Return translation (by response object and included data, field and language)
      *
      * @param array $object The object to translate
-     * @param array $included The included translations data
      * @param string $attribute The attribute name
      * @param string $lang The lang (2 chars string)
      * @param bool $defaultNull Pass true when you want null as default, on missing translation
+     * @param array|null $included The included translations data
      * @return string|null
      */
-    public function field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false) : ?string
+    public function field(array $object, string $attribute, string $lang, bool $defaultNull = false, ?array $included = []) : ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
-            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute));
+            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute), Hash::get($object, sprintf('%s', $attribute)));
+        }
+        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
+            $included = $this->getView()->viewVars['included'];
         }
         $returnValue = $this->getTranslatedField($object, $included, $attribute, $lang);
         if ($returnValue === null) {
@@ -160,25 +163,21 @@ class I18nHelper extends Helper
      */
     private function getTranslatedField(array $object, array $included, string $attribute, string $lang) : ?string
     {
-        if (empty($object)) {
+        if (empty($object['id'])) {
             return null;
         }
-        $id = Hash::get($object, 'id');
-        $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
-        if (!Hash::check($this->translation, $path)) {
-            foreach ($included as $inc) {
-                $incId = Hash::get($inc, 'attributes.object_id');
-                if ($inc['type'] === 'translations' && (string)$incId === (string)$id) {
-                    $lang = Hash::get($inc, 'attributes.lang');
-                    $this->translation[$id][$lang] = Hash::get($inc, 'attributes.translated_fields');
-                    if (!Hash::check($this->translation, sprintf('%s.%s.%s', $id, $lang, $attribute))) { // if field not in translated_fields, set to null
-                        $this->translation[$id][$lang][$attribute] = null;
-                    }
-                }
+
+        $id = $object['id'];
+
+        if (!array_key_exists($id, $this->translation)) {
+            $translations = Hash::combine($included, '{n}.id', '{n}.attributes', '{n}.type');
+            if (empty($translations['translations'])) {
+                return null;
             }
-            $mainLang = Hash::get($object, 'attributes.lang');
-            $this->translation[$id][$mainLang] = Hash::get($object, 'attributes');
+            $this->translation[$id] = Hash::combine($translations, 'translations.{n}.lang', 'translations.{n}.translated_fields');
         }
+
+        $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
 
         return Hash::get($this->translation, $path);
     }

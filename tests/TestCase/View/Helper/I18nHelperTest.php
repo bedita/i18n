@@ -156,7 +156,13 @@ class I18nHelperTest extends TestCase
      */
     public function fieldProvider() : array
     {
-        $object = [
+        $objectBase = [
+            'id' => 999,
+            'title' => 'Sample',
+            'description' => 'A dummy example',
+            'lang' => 'en',
+        ];
+        $objectStructured = [
             'id' => 999,
             'attributes' => [
                 'title' => 'Sample',
@@ -181,34 +187,42 @@ class I18nHelperTest extends TestCase
         return [
             'empty object' => [
                 [], // object
-                [], // included
                 'title', // attribute
                 'it', // lang
                 true, // defaultNull
+                [], // included
                 null, // expected
             ],
-            'translation found' => [
-                $object, // object
-                $included, // included
+            'translation found / object base' => [
+                $objectBase, // object
                 'title', // attribute
                 'it', // lang
                 false, // defaultNull
+                $included, // included
+                'Esempio', // expected
+            ],
+            'translation found / object structured' => [
+                $objectStructured, // object
+                'title', // attribute
+                'it', // lang
+                false, // defaultNull
+                $included, // included
                 'Esempio', // expected
             ],
             'translation missing: default null false' => [
-                $object, // object
-                $included, // included
+                $objectBase, // object
                 'description', // attribute
                 'it', // lang
                 false, // defaultNull
+                $included, // included
                 'A dummy example', // expected
             ],
             'translation missing: default null true' => [
-                $object, // object
-                $included, // included
+                $objectBase, // object
                 'description', // attribute
                 'it', // lang
                 true, // defaultNull
+                $included, // included
                 null, // expected
             ],
         ];
@@ -221,16 +235,16 @@ class I18nHelperTest extends TestCase
      * @covers ::field()
      *
      * @param array $object The object to translate
-     * @param array $included The included translations data
      * @param string $attribute The attribute to translate
      * @param string $lang The language of translation, 2 chars code
      * @param boolean $defaultNull True if default value should be null; otherwise on missing translation, original field value
+     * @param array $included The included translations data
      * @param string|null $expected The expected translation
      * @return void
      */
-    public function testField(array $object, array $included, string $attribute, string $lang, bool $defaultNull, ?string $expected) : void
+    public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected) : void
     {
-        $actual = $this->I18n->field($object, $included, $attribute, $lang, $defaultNull);
+        $actual = $this->I18n->field($object, $attribute, $lang, $defaultNull, $included);
         static::assertEquals($expected, $actual);
     }
 
