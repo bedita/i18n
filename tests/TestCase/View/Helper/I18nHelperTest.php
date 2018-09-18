@@ -35,6 +35,39 @@ class I18nHelperTest extends TestCase
     protected $I18n = null;
 
     /**
+     * Test `object`
+     *
+     * @var array
+     */
+    protected $object = [
+        'id' => 999,
+        'attributes' => [
+            'title' => 'Sample',
+            'description' => 'A dummy example',
+            'lang' => 'en',
+        ],
+    ];
+
+    /**
+     * Test `included`
+     *
+     * @var array
+     */
+    protected $included = [
+        [
+            'id' => 99999,
+            'type' => 'translations',
+            'attributes' => [
+                'object_id' => 999,
+                'lang' => 'it',
+                'translated_fields' => [
+                    'title' => 'Esempio',
+                ],
+            ],
+        ],
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function setUp() : void
@@ -156,33 +189,10 @@ class I18nHelperTest extends TestCase
      */
     public function fieldProvider() : array
     {
-        $objectBase = [
-            'id' => 999,
-            'title' => 'Sample',
-            'description' => 'A dummy example',
-            'lang' => 'en',
-        ];
-        $objectStructured = [
-            'id' => 999,
-            'attributes' => [
-                'title' => 'Sample',
-                'description' => 'A dummy example',
-                'lang' => 'en',
-            ],
-        ];
-        $included = [
-            [
-                'id' => 99999,
-                'type' => 'translations',
-                'attributes' => [
-                    'object_id' => 999,
-                    'lang' => 'it',
-                    'translated_fields' => [
-                        'title' => 'Esempio',
-                    ],
-                ],
-            ],
-        ];
+        $objectBase = ['id' => $this->object['id']] + $this->object['attributes'];
+        $objectStructured = $this->object;
+
+        $included = $this->included;
 
         return [
             'empty object' => [
@@ -255,27 +265,8 @@ class I18nHelperTest extends TestCase
      */
     public function existsProvider() : array
     {
-        $object = [
-            'id' => 999,
-            'attributes' => [
-                'title' => 'Sample',
-                'description' => 'A dummy example',
-                'lang' => 'en',
-            ],
-        ];
-        $included = [
-            [
-                'id' => 99999,
-                'type' => 'translations',
-                'attributes' => [
-                    'object_id' => 999,
-                    'lang' => 'it',
-                    'translated_fields' => [
-                        'title' => 'Esempio',
-                    ],
-                ],
-            ],
-        ];
+        $object = $this->object;
+        $included = $this->included;
 
         return [
             'empty object' => [
@@ -330,5 +321,62 @@ class I18nHelperTest extends TestCase
         }
         $actual = $this->I18n->exists($object, $attribute, $lang, $included);
         static::assertEquals($expected, $actual);
+    }
+
+    /**
+     * Test `exists()` method
+     *
+     * @covers ::exists()
+     * @covers ::getTranslatedField()
+     *
+     * @return void
+     */
+    public function testDefaultExists() : void
+    {
+        Configure::write('I18n.lang', 'it');
+
+        $actual = $this->I18n->exists($this->object, 'title');
+        static::assertFalse($actual);
+    }
+
+    /**
+     * Test internal translation cache
+     *
+     * @covers ::field()
+     * @covers ::getTranslatedField()
+     *
+     * @return void
+     */
+    public function testCache() : void
+    {
+        Configure::write('I18n.lang', 'it');
+
+        $actual = $this->I18n->field($this->object, 'title', null, false, $this->included);
+        static::assertEquals('Esempio', $actual);
+
+        // use cache
+        $actual = $this->I18n->field($this->object, 'title');
+        static::assertEquals('Esempio', $actual);
+    }
+
+    /**
+     * Test `reset()` method
+     *
+     * @covers ::reset()
+     * @covers ::getTranslatedField()
+     *
+     * @return void
+     */
+    public function testCacheReset() : void
+    {
+        Configure::write('I18n.lang', 'it');
+
+        $actual = $this->I18n->field($this->object, 'title', null, false, $this->included);
+        static::assertEquals('Esempio', $actual);
+
+        // reset cache
+        $this->I18n->reset();
+        $actual = $this->I18n->field($this->object, 'title');
+        static::assertEquals('Sample', $actual);
     }
 }
