@@ -99,7 +99,7 @@ class I18nHelper extends Helper
     {
         $request = Router::getRequest(true);
         if (empty($request)) {
-            return sprintf('/%s', $newLang);
+            return '';
         }
         $url = $request->getUri()->getPath();
         $prefix = sprintf('/%s', $this->getLang());

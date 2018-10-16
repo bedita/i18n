@@ -169,7 +169,7 @@ class I18nHelperTest extends TestCase
                 'it',
             ],
             'empty request' => [
-                '/en',
+                '',
                 [
                 ],
                 'en',
