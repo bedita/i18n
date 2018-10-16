@@ -160,6 +160,14 @@ class I18nHelperTest extends TestCase
                 ],
                 'it',
             ],
+            'query' => [
+                '/it/help?page=1',
+                [
+                    'REQUEST_URI' => '/en/help',
+                    'QUERY_STRING' => 'page=1',
+                ],
+                'it',
+            ],
         ];
     }
 

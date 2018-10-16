@@ -97,10 +97,14 @@ class I18nHelper extends Helper
      */
     public function changeUrlLang($newLang) : string
     {
-        $url = Router::getRequest(true)->getUri()->getPath();
+        $uri = Router::getRequest(true)->getUri();
+        $url = $uri->getPath();
         $prefix = sprintf('/%s', $this->getLang());
         if (stripos($url, $prefix . '/') === 0 || $url === $prefix) {
             $url = sprintf('/%s', $newLang) . substr($url, strlen($prefix));
+        }
+        if ($uri->getQuery()) {
+            $url .= '?' . $uri->getQuery();
         }
 
         return $url;
