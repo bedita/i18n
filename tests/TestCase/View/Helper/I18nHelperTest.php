@@ -168,6 +168,12 @@ class I18nHelperTest extends TestCase
                 ],
                 'it',
             ],
+            'empty request' => [
+                '',
+                [
+                ],
+                'en',
+            ],
         ];
     }
 
@@ -184,8 +190,10 @@ class I18nHelperTest extends TestCase
      */
     public function testChangeUrlLang($expected, array $server, $lang) : void
     {
-        $request = ServerRequestFactory::fromGlobals($server);
-        Router::pushRequest($request);
+        if (!empty($server)) {
+            $request = ServerRequestFactory::fromGlobals($server);
+            Router::pushRequest($request);
+        }
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang));
     }
