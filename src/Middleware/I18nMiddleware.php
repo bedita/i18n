@@ -40,6 +40,7 @@ class I18nMiddleware
     protected $_defaultConfig = [
         'match' => [],
         'startWith' => [],
+        'cookieName' => 'i18nSessionLanguage',
     ];
 
     /**
@@ -78,6 +79,10 @@ class I18nMiddleware
         }
 
         $httpLocale = \Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
+
+        // get locale from cookie, if available
+        $cookieName = $this->getConfig('cookieName');
+        $httpLocale = (string)$request->getCookie($cookieName, $httpLocale);
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($path, $httpLocale);

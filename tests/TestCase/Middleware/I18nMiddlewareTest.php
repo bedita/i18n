@@ -140,6 +140,73 @@ class I18nMiddlewareTest extends TestCase
     }
 
     /**
+     * Data provider for `testCookie()`
+     *
+     * @return array
+     */
+    public function cookieProvider() : array
+    {
+        return [
+            'no cookie' => [
+                null, // httpLocale
+                null, // cookieName
+                ['REQUEST_URI' => '/help'], // server
+                'http://localhost/en/help', // expected
+            ],
+            'custom cookie' => [
+                'it_IT', // httpLocale
+                'myTestCookie', // cookieName
+                ['REQUEST_URI' => '/help'], // server
+                'http://localhost/it/help', // expected
+            ],
+        ];
+    }
+
+    /**
+     * Test cookie when invoking middleware.
+     *
+     * @param string|null $httpLocale The locale
+     * @param string|null $cookieName The cookie name
+     * @param array $server The server config
+     * @param string $expected The response location expected
+     *
+     * @return void
+     * @dataProvider cookieProvider
+     * @covers ::__construct()
+     * @covers ::__invoke()
+     */
+    public function testCookie($httpLocale, $cookieName, $server, $expected) : void
+    {
+        if (!empty($httpLocale)) {
+            // write config
+            Configure::write(sprintf('I18n.locales.%s', $httpLocale));
+        }
+
+        // set cookies for test
+        $query = $body = $cookies = $files = null;
+        if (!empty($httpLocale) && !empty($cookieName)) {
+            $cookies = [$cookieName => $httpLocale];
+        }
+
+        // prepare request, response and invoke i18n middleware
+        $request = ServerRequestFactory::fromGlobals($server, $query, $body, $cookies, $files);
+        $response = new Response();
+        $next = function ($req, $res) {
+            return $res;
+        };
+        $config = ['match' => ['/help']];
+        if (!empty($cookieName)) {
+            $config += compact('cookieName');
+        }
+        $middleware = new I18nMiddleware($config);
+        $response = $middleware($request, $response, $next);
+
+        // verify location
+        $location = $response->getHeaderLine('Location');
+        static::assertEquals($expected, $location);
+    }
+
+    /**
      * Data Provider for `testRedirectPath`
      *
      * @return array
