@@ -123,7 +123,7 @@ class I18nMiddleware
         $defaultLang = Configure::read('I18n.default');
 
         // setup detected primary lang in 'I18n.lang'
-        $primaryLang = Hash::get(explode('/', $path), '1');
+        $primaryLang = (string)Hash::get(explode('/', $path), '1');
         if (empty($primaryLang) || !Configure::read(sprintf('I18n.languages.%s', $primaryLang))) {
             $primaryLang = $defaultLang;
         }
