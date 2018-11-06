@@ -82,7 +82,7 @@ class I18nMiddleware
 
         // get locale from cookie, if available
         $cookieName = $this->getConfig('cookieName');
-        $httpLocale = $request->getCookie($cookieName, $httpLocale);
+        $httpLocale = (string)$request->getCookie($cookieName, $httpLocale);
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($path, $httpLocale);

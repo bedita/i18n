@@ -202,7 +202,7 @@ class I18nMiddlewareTest extends TestCase
         $response = $middleware($request, $response, $next);
 
         // verify location
-        $location = $response->getHeaders()['location'][0];
+        $location = $response->getHeaderLine('Location');
         static::assertEquals($expected, $location);
     }
 
