@@ -14,6 +14,7 @@ namespace BEdita\I18n\Test\Middleware;
 
 use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Core\Configure;
+use Cake\Http\Cookie\Cookie;
 use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
@@ -26,6 +27,12 @@ use Cake\TestSuite\TestCase;
  */
 class I18nMiddlewareTest extends TestCase
 {
+    /**
+     * Fake next middleware
+     *
+     * @var callable
+     */
+    protected $nextMiddleware;
 
     /**
      * {@inheritDoc}
@@ -45,6 +52,10 @@ class I18nMiddlewareTest extends TestCase
                 'it' => 'Italiano',
             ],
         ]);
+
+        $this->nextMiddleware = function ($req, $res) {
+            return $res;
+        };
     }
 
     /**
@@ -54,7 +65,10 @@ class I18nMiddlewareTest extends TestCase
     {
         parent::tearDown();
 
+        // reset locale to default value
+        I18n::setLocale(I18n::getDefaultLocale());
         Configure::delete('I18n');
+        $this->nextMiddleware = null;
     }
 
     /**
@@ -126,84 +140,11 @@ class I18nMiddlewareTest extends TestCase
     public function testStatus($expected, array $conf, array $server) : void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-
         $response = new Response();
-
-        $next = function ($req, $res) {
-            return $res;
-        };
-
         $middleware = new I18nMiddleware($conf);
-        $response = $middleware($request, $response, $next);
+        $response = $middleware($request, $response, $this->nextMiddleware);
 
         static::assertEquals($expected, $response->getStatusCode());
-    }
-
-    /**
-     * Data provider for `testCookie()`
-     *
-     * @return array
-     */
-    public function cookieProvider() : array
-    {
-        return [
-            'no cookie' => [
-                null, // httpLocale
-                null, // cookieName
-                ['REQUEST_URI' => '/help'], // server
-                'http://localhost/en/help', // expected
-            ],
-            'custom cookie' => [
-                'it_IT', // httpLocale
-                'myTestCookie', // cookieName
-                ['REQUEST_URI' => '/help'], // server
-                'http://localhost/it/help', // expected
-            ],
-        ];
-    }
-
-    /**
-     * Test cookie when invoking middleware.
-     *
-     * @param string|null $httpLocale The locale
-     * @param string|null $cookieName The cookie name
-     * @param array $server The server config
-     * @param string $expected The response location expected
-     *
-     * @return void
-     * @dataProvider cookieProvider
-     * @covers ::__construct()
-     * @covers ::__invoke()
-     */
-    public function testCookie($httpLocale, $cookieName, $server, $expected) : void
-    {
-        if (!empty($httpLocale)) {
-            // write config
-            Configure::write(sprintf('I18n.locales.%s', $httpLocale));
-        }
-
-        // set cookies for test
-        $query = $body = $cookies = $files = null;
-        if (!empty($httpLocale) && !empty($cookieName)) {
-            $cookies = [$cookieName => $httpLocale];
-        }
-
-        // prepare request, response and invoke i18n middleware
-        $request = ServerRequestFactory::fromGlobals($server, $query, $body, $cookies, $files);
-        $response = new Response();
-        $next = function ($req, $res) {
-            return $res;
-        };
-        $config = ['match' => ['/help']];
-        if (!empty($cookieName)) {
-            $config += compact('cookieName');
-        }
-        $middleware = new I18nMiddleware($config);
-        $response = $middleware($request, $response, $next);
-
-        // verify location
-        $location = $response->getHeaderLine('Location');
-        static::assertEquals($expected, $location);
     }
 
     /**
@@ -274,15 +215,9 @@ class I18nMiddlewareTest extends TestCase
     public function testRedirectPath($expected, array $conf, array $server) : void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-
         $response = new Response();
-
-        $next = function ($req, $res) {
-            return $res;
-        };
-
         $middleware = new I18nMiddleware($conf);
-        $response = $middleware($request, $response, $next);
+        $response = $middleware($request, $response, $this->nextMiddleware);
 
         static::assertEquals(301, $response->getStatusCode());
         static::assertEquals($expected, $response->getHeaderLine('Location'));
@@ -334,22 +269,143 @@ class I18nMiddlewareTest extends TestCase
      * @return void
      *
      * @dataProvider setupLocaleProvider
+     * @covers ::detectLocale()
      * @covers ::setupLocale()
      */
     public function testSetupLocale(array $expected, array $server) : void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-
         $response = new Response();
-
-        $next = function ($req, $res) {
-            return $res;
-        };
-
         $middleware = new I18nMiddleware();
-        $response = $middleware($request, $response, $next);
+        $response = $middleware($request, $response, $this->nextMiddleware);
 
         static::assertEquals($expected['locale'], I18n::getLocale());
         static::assertEquals($expected['lang'], Configure::read('I18n.lang'));
+    }
+
+    /**
+     * Test that if middleware is not configured properly the locale cookie is ignored.
+     *
+     * @return void
+     *
+     * @covers ::detectLocale()
+     * @covers ::setupLocale()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testNotUseCookie() : void
+    {
+        $cookieName = 'I18nLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
+        $response = new Response();
+        $middleware = new I18nMiddleware();
+        $response = $middleware($request, $response, $this->nextMiddleware);
+
+        static::assertEquals('en_US', I18n::getLocale());
+    }
+
+    /**
+     * Test that if middleware is configured properly the locale is set by cookie
+     *
+     * @return void
+     *
+     * @covers ::detectLocale()
+     * @covers ::setupLocale()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testReadFromCookie() : void
+    {
+        $cookieName = 'I18nLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
+        $response = new Response();
+        $middleware = new I18nMiddleware([
+            'cookie' => ['name' => $cookieName],
+        ]);
+        $response = $middleware($request, $response, $this->nextMiddleware);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+    }
+
+    /**
+     * Test cookie creation.
+     *
+     * @return void
+     *
+     * @covers ::detectLocale()
+     * @covers ::setupLocale()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testCreateCookie() : void
+    {
+        $cookieName = 'I18nLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'it-IT',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server);
+        $response = new Response();
+        $middleware = new I18nMiddleware([
+            'cookie' => [
+                'name' => $cookieName,
+                'create' => true,
+            ],
+        ]);
+        $response = $middleware($request, $response, $this->nextMiddleware);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+        $cookie = $response->getCookieCollection()->get($cookieName);
+        static::assertInstanceOf(Cookie::class, $cookie);
+        static::assertEquals('it_IT', $cookie->getValue());
+
+        $dateInterval = $cookie->getExpiry()->diff(new \DateTime());
+        static::assertEquals(1, $dateInterval->y);
+    }
+
+    /**
+     * Test change expire cookie.
+     *
+     * @return void
+     *
+     * @covers ::detectLocale()
+     * @covers ::setupLocale()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testChangeExpireCookie() : void
+    {
+        $cookieName = 'I18nLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
+        $response = new Response();
+        $middleware = new I18nMiddleware([
+            'cookie' => [
+                'name' => $cookieName,
+                'create' => true,
+                'expire' => '+1 month',
+            ],
+        ]);
+        $response = $middleware($request, $response, $this->nextMiddleware);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+        $cookie = $response->getCookieCollection()->get($cookieName);
+        static::assertInstanceOf(Cookie::class, $cookie);
+        static::assertEquals('it_IT', $cookie->getValue());
+
+        $dateInterval = $cookie->getExpiry()->diff(new \DateTime());
+        static::assertEquals(0, $dateInterval->y);
+        static::assertEquals(1, $dateInterval->m);
     }
 }
