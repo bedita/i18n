@@ -93,24 +93,56 @@ class I18nHelper extends Helper
      * Return the current URL replacing current lang with new lang passed.
      *
      * @param string $newLang The new lang you want in URL.
+     * @param string $switchUrl The switch lang URL defined for this app, if any.
      * @return string
      */
-    public function changeUrlLang($newLang) : string
+    public function changeUrlLang($newLang, $switchUrl = null) : string
     {
         $request = Router::getRequest(true);
         if (empty($request)) {
             return '';
         }
-        $url = $request->getUri()->getPath();
-        $prefix = sprintf('/%s', $this->getLang());
-        if (stripos($url, $prefix . '/') === 0 || $url === $prefix) {
-            $url = sprintf('/%s', $newLang) . substr($url, strlen($prefix));
+        $path = $request->getUri()->getPath();
+        $query = $request->getUri()->getQuery();
+
+        $newLangUrl = $this->newLangUrl($newLang, $path, $query);
+        if ($newLangUrl !== null) {
+            return $newLangUrl;
         }
-        if ($request->getUri()->getQuery()) {
-            $url .= '?' . $request->getUri()->getQuery();
+
+        $url = $path;
+        if ($query) {
+            $url .= '?' . $query;
+        }
+
+        if (!empty($switchUrl)) {
+            return sprintf('%s?new=%s&redirect=%s', $switchUrl, $newLang, urlencode($url));
         }
 
         return $url;
+    }
+
+    /**
+     * Try to create a new language URL from current path using lang prefix.
+     *
+     * @param string $newLang The new lang you want in URL.
+     * @param string $path The current URL path.
+     * @param string $query The current URL query.
+     * @return string|null The new lang url or null if no lang prefix was found
+     */
+    protected function newLangUrl($newLang, $path, $query) : ?string
+    {
+        $prefix = sprintf('/%s', $this->getLang());
+        if (stripos($path, $prefix . '/') === 0 || $path === $prefix) {
+            $url = sprintf('/%s', $newLang) . substr($path, strlen($prefix));
+            if ($query) {
+                $url .= '?' . $query;
+            }
+
+            return $url;
+        }
+
+        return null;
     }
 
     /**

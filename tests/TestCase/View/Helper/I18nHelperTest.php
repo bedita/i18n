@@ -174,6 +174,14 @@ class I18nHelperTest extends TestCase
                 ],
                 'en',
             ],
+            'lang url' => [
+                '/lang?new=en&redirect=' . urlencode('/help'),
+                [
+                    'REQUEST_URI' => '/help',
+                ],
+                'en',
+                '/lang',
+            ],
         ];
     }
 
@@ -183,19 +191,20 @@ class I18nHelperTest extends TestCase
      * @param string $expected The string expected
      * @param array $server The server vars
      * @param string $lang The language to change
+     * @param string $lang The switch language url
      * @return void
      *
      * @dataProvider changeUrlLangProvider
      * @covers ::changeUrlLang()
      */
-    public function testChangeUrlLang($expected, array $server, $lang) : void
+    public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null) : void
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
             Router::pushRequest($request);
         }
 
-        static::assertEquals($expected, $this->I18n->changeUrlLang($lang));
+        static::assertEquals($expected, $this->I18n->changeUrlLang($lang, $switchUrl));
     }
 
     /**
