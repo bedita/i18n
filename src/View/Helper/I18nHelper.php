@@ -151,7 +151,7 @@ class I18nHelper extends Helper
      * @param string $attribute The attribute name
      * @param string|null $lang The lang (2 chars string
      * @param array $included The included translations data)
-     * @return string|null
+     * @return bool
      */
     public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []) : bool
     {

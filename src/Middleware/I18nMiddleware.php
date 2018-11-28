@@ -90,7 +90,7 @@ class I18nMiddleware
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($locale);
-            $response = $this->getResponseWithCookie($request, $response, I18n::getLocale());
+            $response = $this->getResponseWithCookie($response, I18n::getLocale());
 
             return $next($request, $response);
         }
@@ -134,8 +134,8 @@ class I18nMiddleware
             return $locale;
         }
 
-        $locale = $request->getCookie($this->config('cookie.name'));
-        if ($locale !== null) {
+        $locale = (string)$request->getCookie($this->config('cookie.name'));
+        if (!empty($locale)) {
             return $locale;
         }
 
@@ -167,12 +167,11 @@ class I18nMiddleware
      *
      * The cookie is added only if the middleware is configured to create cookie.
      *
-     * @param ServerRequest $request The request.
      * @param ResponseInterface $response The response.
      * @param string $locale The locale string to set in cookie.
      * @return \Psr\Http\Message\ResponseInterface
      */
-    protected function getResponseWithCookie(ServerRequest $request, ResponseInterface $response, string $locale) : ResponseInterface
+    protected function getResponseWithCookie(ResponseInterface $response, string $locale) : ResponseInterface
     {
         $name = $this->getConfig('cookie.name');
         $create = $this->getConfig('cookie.create', false);

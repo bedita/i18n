@@ -1,5 +1,9 @@
 # I18n plugin for BEdita4 & CakePHP
 
+[![Build Status](https://travis-ci.com/bedita/i18n.svg)](https://travis-ci.com/bedita/i18n)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bedita/i18n/badges/quality-score.png)](https://scrutinizer-ci.com/g/bedita/i18n)
+<!-- [![Code Coverage](https://codecov.io/gh/bedita/i18n/graph/badge.svg)](https://codecov.io/gh/bedita/i18n) -->
+
 ## Installation
 
 You can install this BEdita4/CakePHP plugin using [composer](http://getcomposer.org) like this:
