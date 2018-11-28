@@ -367,8 +367,9 @@ class I18nMiddlewareTest extends TestCase
         static::assertInstanceOf(Cookie::class, $cookie);
         static::assertEquals('it_IT', $cookie->getValue());
 
-        $dateInterval = $cookie->getExpiry()->diff(new \DateTime());
-        static::assertEquals(1, $dateInterval->y);
+        $expireYear = (int)$cookie->getExpiry()->format('Y');
+        $currentYear = (int)date('Y');
+        static::assertEquals($currentYear + 1, $expireYear);
     }
 
     /**
@@ -390,11 +391,12 @@ class I18nMiddlewareTest extends TestCase
         ];
         $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
         $response = new Response();
+        $expireExpected = '2050-12-31';
         $middleware = new I18nMiddleware([
             'cookie' => [
                 'name' => $cookieName,
                 'create' => true,
-                'expire' => '+1 month',
+                'expire' => $expireExpected,
             ],
         ]);
         $response = $middleware($request, $response, $this->nextMiddleware);
@@ -403,9 +405,6 @@ class I18nMiddlewareTest extends TestCase
         $cookie = $response->getCookieCollection()->get($cookieName);
         static::assertInstanceOf(Cookie::class, $cookie);
         static::assertEquals('it_IT', $cookie->getValue());
-
-        $dateInterval = $cookie->getExpiry()->diff(new \DateTime());
-        static::assertEquals(0, $dateInterval->y);
-        static::assertEquals(1, $dateInterval->m);
+        static::assertEquals($expireExpected, $cookie->getExpiry()->format('Y-m-d'));
     }
 }
