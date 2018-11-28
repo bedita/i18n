@@ -86,23 +86,23 @@ class I18nMiddleware
             }
         }
 
-        $httpLocale = $this->detectLocale($request);
+        $locale = $this->detectLocale($request);
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
-            $this->setupLocale($httpLocale);
+            $this->setupLocale($locale);
             $response = $this->getResponseWithCookie($request, $response, I18n::getLocale());
 
             return $next($request, $response);
         }
 
         $lang = Configure::read('I18n.default');
-        if ($httpLocale) {
-            $localeLang = Configure::read(sprintf('I18n.locales.%s', $httpLocale));
+        if ($locale) {
+            $localeLang = Configure::read(sprintf('I18n.locales.%s', $locale));
             if ($localeLang) {
                 $lang = $localeLang;
             } else {
                 // try with primary language
-                $primary = \Locale::getPrimaryLanguage($httpLocale);
+                $primary = \Locale::getPrimaryLanguage($locale);
                 if (Configure::read(sprintf('I18n.languages.%s', $primary))) {
                     $lang = $primary;
                 }
