@@ -19,6 +19,7 @@ use Cake\I18n\I18n;
 use Cake\Utility\Hash;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\Response\RedirectResponse;
+use Cake\Network\Exception\BadRequestException;
 
 /**
  * i18n middleware.
@@ -34,6 +35,8 @@ class I18nMiddleware
      * Define when I18n rules are applied with `/:lang` prefix:
      *  - 'match': array of URL paths, if there's an exact match rule is applied
      *  - 'startWith': array of URL paths, if current URL path starts with one of these rule is applied
+     *  - 'changeLangUrl': reserved URL (for example `/change_lang`) used to switch locale and redirect to custom URL.
+     *                     By default is disabled.
      *  - 'cookie': array for cookie that keeps the locale value. By default no cookie is used.
      *      - 'name': cookie name
      *      - 'create': set to `true` if the middleware is responsible of cookie creation
@@ -44,6 +47,7 @@ class I18nMiddleware
     protected $_defaultConfig = [
         'match' => [],
         'startWith' => [],
+        'changeLangUrl' => null,
         'cookie' => [
             'name' => null,
             'create' => false,
@@ -78,6 +82,10 @@ class I18nMiddleware
     public function __invoke(ServerRequest $request, ResponseInterface $response, $next) : ResponseInterface
     {
         $path = $request->getUri()->getPath();
+
+        if ($path === (string)$this->getConfig('changeLangUrl') && $this->getConfig('cookie.name')) {
+            return $this->changeLangAndRedirect($request);
+        }
 
         $redir = false;
         foreach ($this->getConfig('startWith') as $needle) {
@@ -183,5 +191,31 @@ class I18nMiddleware
             'value' => $locale,
             'expire' => strtotime($this->getConfig('cookie.expire', '+1 year')),
         ]);
+    }
+
+    /**
+     * Change lang and redirect.
+     *
+     * Require query string `new` and `redirect`
+     *
+     * @param ServerRequest $request The request
+     * @return ServerRequest
+     * @throws BadRequestException When missing required query string
+     */
+    protected function changeLangAndRedirect(ServerRequest $request) : ServerRequest
+    {
+        $new = $request->getQuery('new');
+        $redirect = $request->getQuery('redirect');
+
+        if (empty($new) || empty($redirect)) {
+            throw new BadRequestException(__('Missing required "new" or "redirect" query string'));
+        }
+
+        $locale = array_search($urlLang, (array)Configure::read('I18n.locales'));
+        if ($locale === false) {
+            throw new BadRequestException(__('Lang {0} not supported', [$new]));
+        }
+
+        // update cookie and redirect
     }
 }
