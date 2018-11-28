@@ -102,6 +102,18 @@ $middlewareQueue->add(new I18nMiddleware([
 All URI paths matching exactly something in `'match'` key or starting with one entry in `'startWith'`
 will be redirect to the same URL but with the detected language as prefix, for example `/it/help`.
 
+You can also configure the middleware to use a cookie to store the locale
+
+```php
+$middlewareQueue->add(new I18nMiddleware([
+    'cookie' =>[
+        'name' => 'I18nLocale',
+        'create' => true, // the middleware will create the cookie (default false)
+        'expire' => '+1 month', // cookie expiring time (default +1 year)
+    ],
+]));
+```
+
 ### I18nHelper
 
 In order to use the helper you need to initialize it in your `AppView::initialize()` method
