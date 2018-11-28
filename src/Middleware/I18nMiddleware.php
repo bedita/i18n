@@ -84,7 +84,7 @@ class I18nMiddleware
         $path = $request->getUri()->getPath();
 
         if ($path === (string)$this->getConfig('changeLangUrl') && $this->getConfig('cookie.name')) {
-            return $this->changeLangAndRedirect($request);
+            return $this->changeLangAndRedirect($request, $response);
         }
 
         $redir = false;
@@ -199,23 +199,25 @@ class I18nMiddleware
      * Require query string `new` and `redirect`
      *
      * @param ServerRequest $request The request
-     * @return ServerRequest
+     * @param \Psr\Http\Message\ResponseInterface $response The response.
+     * @return ResponseInterface
      * @throws BadRequestException When missing required query string
      */
-    protected function changeLangAndRedirect(ServerRequest $request) : ServerRequest
+    protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response) : ResponseInterface
     {
-        $new = $request->getQuery('new');
-        $redirect = $request->getQuery('redirect');
+        $new = (string)$request->getQuery('new');
+        $redirect = (string)$request->getQuery('redirect');
 
         if (empty($new) || empty($redirect)) {
             throw new BadRequestException(__('Missing required "new" or "redirect" query string'));
         }
 
-        $locale = array_search($urlLang, (array)Configure::read('I18n.locales'));
+        $locale = array_search($new, (array)Configure::read('I18n.locales'));
         if ($locale === false) {
-            throw new BadRequestException(__('Lang {0} not supported', [$new]));
+            throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }
+        $response = $this->getResponseWithCookie($response, $locale);
 
-        // update cookie and redirect
+        return $response->withLocation($redirect)->withStatus(301);
     }
 }
