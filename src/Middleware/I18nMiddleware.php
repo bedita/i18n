@@ -34,13 +34,21 @@ class I18nMiddleware
      * Define when I18n rules are applied with `/:lang` prefix:
      *  - 'match': array of URL paths, if there's an exact match rule is applied
      *  - 'startWith': array of URL paths, if current URL path starts with one of these rule is applied
+     *  - 'cookie': array for cookie that keeps the locale value. By default no cookie is used.
+     *      - 'name': cookie name
+     *      - 'create': set to `true` if the middleware is responsible of cookie creation
+     *      - 'expire': used when `create` is `true` to define when the cookie must expire
      *
      * @var array
      */
     protected $_defaultConfig = [
         'match' => [],
         'startWith' => [],
-        'cookieName' => 'i18nSessionLanguage',
+        'cookie' => [
+            'name' => null,
+            'create' => false,
+            'expire' => '+1 year',
+        ],
     ];
 
     /**
@@ -78,26 +86,23 @@ class I18nMiddleware
             }
         }
 
-        $httpLocale = \Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
-
-        // get locale from cookie, if available
-        $cookieName = $this->getConfig('cookieName');
-        $httpLocale = (string)$request->getCookie($cookieName, $httpLocale);
+        $locale = $this->detectLocale($request);
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
-            $this->setupLocale($path, $httpLocale);
+            $this->setupLocale($locale);
+            $response = $this->getResponseWithCookie($request, $response, I18n::getLocale());
 
             return $next($request, $response);
         }
 
         $lang = Configure::read('I18n.default');
-        if ($httpLocale) {
-            $localeLang = Configure::read(sprintf('I18n.locales.%s', $httpLocale));
+        if ($locale) {
+            $localeLang = Configure::read(sprintf('I18n.locales.%s', $locale));
             if ($localeLang) {
                 $lang = $localeLang;
             } else {
                 // try with primary language
-                $primary = \Locale::getPrimaryLanguage($httpLocale);
+                $primary = \Locale::getPrimaryLanguage($locale);
                 if (Configure::read(sprintf('I18n.languages.%s', $primary))) {
                     $lang = $primary;
                 }
@@ -111,29 +116,73 @@ class I18nMiddleware
     }
 
     /**
-     * Setup current locale and language code from request URL.
-     * Request URL must have a `/:lang` prefix as primary language in order to work.
+     * Detect locale following the rules:
      *
-     * @param string $path The URL path.
+     * 1. first try to detect from url path
+     * 2. then try to detect from cookie
+     * 3. finally try to detect it from HTTP Accept-Language header
+     *
+     * @param ServerRequest $request The request.
+     * @return string
+     */
+    protected function detectLocale(ServerRequest $request) : string
+    {
+        $path = $request->getUri()->getPath();
+        $urlLang = (string)Hash::get(explode('/', $path), '1');
+        $locale = array_search($urlLang, (array)Configure::read('I18n.locales'));
+        if ($locale !== false) {
+            return $locale;
+        }
+
+        $locale = $request->getCookie($this->config('cookie.name'));
+        if ($locale !== null) {
+            return $locale;
+        }
+
+        return \Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
+    }
+
+    /**
+     * Setup locale and language code from passed `$locale`.
+     * If `$locale` is not found in configuraion then use the default.
+     *
      * @param string $locale Detected HTTP locale.
      * @return void
      */
-    protected function setupLocale(string $path, string $locale) : void
+    protected function setupLocale(?string $locale) : void
     {
-        $defaultLang = Configure::read('I18n.default');
-
-        // setup detected primary lang in 'I18n.lang'
-        $primaryLang = (string)Hash::get(explode('/', $path), '1');
-        if (empty($primaryLang) || !Configure::read(sprintf('I18n.languages.%s', $primaryLang))) {
-            $primaryLang = $defaultLang;
+        $i18nConf = Configure::read('I18n', []);
+        $lang = Hash::get($i18nConf, sprintf('locales.%s', (string)$locale));
+        if ($lang === null) {
+            $lang = Hash::get($i18nConf, 'default');
+            $locale = array_search($lang, (array)Hash::get($i18nConf, 'locales', []));
         }
-        Configure::write('I18n.lang', $primaryLang);
 
-        // if detected locale matches language code let's use it, if not use a primary lang locale
-        if ($primaryLang !== Configure::read(sprintf('I18n.locales.%s', $locale))) {
-            $locales = array_flip((array)Configure::read('I18n.locales'));
-            $locale = Hash::get($locales, $primaryLang);
-        }
+        Configure::write('I18n.lang', $lang);
         I18n::setLocale($locale);
+    }
+
+    /**
+     * Return a response object with the locale cookie set or updated.
+     *
+     * The cookie is added only if the middleware is configured to create cookie.
+     *
+     * @param ServerRequest $request The request.
+     * @param ResponseInterface $response The response.
+     * @param string $locale The locale string to set in cookie.
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    protected function getResponseWithCookie(ServerRequest $request, ResponseInterface $response, string $locale) : ResponseInterface
+    {
+        $name = $this->getConfig('cookie.name');
+        $create = $this->getConfig('cookie.create', false);
+        if ($create !== true || empty($name)) {
+            return $response;
+        }
+
+        return $response->withCookie($name, [
+            'value' => $locale,
+            'expire' => strtotime($this->getConfig('cookie.expire', '+1 year')),
+        ]);
     }
 }
