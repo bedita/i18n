@@ -114,7 +114,11 @@ class I18nHelper extends Helper
             return sprintf('%s?new=%s', $switchUrl, $newLang);
         }
 
-        return $path . (!empty($query) ? '?' . $query : '');
+        if (!empty($query)) {
+            $path .= sprintf('?%s', $query);
+        }
+
+        return $path;
     }
 
     /**

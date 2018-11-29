@@ -422,7 +422,7 @@ class I18nMiddlewareTest extends TestCase
                 [
                     'location' => '/home',
                     'status' => 302,
-                    'cookie' => 'en_US',
+                    'cookie' => 'it_IT',
                 ],
                 [
                     'cookie' => [
@@ -438,7 +438,7 @@ class I18nMiddlewareTest extends TestCase
                     'HTTP_ACCEPT_LANGUAGE' => 'en-US',
                 ],
                 [
-                    'new' => 'en',
+                    'new' => 'it',
                 ],
             ],
             'no query' => [
