@@ -10,19 +10,21 @@
  *
  * See LICENSE.LGPL or <http://gnu.org/licenses/lgpl-3.0.html> for more details.
  */
-namespace BEdita\I18n\Test;
+namespace BEdita\I18n\Test\Core;
 
-use BEdita\I18n\I18nTrait;
+use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
 
 /**
- * {@see \BEdita\I18n\I18nTrait} Test Case
+ * {@see \BEdita\I18n\Core\I18nTrait} Test Case
  *
- * @coversDefaultClass \BEdita\I18n\I18nTrait
+ * @coversDefaultClass \BEdita\I18n\Core\I18nTrait
  */
 class I18nTraitTest extends TestCase
 {
+
+    use I18nTrait;
 
     /**
      * The object using trait
@@ -100,6 +102,7 @@ class I18nTraitTest extends TestCase
      */
     public function testGetLangName($expected, $lang) : void
     {
-        static::assertEquals($expected, $this->subject->getLangName($lang));
+        $result = $this->subject->getLangName($lang);
+        static::assertEquals($expected, $result);
     }
 }

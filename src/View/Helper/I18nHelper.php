@@ -12,7 +12,7 @@
  */
 namespace BEdita\I18n\View\Helper;
 
-use BEdita\I18n\I18nTrait;
+use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
 use Cake\I18n\I18n;
 use Cake\Routing\Router;

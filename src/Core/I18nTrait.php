@@ -10,9 +10,10 @@
  *
  * See LICENSE.LGPL or <http://gnu.org/licenses/lgpl-3.0.html> for more details.
  */
-namespace BEdita\I18n;
+namespace BEdita\I18n\Core;
 
 use Cake\Core\Configure;
+use Cake\I18n\I18n;
 use Cake\Utility\Hash;
 
 /**
@@ -31,6 +32,16 @@ trait I18nTrait
     public function getLocale() : string
     {
         return I18n::getLocale();
+    }
+
+    /**
+     * Return the configured supported locales
+     *
+     * @codeCoverageIgnore
+     */
+    public function getLocales() : array
+    {
+        return (array)Configure::read('I18n.locales', []);
     }
 
     /**
@@ -70,5 +81,17 @@ trait I18nTrait
         }
 
         return Hash::get($this->getLanguages(), $lang);
+    }
+
+    /**
+     * Return the default lang as configured.
+     *
+     * @return string|null
+     *
+     * @codeCoverageIgnore
+     */
+    public function getDefaultLang() : ?string
+    {
+        return Configure::read('I18n.default');
     }
 }
