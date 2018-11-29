@@ -429,7 +429,7 @@ class I18nMiddlewareTest extends TestCase
                         'name' => 'i18nLocal',
                         'create' => true
                     ],
-                    'changeLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang'
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -445,7 +445,7 @@ class I18nMiddlewareTest extends TestCase
                 new BadRequestException('Missing required "new" query string'),
                 [
                     'cookie' => ['name' => 'i18nLocal'],
-                    'changeLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang'
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -457,7 +457,7 @@ class I18nMiddlewareTest extends TestCase
                 new BadRequestException('Lang "de" not supported'),
                 [
                     'cookie' => ['name' => 'i18nLocal'],
-                    'changeLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang'
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -474,7 +474,7 @@ class I18nMiddlewareTest extends TestCase
                     'status' => 200,
                 ],
                 [
-                    'changeLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang'
                 ],
                 [
                     'HTTP_HOST' => 'example.com',

@@ -35,7 +35,7 @@ class I18nMiddleware
      * Define when I18n rules are applied with `/:lang` prefix:
      *  - 'match': array of URL paths, if there's an exact match rule is applied
      *  - 'startWith': array of URL paths, if current URL path starts with one of these rule is applied
-     *  - 'changeLangUrl': reserved URL (for example `/change_lang`) used to switch locale and redirect to custom URL.
+     *  - 'switchLangUrl': reserved URL (for example `/lang`) used to switch lang and redirect to custom URL.
      *                     By default is disabled.
      *  - 'cookie': array for cookie that keeps the locale value. By default no cookie is used.
      *      - 'name': cookie name
@@ -47,7 +47,7 @@ class I18nMiddleware
     protected $_defaultConfig = [
         'match' => [],
         'startWith' => [],
-        'changeLangUrl' => null,
+        'switchLangUrl' => null,
         'cookie' => [
             'name' => null,
             'create' => false,
@@ -83,7 +83,7 @@ class I18nMiddleware
     {
         $path = $request->getUri()->getPath();
 
-        if ($path === (string)$this->getConfig('changeLangUrl') && $this->getConfig('cookie.name')) {
+        if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
             return $this->changeLangAndRedirect($request, $response);
         }
 
