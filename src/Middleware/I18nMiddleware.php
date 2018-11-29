@@ -16,6 +16,7 @@ use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
+use Cake\Network\Exception\BadRequestException;
 use Cake\Utility\Hash;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\Response\RedirectResponse;
@@ -34,6 +35,8 @@ class I18nMiddleware
      * Define when I18n rules are applied with `/:lang` prefix:
      *  - 'match': array of URL paths, if there's an exact match rule is applied
      *  - 'startWith': array of URL paths, if current URL path starts with one of these rule is applied
+     *  - 'switchLangUrl': reserved URL (for example `/lang`) used to switch language and redirect to referer URL.
+     *                     Disabled by default.
      *  - 'cookie': array for cookie that keeps the locale value. By default no cookie is used.
      *      - 'name': cookie name
      *      - 'create': set to `true` if the middleware is responsible of cookie creation
@@ -44,6 +47,7 @@ class I18nMiddleware
     protected $_defaultConfig = [
         'match' => [],
         'startWith' => [],
+        'switchLangUrl' => null,
         'cookie' => [
             'name' => null,
             'create' => false,
@@ -78,6 +82,10 @@ class I18nMiddleware
     public function __invoke(ServerRequest $request, ResponseInterface $response, $next) : ResponseInterface
     {
         $path = $request->getUri()->getPath();
+
+        if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
+            return $this->changeLangAndRedirect($request, $response);
+        }
 
         $redir = false;
         foreach ($this->getConfig('startWith') as $needle) {
@@ -183,5 +191,31 @@ class I18nMiddleware
             'value' => $locale,
             'expire' => strtotime($this->getConfig('cookie.expire', '+1 year')),
         ]);
+    }
+
+    /**
+     * Change lang and redirect to referer.
+     *
+     * Require query string `new` and `redirect`
+     *
+     * @param ServerRequest $request The request
+     * @param \Psr\Http\Message\ResponseInterface $response The response.
+     * @return ResponseInterface
+     * @throws BadRequestException When missing required query string or unsupported language
+     */
+    protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response) : ResponseInterface
+    {
+        $new = (string)$request->getQuery('new');
+        if (empty($new)) {
+            throw new BadRequestException(__('Missing required "new" query string'));
+        }
+
+        $locale = array_search($new, (array)Configure::read('I18n.locales'));
+        if ($locale === false) {
+            throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
+        }
+        $response = $this->getResponseWithCookie($response, $locale);
+
+        return $response->withLocation($request->referer())->withDisabledCache()->withStatus(302);
     }
 }

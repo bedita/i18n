@@ -18,7 +18,9 @@ use Cake\Http\Cookie\Cookie;
 use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
+use Cake\Network\Exception\BadRequestException;
 use Cake\TestSuite\TestCase;
+use Cake\Utility\Hash;
 
 /**
  * {@see \BEdita\I18n\Middleware\I18nMiddleware} Test Case
@@ -406,5 +408,117 @@ class I18nMiddlewareTest extends TestCase
         static::assertInstanceOf(Cookie::class, $cookie);
         static::assertEquals('it_IT', $cookie->getValue());
         static::assertEquals($expireExpected, $cookie->getExpiry()->format('Y-m-d'));
+    }
+
+    /**
+     * Data provider for `testChangeLangAndRedirect()`
+     *
+     * @return array
+     */
+    public function changeLangProvider() : array
+    {
+        return [
+            'ok' => [
+                [
+                    'location' => '/home',
+                    'status' => 302,
+                    'cookie' => 'it_IT',
+                ],
+                [
+                    'cookie' => [
+                        'name' => 'i18nLocal',
+                        'create' => true
+                    ],
+                    'switchLangUrl' => '/lang'
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                    'HTTP_REFERER' => '/home',
+                    'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+                ],
+                [
+                    'new' => 'it',
+                ],
+            ],
+            'no query' => [
+                new BadRequestException('Missing required "new" query string'),
+                [
+                    'cookie' => ['name' => 'i18nLocal'],
+                    'switchLangUrl' => '/lang'
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [],
+            ],
+            'no lang' => [
+                new BadRequestException('Lang "de" not supported'),
+                [
+                    'cookie' => ['name' => 'i18nLocal'],
+                    'switchLangUrl' => '/lang'
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [
+                    'new' => 'de',
+                    'redirect' => '/home',
+                ],
+            ],
+            'no cookie' => [
+                [
+                    'location' => '',
+                    'status' => 200,
+                ],
+                [
+                    'switchLangUrl' => '/lang'
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * Test `changeLangAndRedirect()` method via URI and query string
+     *
+     * @param array|\Exception $expected Expected result
+     * @param array $conf The configuration passed to middleware
+     * @param array $server The server vars
+     * @param array $query The query string
+     * @return void
+     *
+     * @dataProvider changeLangProvider
+     * @covers ::changeLangAndRedirect()
+     * @covers ::__invoke()
+     */
+    public function testChangeLangAndRedirect($expected, $conf, $server, $query) : void
+    {
+        if ($expected instanceof \Exception) {
+            $this->expectException(get_class($expected));
+            $this->expectExceptionCode($expected->getCode());
+            $this->expectExceptionMessage($expected->getMessage());
+        }
+
+        $request = ServerRequestFactory::fromGlobals($server, $query);
+        $response = new Response();
+        $middleware = new I18nMiddleware($conf);
+        $response = $middleware($request, $response, $this->nextMiddleware);
+
+        static::assertEquals($expected['status'], $response->getStatusCode());
+        static::assertEquals($expected['location'], $response->getHeaderLine('Location'));
+
+        $cookieName = Hash::get($conf, 'cookie.name');
+        if ($cookieName) {
+            $cookie = $response->getCookieCollection()->get($cookieName);
+            static::assertInstanceOf(Cookie::class, $cookie);
+            static::assertEquals($expected['cookie'], $cookie->getValue());
+        }
     }
 }
