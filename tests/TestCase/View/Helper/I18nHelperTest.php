@@ -175,7 +175,7 @@ class I18nHelperTest extends TestCase
                 'en',
             ],
             'lang url' => [
-                '/lang?new=en&redirect=' . urlencode('/help'),
+                '/lang?new=en',
                 [
                     'REQUEST_URI' => '/help',
                 ],

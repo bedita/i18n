@@ -421,7 +421,7 @@ class I18nMiddlewareTest extends TestCase
             'ok' => [
                 [
                     'location' => '/home',
-                    'status' => 301,
+                    'status' => 302,
                     'cookie' => 'en_US',
                 ],
                 [
@@ -434,15 +434,15 @@ class I18nMiddlewareTest extends TestCase
                 [
                     'HTTP_HOST' => 'example.com',
                     'REQUEST_URI' => '/lang',
+                    'HTTP_REFERER' => '/home',
                     'HTTP_ACCEPT_LANGUAGE' => 'en-US',
                 ],
                 [
                     'new' => 'en',
-                    'redirect' => '/home',
                 ],
             ],
             'no query' => [
-                new BadRequestException('Missing required "new" or "redirect" query string'),
+                new BadRequestException('Missing required "new" query string'),
                 [
                     'cookie' => ['name' => 'i18nLocal'],
                     'changeLangUrl' => '/lang'
