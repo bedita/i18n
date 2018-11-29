@@ -12,6 +12,7 @@
  */
 namespace BEdita\I18n\Middleware;
 
+use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Http\ServerRequest;
@@ -29,7 +30,7 @@ use Zend\Diactoros\Response\RedirectResponse;
  */
 class I18nMiddleware
 {
-    use InstanceConfigTrait;
+    use InstanceConfigTrait, I18nTrait;
 
     /**
      * Define when I18n rules are applied with `/:lang` prefix:
@@ -98,20 +99,20 @@ class I18nMiddleware
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($locale);
-            $response = $this->getResponseWithCookie($response, I18n::getLocale());
+            $response = $this->getResponseWithCookie($response, $this->getLocale());
 
             return $next($request, $response);
         }
 
-        $lang = Configure::read('I18n.default');
+        $lang = $this->getDefaultLang();
         if ($locale) {
-            $localeLang = Configure::read(sprintf('I18n.locales.%s', $locale));
+            $localeLang = Hash::get($this->getLocales(), $locale);
             if ($localeLang) {
                 $lang = $localeLang;
             } else {
                 // try with primary language
                 $primary = \Locale::getPrimaryLanguage($locale);
-                if (Configure::read(sprintf('I18n.languages.%s', $primary))) {
+                if (Hash::get($this->getLanguages(), $primary)) {
                     $lang = $primary;
                 }
             }
@@ -137,7 +138,7 @@ class I18nMiddleware
     {
         $path = $request->getUri()->getPath();
         $urlLang = (string)Hash::get(explode('/', $path), '1');
-        $locale = array_search($urlLang, (array)Configure::read('I18n.locales'));
+        $locale = array_search($urlLang, $this->getLocales());
         if ($locale !== false) {
             return $locale;
         }
@@ -159,11 +160,11 @@ class I18nMiddleware
      */
     protected function setupLocale(?string $locale) : void
     {
-        $i18nConf = Configure::read('I18n', []);
-        $lang = Hash::get($i18nConf, sprintf('locales.%s', (string)$locale));
+        $locales = $this->getLocales();
+        $lang = Hash::get($locales, (string)$locale);
         if ($lang === null) {
-            $lang = Hash::get($i18nConf, 'default');
-            $locale = array_search($lang, (array)Hash::get($i18nConf, 'locales', []));
+            $lang = $this->getDefaultLang();
+            $locale = array_search($lang, $locales);
         }
 
         Configure::write('I18n.lang', $lang);
@@ -210,7 +211,7 @@ class I18nMiddleware
             throw new BadRequestException(__('Missing required "new" query string'));
         }
 
-        $locale = array_search($new, (array)Configure::read('I18n.locales'));
+        $locale = array_search($new, $this->getLocales());
         if ($locale === false) {
             throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }

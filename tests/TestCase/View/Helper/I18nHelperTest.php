@@ -100,42 +100,7 @@ class I18nHelperTest extends TestCase
         parent::tearDown();
 
         $this->I18n = null;
-    }
-
-    /**
-     * Data provider for `testGetLangName()`
-     *
-     * @return array
-     */
-    public function getLangNameProvider() : array
-    {
-        return [
-            'default' => [
-                'English',
-                null,
-            ],
-            'existingLang' => [
-                'Italiano',
-                'it',
-            ],
-            'notConfiguredLang' => [
-                null,
-                'es',
-            ],
-        ];
-    }
-
-    /**
-     * Test `getLangName()`
-     *
-     * @return void
-     *
-     * @dataProvider getLangNameProvider
-     * @covers ::getLangName()
-     */
-    public function testGetLangName($expected, $lang) : void
-    {
-        static::assertEquals($expected, $this->I18n->getLangName($lang));
+        Configure::delete('I18n');
     }
 
     /**
@@ -266,9 +231,6 @@ class I18nHelperTest extends TestCase
     /**
      * Test `field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false)` method
      *
-     * @dataProvider fieldProvider()
-     * @covers ::field()
-     *
      * @param array $object The object to translate
      * @param string $attribute The attribute to translate
      * @param string $lang The language of translation, 2 chars code
@@ -276,6 +238,9 @@ class I18nHelperTest extends TestCase
      * @param array $included The included translations data
      * @param string|null $expected The expected translation
      * @return void
+     *
+     * @dataProvider fieldProvider()
+     * @covers ::field()
      */
     public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected) : void
     {
@@ -328,16 +293,16 @@ class I18nHelperTest extends TestCase
     /**
      * Test `exists(array $object, array $included, string $attribute, string $lang)` method
      *
-     * @dataProvider existsProvider()
-     * @covers ::exists()
-     * @covers ::getTranslatedField()
-     *
      * @param array $object The object to translate
      * @param string $attribute The attribute to translate
      * @param string|null $lang The language of translation, 2 chars code
      * @param array|null $included The included translations data
      * @param bool $expected The expected result (true => exists, false => does not exist)
      * @return void
+     *
+     * @dataProvider existsProvider()
+     * @covers ::exists()
+     * @covers ::getTranslatedField()
      */
     public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected) : void
     {
@@ -351,10 +316,10 @@ class I18nHelperTest extends TestCase
     /**
      * Test `exists()` method
      *
+     * @return void
+     *
      * @covers ::exists()
      * @covers ::getTranslatedField()
-     *
-     * @return void
      */
     public function testDefaultExists() : void
     {
@@ -367,10 +332,10 @@ class I18nHelperTest extends TestCase
     /**
      * Test internal translation cache
      *
+     * @return void
+     *
      * @covers ::field()
      * @covers ::getTranslatedField()
-     *
-     * @return void
      */
     public function testCache() : void
     {
@@ -387,10 +352,10 @@ class I18nHelperTest extends TestCase
     /**
      * Test `reset()` method
      *
+     * @return void
+     *
      * @covers ::reset()
      * @covers ::getTranslatedField()
-     *
-     * @return void
      */
     public function testCacheReset() : void
     {
