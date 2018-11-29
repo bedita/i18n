@@ -16,10 +16,10 @@ use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
+use Cake\Network\Exception\BadRequestException;
 use Cake\Utility\Hash;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\Response\RedirectResponse;
-use Cake\Network\Exception\BadRequestException;
 
 /**
  * i18n middleware.
@@ -194,22 +194,20 @@ class I18nMiddleware
     }
 
     /**
-     * Change lang and redirect.
+     * Change lang and redirect to referer.
      *
      * Require query string `new` and `redirect`
      *
      * @param ServerRequest $request The request
      * @param \Psr\Http\Message\ResponseInterface $response The response.
      * @return ResponseInterface
-     * @throws BadRequestException When missing required query string
+     * @throws BadRequestException When missing required query string or unsupported language
      */
     protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response) : ResponseInterface
     {
         $new = (string)$request->getQuery('new');
-        $redirect = (string)$request->getQuery('redirect');
-
-        if (empty($new) || empty($redirect)) {
-            throw new BadRequestException(__('Missing required "new" or "redirect" query string'));
+        if (empty($new)) {
+            throw new BadRequestException(__('Missing required "new" query string'));
         }
 
         $locale = array_search($new, (array)Configure::read('I18n.locales'));
@@ -218,6 +216,6 @@ class I18nMiddleware
         }
         $response = $this->getResponseWithCookie($response, $locale);
 
-        return $response->withLocation($redirect)->withStatus(301);
+        return $response->withLocation($request->referer())->withDisabledCache()->withStatus(302);
     }
 }

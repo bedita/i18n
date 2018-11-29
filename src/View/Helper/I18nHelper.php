@@ -110,16 +110,11 @@ class I18nHelper extends Helper
             return $newLangUrl;
         }
 
-        $url = $path;
-        if ($query) {
-            $url .= '?' . $query;
-        }
-
         if (!empty($switchUrl)) {
-            return sprintf('%s?new=%s&redirect=%s', $switchUrl, $newLang, urlencode($url));
+            return sprintf('%s?new=%s', $switchUrl, $newLang);
         }
 
-        return $url;
+        return $path . (!empty($query) ? '?' . $query : '');
     }
 
     /**
