@@ -202,7 +202,7 @@ class GettextShell extends Shell
      */
     private function header(string $type = 'po') : string
     {
-        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n\n");
+        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
