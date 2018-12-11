@@ -106,7 +106,7 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array &$included = []) : ?string
+    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []) : ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
