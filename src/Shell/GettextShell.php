@@ -368,7 +368,6 @@ class GettextShell extends Shell
         // do extract translation strings from js files using ttag
         $this->out('Extracting translation string from javascript files using ttag');
         $masterJs = sprintf('%s/master-js.pot', $this->localePath);
-        $ttagCommand = sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir);
         exec(sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir));
 
         // merge master-js.pot and master.pot
