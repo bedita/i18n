@@ -356,11 +356,17 @@ class GettextShell extends Shell
      */
     private function ttagExtract() : void
     {
-        // check ttag and js folder exist
+        // check ttag command exists
         $ttag = 'node_modules/ttag-cli/bin/ttag';
-        $appDir = 'src/Template/Layout/js/app';
-        if (!file_exists($ttag) || !file_exists($appDir)) {
-            $this->out(sprintf('%s or %s not found', $ttag, $appDir));
+        if (!file_exists($ttag)) {
+            $this->out(sprintf('Skip javascript parsing - %s command not found', $ttag));
+
+            return;
+        }
+        // check template folder exists
+        $appDir = 'src/Template';
+        if (!file_exists($appDir)) {
+            $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
             return;
         }
