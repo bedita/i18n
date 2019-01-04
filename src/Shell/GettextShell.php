@@ -102,15 +102,14 @@ class GettextShell extends Shell
         $this->out('Updating .pot and .po files...');
 
         $this->setupPaths();
-
-        $this->out('Creating master .pot file');
-
         foreach ($this->templatePaths as $path) {
             $this->out(sprintf('Search in: %s', $path));
             $this->parseDir($path);
         }
 
+        $this->out('Creating master .pot file');
         $this->writeMasterPot();
+        $this->ttagExtract();
 
         $this->hr();
         $this->out('Merging master .pot with current .po files');
@@ -348,5 +347,40 @@ class GettextShell extends Shell
                 }
             }
         }
+    }
+
+    /**
+     * Extract translations from javascript files using ttag, if available.
+     *
+     * @return void
+     */
+    private function ttagExtract() : void
+    {
+        // check ttag command exists
+        $ttag = 'node_modules/ttag-cli/bin/ttag';
+        if (!file_exists($ttag)) {
+            $this->out(sprintf('Skip javascript parsing - %s command not found', $ttag));
+
+            return;
+        }
+        // check template folder exists
+        $appDir = 'src/Template';
+        if (!file_exists($appDir)) {
+            $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
+
+            return;
+        }
+
+        // do extract translation strings from js files using ttag
+        $this->out('Extracting translation string from javascript files using ttag');
+        $masterJs = sprintf('%s/master-js.pot', $this->localePath);
+        exec(sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir));
+
+        // merge master-js.pot and master.pot
+        $master = sprintf('%s/master.pot', $this->localePath);
+        exec(sprintf('msgcat --use-first %s %s -o %s', $master, $masterJs, $master));
+
+        // remove master-js.pot
+        unlink($masterJs);
     }
 }
