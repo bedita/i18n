@@ -114,6 +114,55 @@ $middlewareQueue->add(new I18nMiddleware([
 ]));
 ```
 
+### I18nRoute
+
+`I18nRoute` class can be used to simplify the way you write and match routing rules. For example writing
+
+```php
+$routes->connect(
+    '/pages',
+    [
+        'controller' => 'Pages',
+        'action' => 'index',
+    ],
+    [
+        '_name' => 'pages:index',
+        'routeClass' => 'BEdita/I18n.I18nRoute',
+    ]
+);
+```
+
+maps to `/:lang/pages` and the language code defined in `I18n.languages` configuration will be used as route patterns on `:lang` param.
+
+So the above rule is the same of
+
+```php
+$routes->connect(
+    '/:lang/pages',
+    [
+        'controller' => 'Pages',
+        'action' => 'index',
+    ],
+    ['_name' => 'pages:index']
+)
+->setPatterns(['lang' => 'it|en']);
+```
+
+If the current language is `it` you can obtain the localized url as
+
+```php
+// default
+$url = \Cake\Routing\Router::url(['_name' => 'pages:index']);
+echo $url; // prints /it/pages
+
+// get url with another supported lang
+$url = \Cake\Routing\Router::url([
+    '_name' => 'pages:index',
+    'lang' => 'en',
+]);
+echo $url; // prints /en/pages
+```
+
 ### I18nHelper
 
 In order to use the helper you need to initialize it in your `AppView::initialize()` method
