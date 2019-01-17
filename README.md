@@ -116,7 +116,8 @@ $middlewareQueue->add(new I18nMiddleware([
 
 ### I18nRoute
 
-`I18nRoute` class can be used to simplify the way you write and match routing rules. For example writing
+`I18nRoute` class can be used to simplify the way you write and match routing rules.
+For example
 
 ```php
 $routes->connect(
