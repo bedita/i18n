@@ -13,9 +13,7 @@
 namespace BEdita\I18n\Routing\Route;
 
 use BEdita\I18n\Core\I18nTrait;
-use Cake\Core\Configure;
 use Cake\Routing\Route\Route;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * I18n Route class.
