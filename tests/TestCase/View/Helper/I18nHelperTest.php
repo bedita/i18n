@@ -425,7 +425,7 @@ class I18nHelperTest extends TestCase
     }
 
     /**
-     * Test that `metaHreflang()` return an empty string if no request was set.
+     * Test that `metaHreflang()` returns an empty string if no request was set.
      *
      * @return void
      *

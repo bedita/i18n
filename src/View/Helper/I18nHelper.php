@@ -116,7 +116,7 @@ class I18nHelper extends Helper
     }
 
     /**
-     * Create a hreflang meta tag for available languages.
+     * Create hreflang meta tags for available languages.
      * The meta will be created only if a recognizable i18n path was found on current URL.
      *
      * @return string
