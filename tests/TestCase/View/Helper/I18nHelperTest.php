@@ -118,6 +118,14 @@ class I18nHelperTest extends TestCase
                 ],
                 'en',
             ],
+            'noChangeWithQueryString' => [
+                '/help?page=1',
+                [
+                    'REQUEST_URI' => '/help',
+                    'QUERY_STRING' => 'page=1',
+                ],
+                'en',
+            ],
             'change' => [
                 '/it/help',
                 [
@@ -161,6 +169,8 @@ class I18nHelperTest extends TestCase
      *
      * @dataProvider changeUrlLangProvider
      * @covers ::changeUrlLang()
+     * @covers ::newLangUrl()
+     * @covers ::isI18nPath()
      */
     public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null) : void
     {
