@@ -117,11 +117,10 @@ class I18nMiddleware
                 }
             }
         }
-        $statusCode = 301;
 
         $uri = $request->getUri()->withPath(sprintf('%s%s', $lang, $path));
 
-        return new RedirectResponse($uri, $statusCode);
+        return new RedirectResponse($uri);
     }
 
     /**
