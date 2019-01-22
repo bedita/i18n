@@ -21,10 +21,17 @@ use Cake\View\Helper;
 
 /**
  * Helper to handle i18n things in view.
+ *
+ * @property \Cake\View\Helper\HtmlHelper $Html The HtmlHelper
  */
 class I18nHelper extends Helper
 {
     use I18nTrait;
+
+    /**
+     * {@inheritDoc}
+     */
+    public $helpers = ['Html'];
 
     /**
      * Translation data per object and lang (internal cache).
@@ -82,17 +89,62 @@ class I18nHelper extends Helper
      */
     protected function newLangUrl($newLang, $path, $query) : ?string
     {
-        $prefix = sprintf('/%s', $this->getLang());
-        if (stripos($path, $prefix . '/') === 0 || $path === $prefix) {
-            $url = sprintf('/%s', $newLang) . substr($path, strlen($prefix));
-            if ($query) {
-                $url .= '?' . $query;
-            }
-
-            return $url;
+        if (!$this->isI18nPath($path)) {
+            return null;
         }
 
-        return null;
+        $prefix = sprintf('/%s', $this->getLang());
+        $url = sprintf('/%s', $newLang) . substr($path, strlen($prefix));
+        if ($query) {
+            $url .= '?' . $query;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Return true if an URL path has I18n structure i.e. /:lang/other/path or /:lang
+     *
+     * @param string $path The path to check.
+     * @return bool
+     */
+    protected function isI18nPath(string $path) : bool
+    {
+        $prefix = sprintf('/%s', $this->getLang());
+
+        return stripos($path, $prefix . '/') === 0 || $path === $prefix;
+    }
+
+    /**
+     * Create hreflang meta tags for available languages.
+     * The meta will be created only if a recognizable i18n path was found on current URL.
+     *
+     * @return string
+     */
+    public function metaHreflang() : string
+    {
+        $request = Router::getRequest();
+        if ($request === null) {
+            return '';
+        }
+
+        $path = $request->getUri()->getPath();
+        if (!$this->isI18nPath($path)) {
+            return '';
+        }
+
+        $query = $request->getUri()->getQuery();
+        $meta = '';
+        foreach (array_keys($this->getLanguages()) as $code) {
+            $url = Router::url($this->newLangUrl($code, $path, $query), true);
+            $meta .= $this->Html->meta([
+                'rel' => 'alternate',
+                'hreflang' => $code,
+                'link' => $url,
+            ]);
+        }
+
+        return $meta;
     }
 
     /**

@@ -118,6 +118,14 @@ class I18nHelperTest extends TestCase
                 ],
                 'en',
             ],
+            'noChangeWithQueryString' => [
+                '/help?page=1',
+                [
+                    'REQUEST_URI' => '/help',
+                    'QUERY_STRING' => 'page=1',
+                ],
+                'en',
+            ],
             'change' => [
                 '/it/help',
                 [
@@ -161,6 +169,8 @@ class I18nHelperTest extends TestCase
      *
      * @dataProvider changeUrlLangProvider
      * @covers ::changeUrlLang()
+     * @covers ::newLangUrl()
+     * @covers ::isI18nPath()
      */
     public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null) : void
     {
@@ -368,5 +378,61 @@ class I18nHelperTest extends TestCase
         $this->I18n->reset();
         $actual = $this->I18n->field($this->object, 'title');
         static::assertEquals('Sample', $actual);
+    }
+
+    /**
+     * Data provider for `testMetaHreflang()`
+     *
+     * @return array
+     */
+    public function metaHreflangProvider() : array
+    {
+        return [
+            'empty' => [
+                '',
+                [
+                    'REQUEST_URI' => '/help',
+                ],
+            ],
+            'meta' => [
+                '<link href="http://localhost/en/help" rel="alternate" hreflang="en"/><link href="http://localhost/it/help" rel="alternate" hreflang="it"/>',
+                [
+                    'REQUEST_URI' => '/en/help',
+                    'PHP_SELF' => '/',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test meta tag hreflang.
+     *
+     * @param string $expected The expected output.
+     * @param array $server Request configuration.
+     * @return void
+     *
+     * @dataProvider metaHreflangProvider
+     * @covers ::metaHreflang()
+     */
+    public function testMetaHreflang($expected, $server) : void
+    {
+        $request = ServerRequestFactory::fromGlobals($server);
+        Router::$initialized = true; // avoid trying to load rules from routes.php
+        Router::pushRequest($request);
+
+        $meta = $this->I18n->metaHreflang();
+        static::assertEquals($expected, $meta);
+    }
+
+    /**
+     * Test that `metaHreflang()` returns an empty string if no request was set.
+     *
+     * @return void
+     *
+     * @covers ::metaHreflang()
+     */
+    public function testMetaHreflangMissingRequest() : void
+    {
+        static::assertEquals('', $this->I18n->metaHreflang());
     }
 }
