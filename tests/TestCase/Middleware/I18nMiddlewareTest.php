@@ -98,7 +98,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
             ],
             'startsWithMatch' => [
-                301,
+                302,
                 [
                     'startWith' => ['/help'],
                 ],
@@ -116,7 +116,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
             ],
             'matchMatch' => [
-                301,
+                302,
                 [
                     'match' => ['/help'],
                 ],
@@ -221,7 +221,7 @@ class I18nMiddlewareTest extends TestCase
         $middleware = new I18nMiddleware($conf);
         $response = $middleware($request, $response, $this->nextMiddleware);
 
-        static::assertEquals(301, $response->getStatusCode());
+        static::assertEquals(302, $response->getStatusCode());
         static::assertEquals($expected, $response->getHeaderLine('Location'));
     }
 
