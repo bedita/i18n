@@ -1,7 +1,7 @@
 <?php
 /**
  * BEdita, API-first content management framework
- * Copyright 2018 ChannelWeb Srl, Chialab Srl
+ * Copyright 2019 ChannelWeb Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -434,5 +434,53 @@ class I18nHelperTest extends TestCase
     public function testMetaHreflangMissingRequest() : void
     {
         static::assertEquals('', $this->I18n->metaHreflang());
+    }
+
+    /**
+     * Data provider for `testBuildUrl()`
+     *
+     * @return array
+     */
+    public function buildUrlProvider() : array
+    {
+        return [
+            'default' => [
+                '/en/some/path',
+                '/some/path'
+            ],
+            'fr' => [
+                '/fr/some/path',
+                '/some/path',
+                'fr'
+            ],
+            'unchanged' => [
+                '/de/some/path',
+                '/de/some/path',
+                'de'
+            ],
+            'namedurl' => [
+                '/test',
+                ['_name' => 'test'],
+            ]
+        ];
+    }
+
+    /**
+     * Test `buildUrl` method.
+     *
+     * @param string $expected The expected output.
+     * @param string $path URL path.
+     * @param string $lang Current lang code.
+     * @return void
+     *
+     * @dataProvider buildUrlProvider
+     * @covers ::buildUrl()
+     */
+    public function testBuildUrl($expected, $path, $lang = 'en') : void
+    {
+        Configure::write('I18n.lang', $lang);
+
+        $url = $this->I18n->buildUrl($path);
+        static::assertEquals($expected, $url);
     }
 }
