@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
@@ -41,9 +42,23 @@ Configure::write('debug', true);
 Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'utf-8',
+    'fullBaseUrl' => 'http://localhost',
     'paths' => [
         'plugins' => [ROOT . 'Plugin' . DS],
         'templates' => [APP . 'Template' . DS]
+    ]
+]);
+
+Cache::setConfig([
+    '_cake_core_' => [
+        'engine' => 'File',
+        'prefix' => 'cake_core_',
+        'serialize' => true
+    ],
+    '_cake_model_' => [
+        'engine' => 'File',
+        'prefix' => 'cake_model_',
+        'serialize' => true
     ]
 ]);
 
