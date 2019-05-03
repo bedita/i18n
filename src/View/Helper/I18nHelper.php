@@ -1,7 +1,7 @@
 <?php
 /**
  * BEdita, API-first content management framework
- * Copyright 2018 ChannelWeb Srl, Chialab Srl
+ * Copyright 2019 ChannelWeb Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -23,6 +23,7 @@ use Cake\View\Helper;
  * Helper to handle i18n things in view.
  *
  * @property \Cake\View\Helper\HtmlHelper $Html The HtmlHelper
+ * @property \Cake\View\Helper\UrlHelper $Url The UrlHelper
  */
 class I18nHelper extends Helper
 {
@@ -31,7 +32,7 @@ class I18nHelper extends Helper
     /**
      * {@inheritDoc}
      */
-    public $helpers = ['Html'];
+    public $helpers = ['Html', 'Url'];
 
     /**
      * Translation data per object and lang (internal cache).
@@ -247,5 +248,21 @@ class I18nHelper extends Helper
         $path = sprintf('%s.%s.%s', $id, $lang, $attribute);
 
         return Hash::get($this->translation, $path);
+    }
+
+    /**
+     * Build a language URL using lang prefix.
+     *
+     * @param array|string $path The current URL path. MUST be an absolute path, starting wih `/`
+     * @param array|bool $options Array of options; bool `full` for BC reasons.
+     * @return string Full I18n URL.
+     */
+    public function buildUrl($path, $options = false) : string
+    {
+        if (is_string($path) && !$this->isI18nPath($path)) {
+            $path = sprintf('/%s%s', $this->getLang(), $path);
+        }
+
+        return $this->Url->build($path, $options);
     }
 }
