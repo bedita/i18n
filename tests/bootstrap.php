@@ -68,6 +68,6 @@ if (!getenv('db_dsn')) {
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 
-Plugin::load('BEdita/I18n', [
+Plugin::getCollection()->add(new \BEdita\I18n\Plugin([
     'path' => dirname(dirname(__FILE__)) . DS,
-]);
+]));

@@ -15,9 +15,11 @@ namespace BEdita\I18n\Middleware;
 use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
+use Cake\Http\Cookie\Cookie;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
-use Cake\Network\Exception\BadRequestException;
+use Cake\I18n\Time;
 use Cake\Utility\Hash;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\Response\RedirectResponse;
@@ -142,7 +144,7 @@ class I18nMiddleware
             return $locale;
         }
 
-        $locale = (string)$request->getCookie($this->config('cookie.name'));
+        $locale = (string)$request->getCookie($this->getConfig('cookie.name'));
         if (!empty($locale)) {
             return $locale;
         }
@@ -187,10 +189,9 @@ class I18nMiddleware
             return $response;
         }
 
-        return $response->withCookie($name, [
-            'value' => $locale,
-            'expire' => strtotime($this->getConfig('cookie.expire', '+1 year')),
-        ]);
+        $expire = Time::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
+
+        return $response->withCookie(new Cookie($name, $locale, $expire));
     }
 
     /**
