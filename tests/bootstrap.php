@@ -1,6 +1,7 @@
 <?php
 
 use Cake\Cache\Cache;
+use Cake\Core\BasePlugin;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
@@ -68,6 +69,10 @@ if (!getenv('db_dsn')) {
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 
-Plugin::getCollection()->add(new \BEdita\I18n\Plugin([
+// Load plugin via custom class
+class MyPlugin extends BasePlugin
+{}
+
+Plugin::getCollection()->add(new MyPlugin([
     'path' => dirname(dirname(__FILE__)) . DS,
 ]));
