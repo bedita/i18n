@@ -71,7 +71,9 @@ Router::reload();
 
 // Load plugin via custom class
 class MyPlugin extends BasePlugin
-{}
+{
+
+}
 
 Plugin::getCollection()->add(new MyPlugin([
     'path' => dirname(dirname(__FILE__)) . DS,
