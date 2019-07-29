@@ -37,6 +37,8 @@ trait I18nTrait
     /**
      * Return the configured supported locales
      *
+     * @return array
+     *
      * @codeCoverageIgnore
      */
     public function getLocales() : array

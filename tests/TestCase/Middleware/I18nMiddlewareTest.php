@@ -15,10 +15,10 @@ namespace BEdita\I18n\Test\Middleware;
 use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Core\Configure;
 use Cake\Http\Cookie\Cookie;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
-use Cake\Network\Exception\BadRequestException;
 use Cake\TestSuite\TestCase;
 use Cake\Utility\Hash;
 
