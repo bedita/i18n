@@ -361,6 +361,8 @@ class GettextShell extends Shell
      * Extract translations from javascript files using ttag, if available.
      *
      * @return void
+     *
+     * @codeCoverageIgnore
      */
     private function ttagExtract() : void
     {

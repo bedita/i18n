@@ -39,6 +39,16 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $this->shell = new GettextShell();
         parent::setUp();
+        $this->cleanFiles();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function tearDown()
+    {
+        $this->cleanFiles();
+        parent::tearDown();
     }
 
     /**
@@ -46,9 +56,25 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @covers ::update()
      */
-    // public function testUpdate()
-    // {
-    // }
+    public function testUpdate()
+    {
+        $this->shell->params['app'] = sprintf('%s/tests/files/gettext/app', getcwd());
+
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $localePath);
+
+        // call the method
+        $this->shell->update();
+
+        // check po files are not empty
+        foreach (['en_US', 'it_IT'] as $locale) {
+            $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
+            static::assertNotEmpty($content);
+        }
+    }
 
     /**
      * Provider for 'setupPaths'
@@ -135,9 +161,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
 
-        // master.pot contains expected result
-        $expected = file_get_contents(sprintf('%s/master.pot', $localePath));
-
         // set poResult using reflection class
         $poResult = [
             'This is a twig sample',
@@ -169,6 +192,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      *
+     * @covers ::header()
      * @covers ::writePoFiles()
      * @covers ::analyzePoFile()
      */
@@ -190,16 +214,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             static::assertNotEmpty($content);
         }
     }
-
-    /**
-     * Test analyzePoFile
-     *
-     * @covers ::analyzePoFile()
-     * @return void
-     */
-    // public function testAnalyzePoFile()
-    // {
-    // }
 
     /**
      * Provider for 'fixString'
@@ -309,5 +323,24 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $method->setAccessible(true);
 
         return $method;
+    }
+
+    /**
+     * Clean files for test.
+     *
+     * @return void
+     */
+    private function cleanFiles()
+    {
+        $files = [
+            sprintf('%s/tests/files/gettext/app/src/Locale/master.pot', getcwd()),
+            sprintf('%s/tests/files/gettext/app/src/Locale/en_US/default.po', getcwd()),
+            sprintf('%s/tests/files/gettext/app/src/Locale/it_IT/default.po', getcwd()),
+        ];
+        foreach ($files as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
     }
 }
