@@ -127,9 +127,42 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::writeMasterPot()
      * @return void
      */
-    // public function testWriteMasterPot()
-    // {
-    // }
+    public function testWriteMasterPot()
+    {
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
+        $property = $class->getProperty('localePath');
+        $property->setAccessible(true);
+        $property->setValue($class, $localePath);
+
+        // set poResult using reflection class
+        $property = $class->getProperty('poResult');
+        $property->setAccessible(true);
+        $property->setValue($class, [
+            'This is a twig sample',
+            'A twig content',
+            'A twig string with \"double quotes\"',
+            "A twig string with \'single quotes\'",
+            'This is a php sample',
+            'A php content',
+            'A php string with \"double quotes\"',
+            "A php string with \'single quotes\'",
+        ]);
+
+        // call writeMasterPot using reflection class
+        $method = $class->getMethod('writeMasterPot');
+        $method->setAccessible(true);
+        $method->invokeArgs($this->shell, []);
+
+        // check data
+        $expected = '';
+        foreach ($this->shell->poResult as $str) {
+            $expected.= sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $str, "\n", "\n");
+        }
+        $content = file_get_contents(sprintf('%s/master.pot', $localePath));
+        static::assertEquals($expected, $content);
+    }
 
     /**
      * Test writePoFiles
@@ -252,7 +285,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string $name The method name
      * @return \ReflectionMethod
      */
-    protected static function getMethod($name) {
+    protected static function getMethod($name)
+    {
         $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
         $method = $class->getMethod($name);
         $method->setAccessible(true);
