@@ -165,14 +165,31 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
-     * Test writePoFiles
+     * Test 'writePoFiles'
+     *
+     * @return void
      *
      * @covers ::writePoFiles()
-     * @return void
+     * @covers ::analyzePoFile()
      */
-    // public function testWritePoFiles()
-    // {
-    // }
+    public function testWritePoFiles()
+    {
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $localePath);
+
+        // invoke writePoFiles
+        $method = self::getMethod('writePoFiles');
+        $method->invokeArgs($this->shell, []);
+
+        // check po files are not empty
+        foreach (['en_US', 'it_IT'] as $locale) {
+            $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
+            static::assertNotEmpty($content);
+        }
+    }
 
     /**
      * Test analyzePoFile
