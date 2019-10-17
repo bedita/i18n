@@ -301,16 +301,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
-     * Test ttagExtract
-     *
-     * @covers ::ttagExtract()
-     * @return void
-     */
-    // public function testTtagExtract()
-    // {
-    // }
-
-    /**
      * Get GettextShell method by name, making it accessible
      *
      * @param string $name The method name
