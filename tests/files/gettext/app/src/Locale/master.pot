@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: BEdita 4 \n"
+"POT-Creation-Date: 2019-10-17 12:30:13 \n"
+"MIME-Version: 1.0 \n"
+"Content-Transfer-Encoding: 8bit \n"
+"Language-Team: BEdita I18N & I10N Team \n"
+"Plural-Forms: nplurals=2; plural=(n != 1); \n"
+"Content-Type: text/plain; charset=utf-8 \n"
+
+msgid "A php content"
+msgstr ""
+
+msgid "A php string with \"double quotes\""
+msgstr ""
+
+msgid "A php string with \'single quotes\'"
+msgstr ""
+
+msgid "A twig content"
+msgstr ""
+
+msgid "A twig string with \"double quotes\""
+msgstr ""
+
+msgid "A twig string with \'single quotes\'"
+msgstr ""
+
+msgid "This is a php sample"
+msgstr ""
+
+msgid "This is a twig sample"
+msgstr ""
