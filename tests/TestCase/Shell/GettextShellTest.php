@@ -122,12 +122,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
      */
-    public function testSetupPaths(
-        $appPath,
-        $startPath,
-        $pluginName,
-        array $expectedTemplatePaths,
-        string $expectedLocalePath)
+    public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath)
     {
         $expectedPoName = 'default.po';
         if (!empty($appPath)) {
