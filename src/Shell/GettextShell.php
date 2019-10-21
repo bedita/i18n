@@ -1,7 +1,7 @@
 <?php
 /**
  * BEdita, API-first content management framework
- * Copyright 2018 ChannelWeb Srl, Chialab Srl
+ * Copyright 2019 ChannelWeb Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -132,7 +132,8 @@ class GettextShell extends Shell
             $f = new Folder($this->params['app']);
             $basePath = $f->path;
         } elseif (isset($this->params['plugin'])) {
-            $f = new Folder(sprintf('%s/plugins/%s', getcwd(), $this->params['plugin']));
+            $startPath = ($this->params['startPath']) ? $this->params['startPath'] : getcwd();
+            $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . ".po";
         }
@@ -198,6 +199,8 @@ class GettextShell extends Shell
      *
      * @param string $type The file type (can be 'po', 'pot')
      * @return string
+     *
+     * @codeCoverageIgnore
      */
     private function header(string $type = 'po') : string
     {
@@ -273,6 +276,7 @@ class GettextShell extends Shell
         $str = stripslashes($str);
         $str = str_replace('"', '\"', $str);
         $str = str_replace("\n", '\n', $str);
+        $str = str_replace('|||||', "'", $str); // special sequence used in parseContent to temporarily replace "\'"
 
         return $str;
     }
@@ -308,9 +312,13 @@ class GettextShell extends Shell
         $q1 = preg_quote("'");
         $q2 = preg_quote('"');
 
+        // temporarily replace "\'" with "|||||", fixString will replace "|||||" with "\'"
+        // this fixes wrongly matched data in the following regexp
+        $content = str_replace("\'", '|||||', $content);
+
         // looks for __("text to translate",true)
         // or __('text to translate',true), result in matches[1] or in matches[2]
-        $rgxp = "/__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" . "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}/";
+        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" . "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
@@ -353,6 +361,8 @@ class GettextShell extends Shell
      * Extract translations from javascript files using ttag, if available.
      *
      * @return void
+     *
+     * @codeCoverageIgnore
      */
     private function ttagExtract() : void
     {
