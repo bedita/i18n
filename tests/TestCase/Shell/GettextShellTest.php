@@ -224,7 +224,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             ],
             'escaped quotes |||||' => [
                 'something |||||quoted|||||', // input
-                "something \'quoted\'", // expected
+                "something 'quoted'", // expected
             ],
             'new lines' => [
                 sprintf('something%swith%snew%slines', "\n", "\n", "\n", "\n"), // input
@@ -265,11 +265,11 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                     'This is a twig sample',
                     'A twig content',
                     'A twig string with \"double quotes\"',
-                    "A twig string with \'single quotes\'",
+                    "A twig string with 'single quotes'",
                     'This is a php sample',
                     'A php content',
                     'A php string with \"double quotes\"',
-                    "A php string with \'single quotes\'",
+                    "A php string with 'single quotes'",
                 ], // result
             ],
         ];

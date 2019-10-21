@@ -276,7 +276,7 @@ class GettextShell extends Shell
         $str = stripslashes($str);
         $str = str_replace('"', '\"', $str);
         $str = str_replace("\n", '\n', $str);
-        $str = str_replace('|||||', "\'", $str); // special sequence used in parseContent to temporarily replace "\'"
+        $str = str_replace('|||||', "'", $str); // special sequence used in parseContent to temporarily replace "\'"
 
         return $str;
     }
