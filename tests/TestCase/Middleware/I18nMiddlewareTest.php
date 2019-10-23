@@ -167,6 +167,26 @@ class I18nMiddlewareTest extends TestCase
                     'REQUEST_URI' => '/help',
                 ],
             ],
+            'pathWithOneTrailingSlash' => [
+                'http://example.com/en/help',
+                [
+                    'match' => ['/help'],
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/help/',
+                ],
+            ],
+            'pathWithTrailingSlashes' => [
+                'http://example.com/en/help',
+                [
+                    'match' => ['/help'],
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/help////',
+                ],
+            ],
             'configuredLocaleFound' => [
                 'http://example.com/it/help',
                 [
