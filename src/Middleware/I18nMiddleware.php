@@ -85,6 +85,9 @@ class I18nMiddleware
     public function __invoke(ServerRequest $request, ResponseInterface $response, $next) : ResponseInterface
     {
         $path = $request->getUri()->getPath();
+        if ($path !== '/') {
+            $path = rtrim($path, '/'); // remove trailing slashes
+        }
 
         if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
             return $this->changeLangAndRedirect($request, $response);
