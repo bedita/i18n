@@ -164,6 +164,16 @@ class I18nMiddlewareTest extends TestCase
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '',
+                ],
+            ],
+            'rootPathEndsWithSlash' => [
+                'http://example.com/en',
+                [
+                    'match' => ['/'],
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
                     'REQUEST_URI' => '/',
                 ],
             ],
