@@ -32,7 +32,8 @@ use Zend\Diactoros\Response\RedirectResponse;
  */
 class I18nMiddleware
 {
-    use InstanceConfigTrait, I18nTrait;
+    use I18nTrait;
+    use InstanceConfigTrait;
 
     /**
      * Define when I18n rules are applied with `/:lang` prefix:
@@ -82,7 +83,7 @@ class I18nMiddleware
      *
      * @return \Psr\Http\Message\ResponseInterface A response
      */
-    public function __invoke(ServerRequest $request, ResponseInterface $response, $next) : ResponseInterface
+    public function __invoke(ServerRequest $request, ResponseInterface $response, $next): ResponseInterface
     {
         $path = $request->getUri()->getPath();
         if ($path !== '/') {
@@ -138,7 +139,7 @@ class I18nMiddleware
      * @param ServerRequest $request The request.
      * @return string
      */
-    protected function detectLocale(ServerRequest $request) : string
+    protected function detectLocale(ServerRequest $request): string
     {
         $path = $request->getUri()->getPath();
         $urlLang = (string)Hash::get(explode('/', $path), '1');
@@ -162,7 +163,7 @@ class I18nMiddleware
      * @param string $locale Detected HTTP locale.
      * @return void
      */
-    protected function setupLocale(?string $locale) : void
+    protected function setupLocale(?string $locale): void
     {
         $locales = $this->getLocales();
         $lang = Hash::get($locales, (string)$locale);
@@ -184,7 +185,7 @@ class I18nMiddleware
      * @param string $locale The locale string to set in cookie.
      * @return \Psr\Http\Message\ResponseInterface
      */
-    protected function getResponseWithCookie(ResponseInterface $response, string $locale) : ResponseInterface
+    protected function getResponseWithCookie(ResponseInterface $response, string $locale): ResponseInterface
     {
         $name = $this->getConfig('cookie.name');
         $create = $this->getConfig('cookie.create', false);
@@ -207,7 +208,7 @@ class I18nMiddleware
      * @return ResponseInterface
      * @throws BadRequestException When missing required query string or unsupported language
      */
-    protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response) : ResponseInterface
+    protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response): ResponseInterface
     {
         $new = (string)$request->getQuery('new');
         if (empty($new)) {

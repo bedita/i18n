@@ -29,7 +29,7 @@ class I18nRouteTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -52,7 +52,7 @@ class I18nRouteTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -64,7 +64,7 @@ class I18nRouteTest extends TestCase
      *
      * @return array
      */
-    public function templateProvider() : array
+    public function templateProvider(): array
     {
         return [
             'root' => [
@@ -109,7 +109,7 @@ class I18nRouteTest extends TestCase
      * @covers ::__construct()
      * @covers ::buildTemplate()
      */
-    public function testBuildTemplate(string $expected, string $template) : void
+    public function testBuildTemplate(string $expected, string $template): void
     {
         $route = new I18nRoute($template);
         static::assertEquals($expected, $route->template);
@@ -120,7 +120,7 @@ class I18nRouteTest extends TestCase
      *
      * @return array
      */
-    public function langPatternsProvider() : array
+    public function langPatternsProvider(): array
     {
         return [
             'noOptions' => [
@@ -146,7 +146,7 @@ class I18nRouteTest extends TestCase
      * @dataProvider langPatternsProvider
      * @covers ::__construct()
      */
-    public function testLangPatterns(string $expected, array $options) : void
+    public function testLangPatterns(string $expected, array $options): void
     {
         $route = new I18nRoute('/', [], $options);
         static::assertEquals($expected, $route->options['lang']);
@@ -159,7 +159,7 @@ class I18nRouteTest extends TestCase
      *
      * @covers ::match()
      */
-    public function testMatchUseCurrentLang() : void
+    public function testMatchUseCurrentLang(): void
     {
         $route = new I18nRoute(
             '/gustavo/help',
@@ -181,7 +181,7 @@ class I18nRouteTest extends TestCase
      *
      * @covers ::match()
      */
-    public function testMatchUseCustomLang() : void
+    public function testMatchUseCustomLang(): void
     {
         $route = new I18nRoute(
             '/gustavo/help',
@@ -205,7 +205,7 @@ class I18nRouteTest extends TestCase
      *
      * @covers ::match()
      */
-    public function testMatchInvalidLang() : void
+    public function testMatchInvalidLang(): void
     {
         $route = new I18nRoute(
             '/gustavo/help',

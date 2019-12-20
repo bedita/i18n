@@ -23,7 +23,6 @@ use Cake\TestSuite\TestCase;
  */
 class I18nTraitTest extends TestCase
 {
-
     use I18nTrait;
 
     /**
@@ -36,7 +35,7 @@ class I18nTraitTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -61,7 +60,7 @@ class I18nTraitTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -74,7 +73,7 @@ class I18nTraitTest extends TestCase
      *
      * @return array
      */
-    public function getLangNameProvider() : array
+    public function getLangNameProvider(): array
     {
         return [
             'default' => [
@@ -100,7 +99,7 @@ class I18nTraitTest extends TestCase
      * @dataProvider getLangNameProvider
      * @covers ::getLangName()
      */
-    public function testGetLangName($expected, $lang) : void
+    public function testGetLangName($expected, $lang): void
     {
         $result = $this->subject->getLangName($lang);
         static::assertEquals($expected, $result);

@@ -55,7 +55,7 @@ class I18nHelper extends Helper
      * @param string $switchUrl The switch lang URL defined for this app, if any.
      * @return string
      */
-    public function changeUrlLang($newLang, $switchUrl = null) : string
+    public function changeUrlLang($newLang, $switchUrl = null): string
     {
         $request = Router::getRequest(true);
         if (empty($request)) {
@@ -88,7 +88,7 @@ class I18nHelper extends Helper
      * @param string $query The current URL query.
      * @return string|null The new lang url or null if no lang prefix was found
      */
-    protected function newLangUrl($newLang, $path, $query) : ?string
+    protected function newLangUrl($newLang, $path, $query): ?string
     {
         if (!$this->isI18nPath($path)) {
             return null;
@@ -109,7 +109,7 @@ class I18nHelper extends Helper
      * @param string $path The path to check.
      * @return bool
      */
-    protected function isI18nPath(string $path) : bool
+    protected function isI18nPath(string $path): bool
     {
         $prefix = sprintf('/%s', $this->getLang());
 
@@ -122,7 +122,7 @@ class I18nHelper extends Helper
      *
      * @return string
      */
-    public function metaHreflang() : string
+    public function metaHreflang(): string
     {
         $request = Router::getRequest();
         if ($request === null) {
@@ -159,7 +159,7 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []) : ?string
+    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []): ?string
     {
         $defaultValue = null;
         if (!$defaultNull) {
@@ -188,7 +188,7 @@ class I18nHelper extends Helper
      * @param array $included The included translations data)
      * @return bool
      */
-    public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []) : bool
+    public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []): bool
     {
         if (empty($included) && !empty($this->getView()->viewVars['included'])) {
             $included = $this->getView()->viewVars['included'];
@@ -207,7 +207,7 @@ class I18nHelper extends Helper
      *
      * @return void
      */
-    public function reset() : void
+    public function reset(): void
     {
         $this->translation = null;
     }
@@ -227,7 +227,7 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null The translation of attribute field per object response and lang
      */
-    private function getTranslatedField(array $object, string $attribute, string $lang, array &$included) : ?string
+    private function getTranslatedField(array $object, string $attribute, string $lang, array &$included): ?string
     {
         if (empty($object['id'])) {
             return null;
@@ -257,7 +257,7 @@ class I18nHelper extends Helper
      * @param array|bool $options Array of options; bool `full` for BC reasons.
      * @return string Full I18n URL.
      */
-    public function buildUrl($path, $options = false) : string
+    public function buildUrl($path, $options = false): string
     {
         if (is_string($path) && !$this->isI18nPath($path)) {
             $path = sprintf('/%s%s', $this->getLang(), $path);
