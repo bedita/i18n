@@ -123,7 +123,7 @@ class I18nMiddleware
             }
         }
 
-        $uri = $request->getUri()->withPath(sprintf('%s%s', $lang, $path));
+        $uri = $request->getUri()->withPath(sprintf('%s%s', $lang, rtrim($path, '/')));
 
         return new RedirectResponse($uri);
     }
