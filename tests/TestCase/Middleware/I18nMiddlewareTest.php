@@ -39,7 +39,7 @@ class I18nMiddlewareTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -63,7 +63,7 @@ class I18nMiddlewareTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -78,7 +78,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function statusProvider() : array
+    public function statusProvider(): array
     {
         return [
             'noConfig' => [
@@ -139,7 +139,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::__construct()
      * @covers ::__invoke()
      */
-    public function testStatus($expected, array $conf, array $server) : void
+    public function testStatus($expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $response = new Response();
@@ -154,9 +154,29 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function redirectPathProvider() : array
+    public function redirectPathProvider(): array
     {
         return [
+            'rootPath' => [
+                'http://example.com/en',
+                [
+                    'match' => ['/'],
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '',
+                ],
+            ],
+            'rootPathEndsWithSlash' => [
+                'http://example.com/en',
+                [
+                    'match' => ['/'],
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/',
+                ],
+            ],
             'missingAcceptLanguage' => [
                 'http://example.com/en/help',
                 [
@@ -234,7 +254,7 @@ class I18nMiddlewareTest extends TestCase
      * @dataProvider redirectPathProvider
      * @covers ::__invoke()
      */
-    public function testRedirectPath($expected, array $conf, array $server) : void
+    public function testRedirectPath($expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $response = new Response();
@@ -250,7 +270,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function setupLocaleProvider() : array
+    public function setupLocaleProvider(): array
     {
         return [
             'useDefault' => [
@@ -260,7 +280,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
                 [
                     'REQUEST_URI' => '/help',
-                ]
+                ],
             ],
             'notValidLang' => [
                 [
@@ -269,7 +289,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
                 [
                     'REQUEST_URI' => '/es/help',
-                ]
+                ],
             ],
             'setLocaleByPath' => [
                 [
@@ -278,7 +298,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
                 [
                     'REQUEST_URI' => '/it/help',
-                ]
+                ],
             ],
         ];
     }
@@ -294,7 +314,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::detectLocale()
      * @covers ::setupLocale()
      */
-    public function testSetupLocale(array $expected, array $server) : void
+    public function testSetupLocale(array $expected, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $response = new Response();
@@ -314,7 +334,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
      */
-    public function testNotUseCookie() : void
+    public function testNotUseCookie(): void
     {
         $cookieName = 'I18nLocale';
         $server = [
@@ -339,7 +359,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
      */
-    public function testReadFromCookie() : void
+    public function testReadFromCookie(): void
     {
         $cookieName = 'I18nLocale';
         $server = [
@@ -366,7 +386,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
      */
-    public function testCreateCookie() : void
+    public function testCreateCookie(): void
     {
         $cookieName = 'I18nLocale';
         $server = [
@@ -403,7 +423,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
      */
-    public function testChangeExpireCookie() : void
+    public function testChangeExpireCookie(): void
     {
         $cookieName = 'I18nLocale';
         $server = [
@@ -435,7 +455,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function changeLangProvider() : array
+    public function changeLangProvider(): array
     {
         return [
             'ok' => [
@@ -447,9 +467,9 @@ class I18nMiddlewareTest extends TestCase
                 [
                     'cookie' => [
                         'name' => 'i18nLocal',
-                        'create' => true
+                        'create' => true,
                     ],
-                    'switchLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang',
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -465,7 +485,7 @@ class I18nMiddlewareTest extends TestCase
                 new BadRequestException('Missing required "new" query string'),
                 [
                     'cookie' => ['name' => 'i18nLocal'],
-                    'switchLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang',
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -477,7 +497,7 @@ class I18nMiddlewareTest extends TestCase
                 new BadRequestException('Lang "de" not supported'),
                 [
                     'cookie' => ['name' => 'i18nLocal'],
-                    'switchLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang',
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -494,7 +514,7 @@ class I18nMiddlewareTest extends TestCase
                     'status' => 200,
                 ],
                 [
-                    'switchLangUrl' => '/lang'
+                    'switchLangUrl' => '/lang',
                 ],
                 [
                     'HTTP_HOST' => 'example.com',
@@ -518,7 +538,7 @@ class I18nMiddlewareTest extends TestCase
      * @covers ::changeLangAndRedirect()
      * @covers ::__invoke()
      */
-    public function testChangeLangAndRedirect($expected, $conf, $server, $query) : void
+    public function testChangeLangAndRedirect($expected, $conf, $server, $query): void
     {
         if ($expected instanceof \Exception) {
             $this->expectException(get_class($expected));

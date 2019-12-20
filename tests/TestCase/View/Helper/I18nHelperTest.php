@@ -70,7 +70,7 @@ class I18nHelperTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -95,7 +95,7 @@ class I18nHelperTest extends TestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -108,7 +108,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function changeUrlLangProvider() : array
+    public function changeUrlLangProvider(): array
     {
         return [
             'noChange' => [
@@ -172,7 +172,7 @@ class I18nHelperTest extends TestCase
      * @covers ::newLangUrl()
      * @covers ::isI18nPath()
      */
-    public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null) : void
+    public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null): void
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
@@ -187,7 +187,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function fieldProvider() : array
+    public function fieldProvider(): array
     {
         $objectBase = ['id' => $this->object['id']] + $this->object['attributes'];
         $objectStructured = $this->object;
@@ -252,7 +252,7 @@ class I18nHelperTest extends TestCase
      * @dataProvider fieldProvider()
      * @covers ::field()
      */
-    public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected) : void
+    public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected): void
     {
         $actual = $this->I18n->field($object, $attribute, $lang, $defaultNull, $included);
         static::assertEquals($expected, $actual);
@@ -263,7 +263,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function existsProvider() : array
+    public function existsProvider(): array
     {
         $object = $this->object;
         $included = $this->included;
@@ -314,7 +314,7 @@ class I18nHelperTest extends TestCase
      * @covers ::exists()
      * @covers ::getTranslatedField()
      */
-    public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected) : void
+    public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected): void
     {
         if ($lang == null) {
             Configure::write('I18n.lang', 'it');
@@ -331,7 +331,7 @@ class I18nHelperTest extends TestCase
      * @covers ::exists()
      * @covers ::getTranslatedField()
      */
-    public function testDefaultExists() : void
+    public function testDefaultExists(): void
     {
         Configure::write('I18n.lang', 'it');
 
@@ -347,7 +347,7 @@ class I18nHelperTest extends TestCase
      * @covers ::field()
      * @covers ::getTranslatedField()
      */
-    public function testCache() : void
+    public function testCache(): void
     {
         Configure::write('I18n.lang', 'it');
 
@@ -367,7 +367,7 @@ class I18nHelperTest extends TestCase
      * @covers ::reset()
      * @covers ::getTranslatedField()
      */
-    public function testCacheReset() : void
+    public function testCacheReset(): void
     {
         Configure::write('I18n.lang', 'it');
 
@@ -385,7 +385,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function metaHreflangProvider() : array
+    public function metaHreflangProvider(): array
     {
         return [
             'empty' => [
@@ -414,7 +414,7 @@ class I18nHelperTest extends TestCase
      * @dataProvider metaHreflangProvider
      * @covers ::metaHreflang()
      */
-    public function testMetaHreflang($expected, $server) : void
+    public function testMetaHreflang($expected, $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         Router::$initialized = true; // avoid trying to load rules from routes.php
@@ -431,7 +431,7 @@ class I18nHelperTest extends TestCase
      *
      * @covers ::metaHreflang()
      */
-    public function testMetaHreflangMissingRequest() : void
+    public function testMetaHreflangMissingRequest(): void
     {
         static::assertEquals('', $this->I18n->metaHreflang());
     }
@@ -441,27 +441,27 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function buildUrlProvider() : array
+    public function buildUrlProvider(): array
     {
         return [
             'default' => [
                 '/en/some/path',
-                '/some/path'
+                '/some/path',
             ],
             'fr' => [
                 '/fr/some/path',
                 '/some/path',
-                'fr'
+                'fr',
             ],
             'unchanged' => [
                 '/de/some/path',
                 '/de/some/path',
-                'de'
+                'de',
             ],
             'namedurl' => [
                 '/test',
                 ['_name' => 'test'],
-            ]
+            ],
         ];
     }
 
@@ -476,7 +476,7 @@ class I18nHelperTest extends TestCase
      * @dataProvider buildUrlProvider
      * @covers ::buildUrl()
      */
-    public function testBuildUrl($expected, $path, $lang = 'en') : void
+    public function testBuildUrl($expected, $path, $lang = 'en'): void
     {
         Configure::write('I18n.lang', $lang);
 

@@ -49,8 +49,8 @@ class GettextShell extends Shell
                         'short' => 'p',
                         'required' => false,
                     ],
-                ]
-            ]
+                ],
+            ],
         ]);
 
         return $parser;
@@ -89,7 +89,7 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    public function update() : void
+    public function update(): void
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
@@ -125,7 +125,7 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    private function setupPaths() : void
+    private function setupPaths(): void
     {
         $basePath = getcwd();
         if (isset($this->params['app'])) {
@@ -150,7 +150,7 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    private function writeMasterPot() : void
+    private function writeMasterPot(): void
     {
         $potFilename = sprintf('%s/master.pot', $this->localePath);
         $this->out(sprintf('Writing new .pot file: %s', $potFilename));
@@ -170,7 +170,7 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    private function writePoFiles() : void
+    private function writePoFiles(): void
     {
         $header = $this->header('po');
         $potFilename = sprintf('%s/master.pot', $this->localePath);
@@ -202,7 +202,7 @@ class GettextShell extends Shell
      *
      * @codeCoverageIgnore
      */
-    private function header(string $type = 'po') : string
+    private function header(string $type = 'po'): string
     {
         $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
         $contents = [
@@ -241,7 +241,7 @@ class GettextShell extends Shell
      * @param string $filename The po file name
      * @return void
      */
-    private function analyzePoFile($filename) : void
+    private function analyzePoFile($filename): void
     {
         $lines = file($filename);
         $numItems = $numNotTranslated = 0;
@@ -271,7 +271,7 @@ class GettextShell extends Shell
      * @param string $str The string
      * @return string The new string
      */
-    private function fixString($str) : string
+    private function fixString($str): string
     {
         $str = stripslashes($str);
         $str = str_replace('"', '\"', $str);
@@ -306,7 +306,7 @@ class GettextShell extends Shell
      * @param string $content The file content
      * @return void
      */
-    private function parseContent($content) : void
+    private function parseContent($content): void
     {
         $p = preg_quote("(");
         $q1 = preg_quote("'");
@@ -340,7 +340,7 @@ class GettextShell extends Shell
      * @param string $dir The directory
      * @return void
      */
-    private function parseDir($dir) : void
+    private function parseDir($dir): void
     {
         $folder = new Folder($dir);
         $tree = $folder->tree($dir, false);
@@ -364,7 +364,7 @@ class GettextShell extends Shell
      *
      * @codeCoverageIgnore
      */
-    private function ttagExtract() : void
+    private function ttagExtract(): void
     {
         // check ttag command exists
         $ttag = 'node_modules/ttag-cli/bin/ttag';

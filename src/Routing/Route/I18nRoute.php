@@ -44,7 +44,7 @@ class I18nRoute extends Route
      * @param string $template The initial template.
      * @return string
      */
-    protected function buildTemplate(string $template) : string
+    protected function buildTemplate(string $template): string
     {
         if ($template === '/') {
             return '/:lang';

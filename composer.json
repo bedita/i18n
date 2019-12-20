@@ -12,7 +12,7 @@
         "cakephp/cakephp": "3.8.*"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^3.0.3",
+        "cakephp/cakephp-codesniffer": "^3.1",
         "cakephp/plugin-installer": "^1.0",
         "phpunit/phpunit": "^6.0"
     },

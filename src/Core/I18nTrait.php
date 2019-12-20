@@ -29,7 +29,7 @@ trait I18nTrait
      *
      * @codeCoverageIgnore
      */
-    public function getLocale() : string
+    public function getLocale(): string
     {
         return I18n::getLocale();
     }
@@ -41,7 +41,7 @@ trait I18nTrait
      *
      * @codeCoverageIgnore
      */
-    public function getLocales() : array
+    public function getLocales(): array
     {
         return (array)Configure::read('I18n.locales', []);
     }
@@ -53,7 +53,7 @@ trait I18nTrait
      *
      * @codeCoverageIgnore
      */
-    public function getLanguages() : array
+    public function getLanguages(): array
     {
         return (array)Configure::read('I18n.languages', []);
     }
@@ -65,7 +65,7 @@ trait I18nTrait
      *
      * @codeCoverageIgnore
      */
-    public function getLang() : ?string
+    public function getLang(): ?string
     {
         return Configure::read('I18n.lang');
     }
@@ -76,7 +76,7 @@ trait I18nTrait
      * @param string $lang The abbreviated lang
      * @return string|null
      */
-    public function getLangName($lang = null) : ?string
+    public function getLangName($lang = null): ?string
     {
         if (empty($lang)) {
             $lang = Configure::read('I18n.default');
@@ -92,7 +92,7 @@ trait I18nTrait
      *
      * @codeCoverageIgnore
      */
-    public function getDefaultLang() : ?string
+    public function getDefaultLang(): ?string
     {
         return Configure::read('I18n.default');
     }
