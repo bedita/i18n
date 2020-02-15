@@ -70,11 +70,11 @@ if (!getenv('db_dsn')) {
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 
-// Load plugin via custom class
-class MyPlugin extends BasePlugin
-{
-}
-
-Plugin::getCollection()->add(new MyPlugin([
+$plugin = [
     'path' => dirname(dirname(__FILE__)) . DS,
-]));
+];
+
+// Load plugin via custom class
+Plugin::getCollection()->add(new class ($plugin) extends BasePlugin
+{
+});

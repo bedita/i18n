@@ -321,7 +321,8 @@ class GettextShell extends Shell
 
         // looks for __("text to translate",true)
         // or __('text to translate',true), result in matches[1] or in matches[2]
-        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" . "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
+        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" .
+            "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 

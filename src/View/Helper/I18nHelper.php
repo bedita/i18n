@@ -160,11 +160,20 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []): ?string
-    {
+    public function field(
+        array $object,
+        string $attribute,
+        ?string $lang = null,
+        bool $defaultNull = false,
+        array $included = []
+    ): ?string {
         $defaultValue = null;
         if (!$defaultNull) {
-            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute), Hash::get($object, sprintf('%s', $attribute)));
+            $defaultValue = Hash::get(
+                $object,
+                sprintf('attributes.%s', $attribute),
+                Hash::get($object, sprintf('%s', $attribute))
+            );
         }
         if (empty($included) && !empty($this->_View->get('included'))) {
             $included = $this->_View->get('included');
@@ -191,7 +200,6 @@ class I18nHelper extends Helper
      */
     public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []): bool
     {
-
         if (empty($included) && !empty($this->_View->get('included'))) {
             $included = $this->_View->get('included');
         }
