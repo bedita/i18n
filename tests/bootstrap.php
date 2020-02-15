@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use Cake\Cache\Cache;
 use Cake\Core\BasePlugin;
@@ -72,7 +73,6 @@ Router::reload();
 // Load plugin via custom class
 class MyPlugin extends BasePlugin
 {
-
 }
 
 Plugin::getCollection()->add(new MyPlugin([

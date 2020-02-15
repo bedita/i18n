@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2018 ChannelWeb Srl, Chialab Srl
@@ -136,7 +138,7 @@ class I18nMiddleware
      * 2. then try to detect from cookie
      * 3. finally try to detect it from HTTP Accept-Language header
      *
-     * @param ServerRequest $request The request.
+     * @param \Cake\Http\ServerRequest $request The request.
      * @return string
      */
     protected function detectLocale(ServerRequest $request): string
@@ -148,7 +150,7 @@ class I18nMiddleware
             return $locale;
         }
 
-        $locale = (string)$request->getCookie($this->getConfig('cookie.name'));
+        $locale = (string)$request->getCookie($this->getConfig('cookie.name', ''));
         if (!empty($locale)) {
             return $locale;
         }
@@ -181,7 +183,7 @@ class I18nMiddleware
      *
      * The cookie is added only if the middleware is configured to create cookie.
      *
-     * @param ResponseInterface $response The response.
+     * @param \Psr\Http\Message\ResponseInterface $response The response.
      * @param string $locale The locale string to set in cookie.
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -203,10 +205,10 @@ class I18nMiddleware
      *
      * Require query string `new` and `redirect`
      *
-     * @param ServerRequest $request The request
+     * @param \Cake\Http\ServerRequest $request The request
      * @param \Psr\Http\Message\ResponseInterface $response The response.
-     * @return ResponseInterface
-     * @throws BadRequestException When missing required query string or unsupported language
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \Cake\Http\Exception\BadRequestException When missing required query string or unsupported language
      */
     protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response): ResponseInterface
     {
@@ -221,6 +223,6 @@ class I18nMiddleware
         }
         $response = $this->getResponseWithCookie($response, $locale);
 
-        return $response->withLocation($request->referer())->withDisabledCache()->withStatus(302);
+        return $response->withLocation((string)$request->referer())->withDisabledCache()->withStatus(302);
     }
 }

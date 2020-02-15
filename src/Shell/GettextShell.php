@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -13,6 +15,7 @@
 
 namespace BEdita\I18n\Shell;
 
+use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
@@ -27,7 +30,7 @@ class GettextShell extends Shell
      *
      * @return \Cake\Console\ConsoleOptionParser
      */
-    public function getOptionParser()
+    public function getOptionParser(): ConsoleOptionParser
     {
         $parser = parent::getOptionParser();
         $parser->addSubcommand('update', [
@@ -132,7 +135,7 @@ class GettextShell extends Shell
             $f = new Folder($this->params['app']);
             $basePath = $f->path;
         } elseif (isset($this->params['plugin'])) {
-            $startPath = ($this->params['startPath']) ? $this->params['startPath'] : getcwd();
+            $startPath = $this->params['startPath'] ? $this->params['startPath'] : getcwd();
             $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . ".po";
@@ -260,7 +263,7 @@ class GettextShell extends Shell
         $translated = $numItems - $numNotTranslated;
         $percent = 0;
         if ($numItems > 0) {
-            $percent = number_format(($translated * 100.) / $numItems, 1);
+            $percent = number_format($translated * 100. / $numItems, 1);
         }
         $this->out(sprintf('Translated %s of items - %s %', $translated, $numItems, $percent));
     }

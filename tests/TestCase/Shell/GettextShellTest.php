@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -14,9 +16,7 @@
 namespace BEdita\I18n\Test\Shell;
 
 use BEdita\I18n\Shell\GettextShell;
-use Cake\Console\Shell;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
-use Cake\Utility\Hash;
 
 /**
  * {@see \BEdita\I18n\Shell\GettextShell} Test Case
@@ -35,7 +35,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->shell = new GettextShell();
         parent::setUp();
@@ -45,7 +45,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->cleanFiles();
         parent::tearDown();

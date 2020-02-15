@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
     __('This is a php sample', true);
 
