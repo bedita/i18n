@@ -145,7 +145,7 @@ class I18nMiddleware
     {
         $path = $request->getUri()->getPath();
         $urlLang = (string)Hash::get(explode('/', $path), '1');
-        $locale = array_search($urlLang, $this->getLocales());
+        $locale = (string)array_search($urlLang, $this->getLocales());
         if ($locale !== false) {
             return $locale;
         }
@@ -155,7 +155,7 @@ class I18nMiddleware
             return $locale;
         }
 
-        return \Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
+        return (string)\Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
     }
 
     /**
