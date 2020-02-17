@@ -44,11 +44,12 @@ Configure::write('debug', true);
 Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'utf-8',
-    'fullBaseUrl' => 'http://localhost',
     'paths' => [
         'plugins' => [ROOT . 'Plugin' . DS],
         'templates' => [APP . 'Template' . DS],
     ],
+    'base' => '',
+    'webroot' => '/',
 ]);
 
 Cache::setConfig([
