@@ -220,6 +220,6 @@ class I18nRouteTest extends TestCase
             'lang' => 'sp',
         ]);
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
     }
 }

@@ -91,6 +91,12 @@ class I18nHelperTest extends TestCase
             // usually set by middleware
             'lang' => 'en',
         ]);
+
+        Router::connect(
+            '/test',
+            ['controller' => 'TestApp', 'action' => 'test'],
+            ['_name' => 'test']
+        );
     }
 
     /**
@@ -418,7 +424,6 @@ class I18nHelperTest extends TestCase
     public function testMetaHreflang($expected, $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        Router::$initialized = true; // avoid trying to load rules from routes.php
         Router::setRequest($request);
 
         $meta = $this->I18n->metaHreflang();

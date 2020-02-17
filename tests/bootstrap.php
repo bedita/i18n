@@ -46,7 +46,7 @@ Configure::write('App', [
     'encoding' => 'utf-8',
     'paths' => [
         'plugins' => [ROOT . 'Plugin' . DS],
-        'templates' => [APP . 'Template' . DS],
+        'templates' => [ROOT . 'templates' . DS],
     ],
     'base' => '',
     'webroot' => '/',
