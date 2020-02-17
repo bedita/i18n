@@ -145,9 +145,9 @@ class I18nMiddleware
     {
         $path = $request->getUri()->getPath();
         $urlLang = (string)Hash::get(explode('/', $path), '1');
-        $locale = (string)array_search($urlLang, $this->getLocales());
+        $locale = array_search($urlLang, $this->getLocales());
         if ($locale !== false) {
-            return $locale;
+            return (string)$locale;
         }
 
         $locale = (string)$request->getCookie($this->getConfig('cookie.name', ''));
