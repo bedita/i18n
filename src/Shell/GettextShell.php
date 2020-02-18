@@ -144,8 +144,9 @@ class GettextShell extends Shell
         $this->templatePaths = [
             $basePath . '/src',
             $basePath . '/config',
+            $basePath . '/templates',
         ];
-        $this->localePath = $basePath . '/src/Locale';
+        $this->localePath = $basePath . '/resources/locales';
     }
 
     /**
