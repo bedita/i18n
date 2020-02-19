@@ -17,6 +17,7 @@ namespace BEdita\I18n\Shell;
 
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
+use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 
@@ -178,23 +179,24 @@ class GettextShell extends Shell
     {
         $header = $this->header('po');
         $potFilename = sprintf('%s/master.pot', $this->localePath);
-        $folder = new Folder($this->localePath);
-        $ls = $folder->read();
-        foreach ($ls[0] as $loc) {
-            if ($loc[0] != '.') { // only "regular" dirs...
-                $this->out(sprintf('Language: %s', $loc));
-                $poFile = sprintf('%s/%s/%s', $this->localePath, $loc, $this->poName);
-                if (!file_exists($poFile)) {
-                    $newPoFile = new File($poFile, true);
-                    $newPoFile->write($header);
-                    $newPoFile->close();
-                }
-                $this->out(sprintf('Merging %s', $poFile));
-                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-                exec($mergeCmd);
-                $this->analyzePoFile($poFile);
-                $this->hr();
+        $locales = array_keys((array)Configure::read('I18n.locales', []));
+        foreach ($locales as $loc) {
+            $potDir = $this->localePath . DS . $loc;
+            if (!file_exists($potDir)) {
+                mkdir($potDir);
             }
+            $this->out(sprintf('Language: %s', $loc));
+            $poFile = sprintf('%s/%s', $potDir, $this->poName);
+            if (!file_exists($poFile)) {
+                $newPoFile = new File($poFile, true);
+                $newPoFile->write($header);
+                $newPoFile->close();
+            }
+            $this->out(sprintf('Merging %s', $poFile));
+            $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
+            exec($mergeCmd);
+            $this->analyzePoFile($poFile);
+            $this->hr();
         }
     }
 
