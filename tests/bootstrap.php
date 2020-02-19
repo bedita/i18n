@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use Cake\Cache\Cache;
 use Cake\Core\BasePlugin;
@@ -43,11 +44,12 @@ Configure::write('debug', true);
 Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'utf-8',
-    'fullBaseUrl' => 'http://localhost',
     'paths' => [
         'plugins' => [ROOT . 'Plugin' . DS],
-        'templates' => [APP . 'Template' . DS],
+        'templates' => [ROOT . 'templates' . DS],
     ],
+    'base' => '',
+    'webroot' => '/',
 ]);
 
 Cache::setConfig([
@@ -69,12 +71,11 @@ if (!getenv('db_dsn')) {
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 
-// Load plugin via custom class
-class MyPlugin extends BasePlugin
-{
-
-}
-
-Plugin::getCollection()->add(new MyPlugin([
+$plugin = [
     'path' => dirname(dirname(__FILE__)) . DS,
-]));
+];
+
+// Load plugin via custom class
+Plugin::getCollection()->add(new class ($plugin) extends BasePlugin
+{
+});

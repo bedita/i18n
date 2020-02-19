@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -26,7 +28,6 @@ use Cake\View\View;
  */
 class I18nHelperTest extends TestCase
 {
-
     /**
      * The instance of `BEdita\I18n\View\Helper\I18nHelper`
      *
@@ -90,6 +91,12 @@ class I18nHelperTest extends TestCase
             // usually set by middleware
             'lang' => 'en',
         ]);
+
+        Router::connect(
+            '/test',
+            ['controller' => 'TestApp', 'action' => 'test'],
+            ['_name' => 'test']
+        );
     }
 
     /**
@@ -176,7 +183,7 @@ class I18nHelperTest extends TestCase
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
-            Router::pushRequest($request);
+            Router::setRequest($request);
         }
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang, $switchUrl));
@@ -244,7 +251,7 @@ class I18nHelperTest extends TestCase
      * @param array $object The object to translate
      * @param string $attribute The attribute to translate
      * @param string $lang The language of translation, 2 chars code
-     * @param boolean $defaultNull True if default value should be null; otherwise on missing translation, original field value
+     * @param bool $defaultNull True if default value should be null; otherwise on missing translation, original field value
      * @param array $included The included translations data
      * @param string|null $expected The expected translation
      * @return void
@@ -417,8 +424,7 @@ class I18nHelperTest extends TestCase
     public function testMetaHreflang($expected, $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        Router::$initialized = true; // avoid trying to load rules from routes.php
-        Router::pushRequest($request);
+        Router::setRequest($request);
 
         $meta = $this->I18n->metaHreflang();
         static::assertEquals($expected, $meta);

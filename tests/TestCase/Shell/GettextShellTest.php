@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -14,9 +16,8 @@
 namespace BEdita\I18n\Test\Shell;
 
 use BEdita\I18n\Shell\GettextShell;
-use Cake\Console\Shell;
+use Cake\Core\Configure;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
-use Cake\Utility\Hash;
 
 /**
  * {@see \BEdita\I18n\Shell\GettextShell} Test Case
@@ -35,8 +36,15 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
+        Configure::write('I18n', [
+            'locales' => [
+                'en_US' => 'en',
+                'it_IT' => 'it',
+            ],
+        ]);
+
         $this->shell = new GettextShell();
         parent::setUp();
         $this->cleanFiles();
@@ -45,7 +53,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->cleanFiles();
         parent::tearDown();
@@ -61,7 +69,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $this->shell->params['app'] = sprintf('%s/tests/files/gettext/app', getcwd());
 
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -93,8 +101,9 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 [
                     sprintf('%s/tests/files/gettext/app/src', $base),
                     sprintf('%s/tests/files/gettext/app/config', $base),
+                    sprintf('%s/tests/files/gettext/app/templates', $base),
                 ], // template paths
-                sprintf('%s/tests/files/gettext/app/src/Locale', $base), // locale path
+                sprintf('%s/tests/files/gettext/app/resources/locales', $base), // locale path
             ],
             'plugin' => [
                 null, // app path
@@ -103,8 +112,9 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 [
                     sprintf('%s/tests/files/gettext/plugins/dummy/src', $base),
                     sprintf('%s/tests/files/gettext/plugins/dummy/config', $base),
+                    sprintf('%s/tests/files/gettext/plugins/dummy/templates', $base),
                 ], // template paths
-                sprintf('%s/tests/files/gettext/plugins/dummy/src/Locale', $base), // locale path
+                sprintf('%s/tests/files/gettext/plugins/dummy/resources/locales', $base), // locale path
             ],
         ];
     }
@@ -151,7 +161,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testWriteMasterPot()
     {
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -194,7 +204,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testWritePoFiles()
     {
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
+        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -318,9 +328,9 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     private function cleanFiles()
     {
         $files = [
-            sprintf('%s/tests/files/gettext/app/src/Locale/master.pot', getcwd()),
-            sprintf('%s/tests/files/gettext/app/src/Locale/en_US/default.po', getcwd()),
-            sprintf('%s/tests/files/gettext/app/src/Locale/it_IT/default.po', getcwd()),
+            sprintf('%s/tests/files/gettext/app/resources/locales/master.pot', getcwd()),
+            sprintf('%s/tests/files/gettext/app/resources/locales/en_US/default.po', getcwd()),
+            sprintf('%s/tests/files/gettext/app/resources/locales/it_IT/default.po', getcwd()),
         ];
         foreach ($files as $file) {
             if (file_exists($file)) {

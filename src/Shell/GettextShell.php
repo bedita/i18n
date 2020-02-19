@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -13,7 +15,9 @@
 
 namespace BEdita\I18n\Shell;
 
+use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
+use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 
@@ -27,7 +31,7 @@ class GettextShell extends Shell
      *
      * @return \Cake\Console\ConsoleOptionParser
      */
-    public function getOptionParser()
+    public function getOptionParser(): ConsoleOptionParser
     {
         $parser = parent::getOptionParser();
         $parser->addSubcommand('update', [
@@ -132,7 +136,7 @@ class GettextShell extends Shell
             $f = new Folder($this->params['app']);
             $basePath = $f->path;
         } elseif (isset($this->params['plugin'])) {
-            $startPath = ($this->params['startPath']) ? $this->params['startPath'] : getcwd();
+            $startPath = $this->params['startPath'] ? $this->params['startPath'] : getcwd();
             $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . ".po";
@@ -141,8 +145,9 @@ class GettextShell extends Shell
         $this->templatePaths = [
             $basePath . '/src',
             $basePath . '/config',
+            $basePath . '/templates',
         ];
-        $this->localePath = $basePath . '/src/Locale';
+        $this->localePath = $basePath . '/resources/locales';
     }
 
     /**
@@ -174,23 +179,24 @@ class GettextShell extends Shell
     {
         $header = $this->header('po');
         $potFilename = sprintf('%s/master.pot', $this->localePath);
-        $folder = new Folder($this->localePath);
-        $ls = $folder->read();
-        foreach ($ls[0] as $loc) {
-            if ($loc[0] != '.') { // only "regular" dirs...
-                $this->out(sprintf('Language: %s', $loc));
-                $poFile = sprintf('%s/%s/%s', $this->localePath, $loc, $this->poName);
-                if (!file_exists($poFile)) {
-                    $newPoFile = new File($poFile, true);
-                    $newPoFile->write($header);
-                    $newPoFile->close();
-                }
-                $this->out(sprintf('Merging %s', $poFile));
-                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-                exec($mergeCmd);
-                $this->analyzePoFile($poFile);
-                $this->hr();
+        $locales = array_keys((array)Configure::read('I18n.locales', []));
+        foreach ($locales as $loc) {
+            $potDir = $this->localePath . DS . $loc;
+            if (!file_exists($potDir)) {
+                mkdir($potDir);
             }
+            $this->out(sprintf('Language: %s', $loc));
+            $poFile = sprintf('%s/%s', $potDir, $this->poName);
+            if (!file_exists($poFile)) {
+                $newPoFile = new File($poFile, true);
+                $newPoFile->write($header);
+                $newPoFile->close();
+            }
+            $this->out(sprintf('Merging %s', $poFile));
+            $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
+            exec($mergeCmd);
+            $this->analyzePoFile($poFile);
+            $this->hr();
         }
     }
 
@@ -260,7 +266,7 @@ class GettextShell extends Shell
         $translated = $numItems - $numNotTranslated;
         $percent = 0;
         if ($numItems > 0) {
-            $percent = number_format(($translated * 100.) / $numItems, 1);
+            $percent = number_format($translated * 100. / $numItems, 1);
         }
         $this->out(sprintf('Translated %s of items - %s %', $translated, $numItems, $percent));
     }
@@ -318,7 +324,8 @@ class GettextShell extends Shell
 
         // looks for __("text to translate",true)
         // or __('text to translate',true), result in matches[1] or in matches[2]
-        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" . "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
+        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" .
+            "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 

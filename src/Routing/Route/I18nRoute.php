@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -60,7 +62,7 @@ class I18nRoute extends Route
     /**
      * {@inheritDoc}
      */
-    public function match(array $url, array $context = [])
+    public function match(array $url, array $context = []): ?string
     {
         if (!array_key_exists('lang', $url)) {
             $url['lang'] = $this->getLang();

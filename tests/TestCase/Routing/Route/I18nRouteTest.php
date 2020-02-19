@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -218,6 +220,6 @@ class I18nRouteTest extends TestCase
             'lang' => 'sp',
         ]);
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
     }
 }
