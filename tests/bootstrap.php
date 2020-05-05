@@ -71,11 +71,4 @@ if (!getenv('db_dsn')) {
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 
-$plugin = [
-    'path' => dirname(dirname(__FILE__)) . DS,
-];
-
-// Load plugin via custom class
-Plugin::getCollection()->add(new class ($plugin) extends BasePlugin
-{
-});
+Plugin::getCollection()->add(new \BEdita\I18n\Plugin());
