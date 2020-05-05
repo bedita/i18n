@@ -32,7 +32,7 @@ class Plugin extends BasePlugin
      */
     protected $bootstrapEnabled = false;
 
-        /**
+    /**
      * Load routes or not
      *
      * @var bool
@@ -69,5 +69,4 @@ class Plugin extends BasePlugin
 
         return $middlewareQueue;
     }
-
 }

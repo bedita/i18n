@@ -410,7 +410,7 @@ class I18nMiddlewareTest extends TestCase
                 'create' => true,
             ],
         ]);
-        /** @var \Cake\Http\Response */
+        /** @var \Cake\Http\Response $response */
         $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
@@ -449,7 +449,7 @@ class I18nMiddlewareTest extends TestCase
                 'expire' => $expireExpected,
             ],
         ]);
-        /** @var \Cake\Http\Response */
+        /** @var \Cake\Http\Response $response */
         $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
@@ -557,7 +557,7 @@ class I18nMiddlewareTest extends TestCase
 
         $request = ServerRequestFactory::fromGlobals($server, $query);
         $middleware = new I18nMiddleware($conf);
-        /** @var \Cake\Http\Response */
+        /** @var \Cake\Http\Response $response */
         $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals($expected['status'], $response->getStatusCode());

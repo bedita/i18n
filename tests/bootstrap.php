@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use Cake\Cache\Cache;
-use Cake\Core\BasePlugin;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
