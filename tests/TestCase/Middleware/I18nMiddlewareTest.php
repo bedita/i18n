@@ -23,6 +23,9 @@ use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
 use Cake\Utility\Hash;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * {@see \BEdita\I18n\Middleware\I18nMiddleware} Test Case
@@ -32,11 +35,11 @@ use Cake\Utility\Hash;
 class I18nMiddlewareTest extends TestCase
 {
     /**
-     * Fake next middleware
+     * Fake request handler
      *
-     * @var callable
+     * @var \Psr\Http\Server\RequestHandlerInterface
      */
-    protected $nextMiddleware;
+    protected $requestHandler;
 
     /**
      * {@inheritDoc}
@@ -57,8 +60,17 @@ class I18nMiddlewareTest extends TestCase
             ],
         ]);
 
-        $this->nextMiddleware = function ($req, $res) {
-            return $res;
+        $this->requestHandler = new class () implements RequestHandlerInterface {
+            /**
+             * Implementation of handle method
+             *
+             * @param ServerRequestInterface $request The request.
+             * @return ResponseInterface
+             */
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                return new Response();
+            }
         };
     }
 
@@ -72,7 +84,7 @@ class I18nMiddlewareTest extends TestCase
         // reset locale to default value
         I18n::setLocale(I18n::getDefaultLocale());
         Configure::delete('I18n');
-        $this->nextMiddleware = null;
+        $this->requestHandler = null;
     }
 
     /**
@@ -144,9 +156,8 @@ class I18nMiddlewareTest extends TestCase
     public function testStatus($expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        $response = new Response();
         $middleware = new I18nMiddleware($conf);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals($expected, $response->getStatusCode());
     }
@@ -259,9 +270,8 @@ class I18nMiddlewareTest extends TestCase
     public function testRedirectPath($expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        $response = new Response();
         $middleware = new I18nMiddleware($conf);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals(302, $response->getStatusCode());
         static::assertEquals($expected, $response->getHeaderLine('Location'));
@@ -319,9 +329,8 @@ class I18nMiddlewareTest extends TestCase
     public function testSetupLocale(array $expected, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        $response = new Response();
         $middleware = new I18nMiddleware();
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        $middleware->process($request, $this->requestHandler);
 
         static::assertEquals($expected['locale'], I18n::getLocale());
         static::assertEquals($expected['lang'], Configure::read('I18n.lang'));
@@ -345,9 +354,8 @@ class I18nMiddlewareTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'en-US',
         ];
         $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
-        $response = new Response();
         $middleware = new I18nMiddleware();
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('en_US', I18n::getLocale());
     }
@@ -370,11 +378,10 @@ class I18nMiddlewareTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'en-US',
         ];
         $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
-        $response = new Response();
         $middleware = new I18nMiddleware([
             'cookie' => ['name' => $cookieName],
         ]);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
     }
@@ -397,14 +404,14 @@ class I18nMiddlewareTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'it-IT',
         ];
         $request = ServerRequestFactory::fromGlobals($server);
-        $response = new Response();
         $middleware = new I18nMiddleware([
             'cookie' => [
                 'name' => $cookieName,
                 'create' => true,
             ],
         ]);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        /** @var \Cake\Http\Response */
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
         $cookie = $response->getCookieCollection()->get($cookieName);
@@ -434,7 +441,6 @@ class I18nMiddlewareTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'en-US',
         ];
         $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
-        $response = new Response();
         $expireExpected = '2050-12-31';
         $middleware = new I18nMiddleware([
             'cookie' => [
@@ -443,7 +449,8 @@ class I18nMiddlewareTest extends TestCase
                 'expire' => $expireExpected,
             ],
         ]);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        /** @var \Cake\Http\Response */
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
         $cookie = $response->getCookieCollection()->get($cookieName);
@@ -549,9 +556,9 @@ class I18nMiddlewareTest extends TestCase
         }
 
         $request = ServerRequestFactory::fromGlobals($server, $query);
-        $response = new Response();
         $middleware = new I18nMiddleware($conf);
-        $response = $middleware($request, $response, $this->nextMiddleware);
+        /** @var \Cake\Http\Response */
+        $response = $middleware->process($request, $this->requestHandler);
 
         static::assertEquals($expected['status'], $response->getStatusCode());
         static::assertEquals($expected['location'], $response->getHeaderLine('Location'));
