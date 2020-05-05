@@ -14,17 +14,15 @@ composer require bedita/i18n
 
 ## Setup
 
-In order to use the plugin you have to load it in you application using
+In order to use the plugin you have to load it in your `Application::bootstrap()` using
 
 ```php
-Plugin::load('BEdita/I18n');
+$this->addPlugin('BEdita/I18n');
 ```
-
-in either `config/bootstrap.php` or `config/bootstrap_cli.php`.
 
 ## Middleware and Helper
 
-First of all you need to setup an `I18n` configuration in your application bootstrap
+First of all you need to setup an `I18n` configuration in your application `config/bootstrap.php` (or if you prefer in `config/app_local.php`)
 
 ```php
 /*
@@ -45,12 +43,56 @@ Configure::write('I18n', [
         'en' => 'English',
         'it' => 'Italiano',
     ],
+
+    /** Middleware specific conf **/
+    // array of URL paths, if there's an exact match rule is applied
+    'match' => ['/'],
+    // array of URL paths, if current URL path starts with one of these rule is applied
+    'startWith' => ['/help', '/about'],
+    //reserved URL (for example `/lang`) used to switch language and redirect to referer URL.
+    'switchLangUrl' => '/lang',
+    // array for cookie that keeps the locale value. By default no cookie is used.
+    'cookie' => [
+         'name' =>  'i18n-lang', //cookie name
+         'create' => true, // set to `true` if the middleware is responsible of cookie creation
+         'expire' => '+1 year', // used when `create` is `true` to define when the cookie must expire
+    ],
 ]);
 ```
 
 ### I18nMiddleware
 
-In order to use the `I18nMiddleware` you have to add it to `MiddlewareQueue` in app `src/Application.php`
+Adding `BEdita/I18n` plugin in app `Application::bootstrap()` method, the `I18nMiddleware`
+will be added in middleware queue just before `RoutingMiddleware`.
+
+`I18n` configuration will be used to setup middleware configuration.
+
+```php
+namespace App;
+
+use Cake\Http\BaseApplication;
+
+/**
+ * Application setup class.
+ */
+class Application extends BaseApplication
+{
+    /**
+     * {inheritDoc}
+     */
+    public function bootstrap(): void
+    {
+        parent::bootstrap();
+
+        $this->addPlugin('BEdita/I18n');
+    }
+
+    // other stuff here
+}
+```
+
+You can also decide to not add `I18nMiddleware` since your app doesn't need it or to
+programmatically add it in your application:
 
 ```php
 namespace App;
@@ -68,6 +110,17 @@ use Cake\Routing\Middleware\RoutingMiddleware;
 class Application extends BaseApplication
 {
     /**
+     * {inheritDoc}
+     */
+    public function bootstrap(): void
+    {
+        parent::bootstrap();
+
+        // Do not add I18nMiddleware automatically
+        $this->addPlugin('BEdita/I18n', ['middleware' => false]);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function middleware($middlewareQueue) : MiddlewareQueue
@@ -76,7 +129,7 @@ class Application extends BaseApplication
             ->add(ErrorHandlerMiddleware::class)
             ->add(AssetMiddleware::class)
 
-            // Add I18n middleware.
+            // Add programmatically I18n middleware.
             ->add(new I18nMiddleware())
 
             ->add(new RoutingMiddleware($this));
