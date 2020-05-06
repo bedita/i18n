@@ -19,12 +19,16 @@ use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Http\Cookie\Cookie;
 use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
 use Cake\I18n\Time;
 use Cake\Utility\Hash;
+use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
-use Zend\Diactoros\Response\RedirectResponse;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * i18n middleware.
@@ -32,7 +36,7 @@ use Zend\Diactoros\Response\RedirectResponse;
  * It is responsible to setup the right locale based on URI path as `/:lang/page/to/reach`.
  * It is configurable to redirect URI matches some rules using `:lang` prefix.
  */
-class I18nMiddleware
+class I18nMiddleware implements MiddlewareInterface
 {
     use I18nTrait;
     use InstanceConfigTrait;
@@ -79,13 +83,11 @@ class I18nMiddleware
      *
      * At the moment only primary languages are correctly handled as language codes to be used as URL prefix.
      *
-     * @param \Cake\Http\ServerRequest $request The request.
-     * @param \Psr\Http\Message\ResponseInterface $response The response.
-     * @param callable $next Callback to invoke the next middleware.
-     *
-     * @return \Psr\Http\Message\ResponseInterface A response
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request.
+     * @param \Psr\Http\Server\RequestHandlerInterface $handler The request handler.
+     * @return \Psr\Http\Message\ResponseInterface A response.
      */
-    public function __invoke(ServerRequest $request, ResponseInterface $response, $next): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = $request->getUri()->getPath();
         if ($path !== '/') {
@@ -93,7 +95,7 @@ class I18nMiddleware
         }
 
         if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
-            return $this->changeLangAndRedirect($request, $response);
+            return $this->changeLangAndRedirect($request);
         }
 
         $redir = false;
@@ -107,9 +109,9 @@ class I18nMiddleware
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($locale);
-            $response = $this->getResponseWithCookie($response, $this->getLocale());
+            $response = $handler->handle($request);
 
-            return $next($request, $response);
+            return $this->getResponseWithCookie($response, $this->getLocale());
         }
 
         $lang = $this->getDefaultLang();
@@ -206,11 +208,10 @@ class I18nMiddleware
      * Require query string `new` and `redirect`
      *
      * @param \Cake\Http\ServerRequest $request The request
-     * @param \Psr\Http\Message\ResponseInterface $response The response.
      * @return \Psr\Http\Message\ResponseInterface
      * @throws \Cake\Http\Exception\BadRequestException When missing required query string or unsupported language
      */
-    protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response): ResponseInterface
+    protected function changeLangAndRedirect(ServerRequest $request): ResponseInterface
     {
         $new = (string)$request->getQuery('new');
         if (empty($new)) {
@@ -221,8 +222,12 @@ class I18nMiddleware
         if ($locale === false) {
             throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }
-        $response = $this->getResponseWithCookie($response, $locale);
 
-        return $response->withLocation((string)$request->referer())->withDisabledCache()->withStatus(302);
+        $response = (new Response())
+            ->withLocation((string)$request->referer())
+            ->withDisabledCache()
+            ->withStatus(302);
+
+        return $this->getResponseWithCookie($response, $locale);
     }
 }
