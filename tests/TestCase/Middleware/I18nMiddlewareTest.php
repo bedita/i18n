@@ -18,6 +18,7 @@ use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Core\Configure;
 use Cake\Http\Cookie\Cookie;
 use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
@@ -334,6 +335,26 @@ class I18nMiddlewareTest extends TestCase
 
         static::assertEquals($expected['locale'], I18n::getLocale());
         static::assertEquals($expected['lang'], Configure::read('I18n.lang'));
+    }
+
+    /**
+     * Test that an exception is raised if missing required conf.
+     *
+     * @return void
+     *
+     * @covers ::setupLocale()
+     */
+    public function testSetupLocaleMissingConfig(): void
+    {
+        $this->expectException(InternalErrorException::class);
+        $this->expectExceptionCode(500);
+
+        Configure::delete('I18n');
+        $request = ServerRequestFactory::fromGlobals([
+            'REQUEST_URI' => '/help',
+        ]);
+        $middleware = new I18nMiddleware();
+        $middleware->process($request, $this->requestHandler);
     }
 
     /**

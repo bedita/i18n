@@ -19,6 +19,7 @@ use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Http\Cookie\Cookie;
 use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
@@ -174,6 +175,12 @@ class I18nMiddleware implements MiddlewareInterface
         if ($lang === null) {
             $lang = $this->getDefaultLang();
             $locale = array_search($lang, $locales);
+        }
+
+        if ($lang === null || $locale === false) {
+            throw new InternalErrorException(
+                __('Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"')
+            );
         }
 
         Configure::write('I18n.lang', $lang);
