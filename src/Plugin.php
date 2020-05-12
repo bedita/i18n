@@ -40,6 +40,13 @@ class Plugin extends BasePlugin
     protected $routesEnabled = false;
 
     /**
+     * Enable middleware
+     *
+     * @var bool
+     */
+    protected $middlewareEnabled = false;
+
+    /**
      * Setup the I8nMiddleware.
      *
      * @param \Cake\Http\MiddlewareQueue $middlewareQueue The middleware queue to setup.
