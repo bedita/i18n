@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.com/bedita/i18n.svg?branch=master)](https://travis-ci.com/bedita/i18n)
 [![codecov](https://codecov.io/gh/bedita/i18n/branch/master/graph/badge.svg)](https://codecov.io/gh/bedita/i18n)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bedita/i18n/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/bedita/i18n?branch=master)
-<!-- [![Code Coverage](https://codecov.io/gh/bedita/i18n/graph/badge.svg)](https://codecov.io/gh/bedita/i18n) -->
+[![image](https://img.shields.io/packagist/v/bedita/i18n.svg?label=stable)](https://packagist.org/packages/bedita/i18n)
+[![image](https://img.shields.io/github/license/bedita/i18n.svg)](https://github.com/bedita/i18n/blob/master/LICENSE.LGPL)
 
 ## Installation
 
