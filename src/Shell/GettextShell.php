@@ -139,7 +139,7 @@ class GettextShell extends Shell
             $startPath = $this->params['startPath'] ? $this->params['startPath'] : getcwd();
             $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
             $basePath = $f->path;
-            $this->poName = $this->params['plugin'] . ".po";
+            $this->poName = $this->params['plugin'] . '.po';
         }
 
         $this->templatePaths = [
@@ -205,7 +205,6 @@ class GettextShell extends Shell
      *
      * @param string $type The file type (can be 'po', 'pot')
      * @return string
-     *
      * @codeCoverageIgnore
      */
     private function header(string $type = 'po'): string
@@ -214,7 +213,7 @@ class GettextShell extends Shell
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date("Y-m-d H:i:s"),
+                'POT-Creation-Date' => date('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -226,7 +225,7 @@ class GettextShell extends Shell
             ],
             'pot' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date("Y-m-d H:i:s"),
+                'POT-Creation-Date' => date('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -314,7 +313,7 @@ class GettextShell extends Shell
      */
     private function parseContent($content): void
     {
-        $p = preg_quote("(");
+        $p = preg_quote('(');
         $q1 = preg_quote("'");
         $q2 = preg_quote('"');
 
@@ -324,8 +323,8 @@ class GettextShell extends Shell
 
         // looks for __("text to translate",true)
         // or __('text to translate',true), result in matches[1] or in matches[2]
-        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" .
-            "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
+        $rgxp = '/' . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" .
+            '|' . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . '/';
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
@@ -368,7 +367,6 @@ class GettextShell extends Shell
      * Extract translations from javascript files using ttag, if available.
      *
      * @return void
-     *
      * @codeCoverageIgnore
      */
     private function ttagExtract(): void

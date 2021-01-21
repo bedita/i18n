@@ -69,7 +69,7 @@ class I18nHelperTest extends TestCase
     ];
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -100,7 +100,7 @@ class I18nHelperTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
@@ -173,7 +173,6 @@ class I18nHelperTest extends TestCase
      * @param string $lang The language to change
      * @param string $lang The switch language url
      * @return void
-     *
      * @dataProvider changeUrlLangProvider
      * @covers ::changeUrlLang()
      * @covers ::newLangUrl()
@@ -255,7 +254,6 @@ class I18nHelperTest extends TestCase
      * @param array $included The included translations data
      * @param string|null $expected The expected translation
      * @return void
-     *
      * @dataProvider fieldProvider()
      * @covers ::field()
      */
@@ -316,7 +314,6 @@ class I18nHelperTest extends TestCase
      * @param array|null $included The included translations data
      * @param bool $expected The expected result (true => exists, false => does not exist)
      * @return void
-     *
      * @dataProvider existsProvider()
      * @covers ::exists()
      * @covers ::getTranslatedField()
@@ -334,7 +331,6 @@ class I18nHelperTest extends TestCase
      * Test `exists()` method
      *
      * @return void
-     *
      * @covers ::exists()
      * @covers ::getTranslatedField()
      */
@@ -350,7 +346,6 @@ class I18nHelperTest extends TestCase
      * Test internal translation cache
      *
      * @return void
-     *
      * @covers ::field()
      * @covers ::getTranslatedField()
      */
@@ -370,7 +365,6 @@ class I18nHelperTest extends TestCase
      * Test `reset()` method
      *
      * @return void
-     *
      * @covers ::reset()
      * @covers ::getTranslatedField()
      */
@@ -417,7 +411,6 @@ class I18nHelperTest extends TestCase
      * @param string $expected The expected output.
      * @param array $server Request configuration.
      * @return void
-     *
      * @dataProvider metaHreflangProvider
      * @covers ::metaHreflang()
      */
@@ -434,7 +427,6 @@ class I18nHelperTest extends TestCase
      * Test that `metaHreflang()` returns an empty string if no request was set.
      *
      * @return void
-     *
      * @covers ::metaHreflang()
      */
     public function testMetaHreflangMissingRequest(): void
@@ -478,7 +470,6 @@ class I18nHelperTest extends TestCase
      * @param string $path URL path.
      * @param string $lang Current lang code.
      * @return void
-     *
      * @dataProvider buildUrlProvider
      * @covers ::buildUrl()
      */

@@ -43,7 +43,7 @@ class I18nMiddlewareTest extends TestCase
     protected $requestHandler;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -76,7 +76,7 @@ class I18nMiddlewareTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
@@ -149,7 +149,6 @@ class I18nMiddlewareTest extends TestCase
      * @param array $conf The configuration passed to middleware
      * @param array $server The server vars
      * @return void
-     *
      * @dataProvider statusProvider
      * @covers ::__construct()
      * @covers ::__invoke()
@@ -264,7 +263,6 @@ class I18nMiddlewareTest extends TestCase
      * @param array $conf The configuration passed to middleware
      * @param array $server The server vars
      * @return void
-     *
      * @dataProvider redirectPathProvider
      * @covers ::__invoke()
      */
@@ -322,7 +320,6 @@ class I18nMiddlewareTest extends TestCase
      * @param array $expected The expected values (locale and lang)
      * @param array $server The server vars
      * @return void
-     *
      * @dataProvider setupLocaleProvider
      * @covers ::detectLocale()
      * @covers ::setupLocale()
@@ -341,7 +338,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that an exception is raised if missing required conf.
      *
      * @return void
-     *
      * @covers ::setupLocale()
      */
     public function testSetupLocaleMissingConfig(): void
@@ -361,7 +357,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that if middleware is not configured properly the locale cookie is ignored.
      *
      * @return void
-     *
      * @covers ::detectLocale()
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
@@ -385,7 +380,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that if middleware is configured properly the locale is set by cookie
      *
      * @return void
-     *
      * @covers ::detectLocale()
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
@@ -411,7 +405,6 @@ class I18nMiddlewareTest extends TestCase
      * Test cookie creation.
      *
      * @return void
-     *
      * @covers ::detectLocale()
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
@@ -448,7 +441,6 @@ class I18nMiddlewareTest extends TestCase
      * Test change expire cookie.
      *
      * @return void
-     *
      * @covers ::detectLocale()
      * @covers ::setupLocale()
      * @covers ::getResponseWithCookie()
@@ -563,7 +555,6 @@ class I18nMiddlewareTest extends TestCase
      * @param array $server The server vars
      * @param array $query The query string
      * @return void
-     *
      * @dataProvider changeLangProvider
      * @covers ::changeLangAndRedirect()
      * @covers ::__invoke()
