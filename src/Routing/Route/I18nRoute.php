@@ -27,7 +27,7 @@ class I18nRoute extends Route
     use I18nTrait;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function __construct($template, $defaults = [], array $options = [])
     {
@@ -60,7 +60,7 @@ class I18nRoute extends Route
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function match(array $url, array $context = []): ?string
     {

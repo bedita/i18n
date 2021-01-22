@@ -29,7 +29,7 @@ class I18nRouteTest extends TestCase
     use I18nTrait;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -52,7 +52,7 @@ class I18nRouteTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
@@ -106,7 +106,6 @@ class I18nRouteTest extends TestCase
      * @param string $expected The expected template for the route
      * @param string $template The initial template
      * @return void
-     *
      * @dataProvider templateProvider
      * @covers ::__construct()
      * @covers ::buildTemplate()
@@ -144,7 +143,6 @@ class I18nRouteTest extends TestCase
      * @param string $expected The expected pattern for 'lang'
      * @param array $options The options for constructor.
      * @return void
-     *
      * @dataProvider langPatternsProvider
      * @covers ::__construct()
      */
@@ -158,7 +156,6 @@ class I18nRouteTest extends TestCase
      * Test that if missing 'lang' param match() method return current lang in path.
      *
      * @return void
-     *
      * @covers ::match()
      */
     public function testMatchUseCurrentLang(): void
@@ -180,7 +177,6 @@ class I18nRouteTest extends TestCase
      * Test that passing a different lang match() method return it in path
      *
      * @return void
-     *
      * @covers ::match()
      */
     public function testMatchUseCustomLang(): void
@@ -204,7 +200,6 @@ class I18nRouteTest extends TestCase
      * Test that passing an invalid lang match() method return false
      *
      * @return void
-     *
      * @covers ::match()
      */
     public function testMatchInvalidLang(): void

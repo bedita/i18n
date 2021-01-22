@@ -31,7 +31,6 @@ class PluginTest extends TestCase
      * Test `console` method
      *
      * @return void
-     *
      * @covers ::middleware()
      */
     public function testMiddleware(): void

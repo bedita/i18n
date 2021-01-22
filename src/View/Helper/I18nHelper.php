@@ -31,7 +31,7 @@ class I18nHelper extends Helper
     use I18nTrait;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public $helpers = ['Html', 'Url'];
 
@@ -43,7 +43,6 @@ class I18nHelper extends Helper
      * Structure:
      *
      *   translation[<object ID>][<lang>][<field>] = <value>.
-     *
      *
      * @var array|null
      */

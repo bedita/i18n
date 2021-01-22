@@ -35,7 +35,7 @@ class I18nTraitTest extends TestCase
     protected $subject = null;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -60,7 +60,7 @@ class I18nTraitTest extends TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
@@ -97,7 +97,6 @@ class I18nTraitTest extends TestCase
      * Test `getLangName()`
      *
      * @return void
-     *
      * @dataProvider getLangNameProvider
      * @covers ::getLangName()
      */

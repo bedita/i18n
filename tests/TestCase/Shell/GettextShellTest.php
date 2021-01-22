@@ -34,7 +34,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     protected $shell = null;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -51,7 +51,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
@@ -128,7 +128,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param array $expectedTemplatePaths The expected template paths
      * @param string $expectedLocalePath The expected locale path
      * @return void
-     *
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
      */
@@ -196,7 +195,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * Test 'writePoFiles'
      *
      * @return void
-     *
      * @covers ::header()
      * @covers ::writePoFiles()
      * @covers ::analyzePoFile()
@@ -249,7 +247,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string $input The input string
      * @param string $expected The expected output string
      * @return void
-     *
      * @dataProvider fixStringProvider
      * @covers ::fixString()
      */
@@ -291,7 +288,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string $dir The directory containing files to parse
      * @param array $expected The po result array
      * @return void
-     *
      * @dataProvider parseDirProvider
      * @covers ::parseDir()
      * @covers ::parseFile()
