@@ -12,7 +12,7 @@ declare(strict_types=1);
  *
  * See LICENSE.LGPL or <http://gnu.org/licenses/lgpl-3.0.html> for more details.
  */
-namespace BEdita\I18n; // test
+namespace BEdita\I18n;
 
 use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Core\BasePlugin;
