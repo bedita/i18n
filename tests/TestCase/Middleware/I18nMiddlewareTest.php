@@ -151,6 +151,7 @@ class I18nMiddlewareTest extends TestCase
      * @return void
      * @dataProvider statusProvider
      * @covers ::__construct()
+     * @covers ::process()
      */
     public function testStatus($expected, array $conf, array $server): void
     {
@@ -263,7 +264,7 @@ class I18nMiddlewareTest extends TestCase
      * @param array $server The server vars
      * @return void
      * @dataProvider redirectPathProvider
-     * @covers ::__invoke()
+     * @covers ::process()
      */
     public function testRedirectPath($expected, array $conf, array $server): void
     {
@@ -556,7 +557,7 @@ class I18nMiddlewareTest extends TestCase
      * @return void
      * @dataProvider changeLangProvider
      * @covers ::changeLangAndRedirect()
-     * @covers ::__invoke()
+     * @covers ::process()
      */
     public function testChangeLangAndRedirect($expected, $conf, $server, $query): void
     {
