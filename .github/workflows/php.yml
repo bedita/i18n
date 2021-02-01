@@ -22,9 +22,6 @@ jobs:
       - name: 'Checkout current revision'
         uses: 'actions/checkout@v2'
 
-      - name: Install GNU gettext
-        run: sudo apt install gettext
-
       - name: 'Setup PHP'
         uses: 'shivammathur/setup-php@v2'
         with:
@@ -109,6 +106,9 @@ jobs:
     steps:
       - name: 'Checkout current revision'
         uses: 'actions/checkout@v2'
+
+      - name: Install GNU gettext
+        run: sudo apt-get install -y gettext
 
       - name: 'Composer config GH token if available'
         run: 'if [ -n "$GH_TOKEN" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi'
