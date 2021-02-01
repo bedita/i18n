@@ -151,7 +151,6 @@ class I18nMiddlewareTest extends TestCase
      * @return void
      * @dataProvider statusProvider
      * @covers ::__construct()
-     * @covers ::__invoke()
      */
     public function testStatus($expected, array $conf, array $server): void
     {
