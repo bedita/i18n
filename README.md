@@ -1,6 +1,6 @@
 # I18n plugin for BEdita4 & CakePHP
 
-[![Build Status](https://travis-ci.com/bedita/i18n.svg?branch=master)](https://travis-ci.com/bedita/i18n)
+[![Github Actions](https://github.com/bedita/i18n/workflows/php/badge.svg)](https://github.com/bedita/i18n/actions?query=workflow%3Aphp)
 [![codecov](https://codecov.io/gh/bedita/i18n/branch/master/graph/badge.svg)](https://codecov.io/gh/bedita/i18n)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bedita/i18n/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/bedita/i18n?branch=master)
 [![image](https://img.shields.io/packagist/v/bedita/i18n.svg?label=stable)](https://packagist.org/packages/bedita/i18n)
