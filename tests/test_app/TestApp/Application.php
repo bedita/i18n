@@ -18,7 +18,7 @@ class Application extends BaseApplication
     /**
      * @inheritDoc
      */
-    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
+    public function middleware($middlewareQueue): MiddlewareQueue
     {
         $middlewareQueue->add(new RoutingMiddleware($this));
 
