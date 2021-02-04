@@ -14,10 +14,6 @@ jobs:
     if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
     runs-on: 'ubuntu-18.04'
 
-    strategy:
-      matrix:
-        php-version: [7.2]
-
     steps:
       - name: 'Checkout current revision'
         uses: 'actions/checkout@v2'
@@ -25,8 +21,8 @@ jobs:
       - name: 'Setup PHP'
         uses: 'shivammathur/setup-php@v2'
         with:
-          php-version: '${{ matrix.php-version }}'
-          tools: 'composer:v1'
+          php-version: '7.4'
+          tools: 'composer:v2'
           extensions: 'mbstring, intl'
           coverage: 'none'
 
@@ -58,10 +54,6 @@ jobs:
     runs-on: 'ubuntu-18.04'
     continue-on-error: true
 
-    strategy:
-      matrix:
-        php-version: [7.2, 7.3, 7.4]
-
     steps:
       - name: 'Checkout current revision'
         uses: 'actions/checkout@v2'
@@ -69,8 +61,8 @@ jobs:
       - name: 'Setup PHP'
         uses: 'shivammathur/setup-php@v2'
         with:
-          php-version: '${{ matrix.php-version }}'
-          tools: 'composer:v1, phpstan'
+          php-version: '7.4'
+          tools: 'composer:v2, phpstan'
           extensions: 'mbstring, intl'
           coverage: 'none'
 
@@ -117,7 +109,7 @@ jobs:
         uses: 'shivammathur/setup-php@v2'
         with:
           php-version: '${{ matrix.php-version }}'
-          tools: 'composer:v1'
+          tools: 'composer:v2'
           extensions: 'mbstring, intl'
 
       - name: 'Discover Composer cache directory'
@@ -157,3 +149,38 @@ jobs:
         with:
           name: 'PHP ${{ matrix.php }}'
           path: 'clover.xml'
+
+  unit-lowest:
+    name: 'Run unit tests with lowest-matching dependencies versions'
+    if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
+    runs-on: 'ubuntu-18.04'
+
+    steps:
+      - name: 'Checkout current revision'
+        uses: 'actions/checkout@v2'
+
+      - name: 'Setup PHP'
+        uses: 'shivammathur/setup-php@v2'
+        with:
+          php-version: '7.2'
+          tools: 'composer:v1'
+          extensions: 'mbstring, intl, pdo_sqlite'
+
+      - name: 'Discover Composer cache directory'
+        id: 'cachedir'
+        run: 'echo "::set-output name=path::$(composer global config cache-dir)"'
+
+      - name: 'Share Composer cache across runs'
+        uses: 'actions/cache@v2'
+        with:
+          path: '${{ steps.cachedir.outputs.path }}'
+          key: "composer-lowest-${{ hashFiles('**/composer.json') }}"
+          restore-keys: |
+            composer-lowest-
+            composer-
+
+      - name: 'Install dependencies with Composer'
+        run: 'composer update --prefer-lowest --prefer-dist --no-interaction'
+
+      - name: 'Run PHPUnit'
+        run: 'vendor/bin/phpunit'
