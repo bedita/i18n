@@ -30,7 +30,6 @@
         }
     },
     "scripts": {
-        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump",
         "check": [
             "@test",
             "@cs-check"
