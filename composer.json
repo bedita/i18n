@@ -9,7 +9,7 @@
     },
     "require": {
         "php": ">=7.2",
-        "cakephp/cakephp": "~3.8.3|~4.2.2",
+        "cakephp/cakephp": "^3.8.3|~4.2.2",
         "laminas/laminas-diactoros": "^1.4.0|^2.2.2"
     },
     "require-dev": {
