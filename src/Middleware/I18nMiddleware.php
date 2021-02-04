@@ -231,7 +231,7 @@ class I18nMiddleware implements MiddlewareInterface
         }
 
         $response = (new Response())
-            ->withLocation((string)$request->referer())
+            ->withLocation((string)$request->referer(false))
             ->withDisabledCache()
             ->withStatus(302);
 
