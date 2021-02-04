@@ -182,7 +182,8 @@ class I18nHelperTest extends TestCase
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
-            Router::setRequest($request);
+            $method = method_exists(Router::class, 'setRequest') ? 'setRequest' : 'pushRequest';
+            Router::$method($request);
         }
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang, $switchUrl));
@@ -417,7 +418,8 @@ class I18nHelperTest extends TestCase
     public function testMetaHreflang($expected, $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        Router::setRequest($request);
+        $method = method_exists(Router::class, 'setRequest') ? 'setRequest' : 'pushRequest';
+        Router::$method($request);
 
         $meta = $this->I18n->metaHreflang();
         static::assertEquals($expected, $meta);
