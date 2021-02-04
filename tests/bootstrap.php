@@ -69,5 +69,6 @@ if (!getenv('db_dsn')) {
 }
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
+Router::fullBaseUrl('http://localhost');
 
 Plugin::getCollection()->add(new \BEdita\I18n\Plugin(['middleware' => true]));
