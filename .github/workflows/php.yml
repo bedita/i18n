@@ -5,15 +5,16 @@ on:
     paths:
       - '**/*.php'
       - '.github/workflows/*'
+      - 'composer.json'
   push:
     paths:
       - '**/*.php'
       - '.github/workflows/*'
+      - 'composer.json'
 
 jobs:
   cs:
     name: 'Check coding style'
-    if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
     runs-on: 'ubuntu-18.04'
 
     steps:
@@ -87,6 +88,41 @@ jobs:
       - name: 'Run PHP STAN'
         run: |
           phpstan analyse --no-progress src
+
+  undeclared-dependencies:
+    name: 'Check missing dependencies'
+    runs-on: 'ubuntu-18.04'
+
+    steps:
+      - name: 'Checkout current revision'
+        uses: 'actions/checkout@v2'
+
+      - name: 'Setup PHP'
+        uses: 'shivammathur/setup-php@v2'
+        with:
+          php-version: '7.4'
+          tools: 'composer:v2, composer-require-checker'
+          extensions: 'mbstring, intl'
+          coverage: 'none'
+
+      - name: 'Discover Composer cache directory'
+        id: 'cachedir'
+        run: 'echo "::set-output name=path::$(composer global config cache-dir)"'
+
+      - name: 'Share Composer cache across runs'
+        uses: 'actions/cache@v2'
+        with:
+          path: '${{ steps.cachedir.outputs.path }}'
+          key: "composer-${{ github.job }}-${{ hashFiles('**/composer.json') }}"
+          restore-keys: |
+            composer-${{ github.job }}-
+            composer-
+
+      - name: 'Install dependencies with Composer'
+        run: 'composer install --prefer-dist --no-interaction'
+
+      - name: 'Run ComposerRequireChecker'
+        run: 'composer-require-checker check'
 
   unit:
     name: 'Run unit tests'
