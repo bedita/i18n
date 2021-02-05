@@ -14,10 +14,12 @@ declare(strict_types=1);
  */
 namespace BEdita\I18n\Test\TestCase;
 
+use ArrayIterator;
 use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use Cake\TestSuite\TestCase;
+use Iterator;
 use TestApp\Application;
 
 /**
@@ -36,14 +38,30 @@ class PluginTest extends TestCase
     public function testMiddleware(): void
     {
         $app = new Application(CONFIG);
-        $middlewareQueue = $app->middleware(new MiddlewareQueue());
-        static::assertEquals(1, $middlewareQueue->count());
-        static::assertInstanceOf(RoutingMiddleware::class, $middlewareQueue->current());
+        $queue = $app->middleware(new MiddlewareQueue());
+        $queue = $app->pluginMiddleware($queue);
 
-        $middlewareQueue = $app->pluginMiddleware($middlewareQueue);
-        static::assertEquals(2, $middlewareQueue->count());
-        static::assertInstanceOf(I18nMiddleware::class, $middlewareQueue->current());
-        $middlewareQueue->next();
-        static::assertInstanceOf(RoutingMiddleware::class, $middlewareQueue->current());
+        if (!($queue instanceof Iterator)) {
+            $queue = new ArrayIterator(array_map([$queue, 'get'], range(0, count($queue) - 1)));
+        }
+        static::assertInstanceOfTuple([I18nMiddleware::class, RoutingMiddleware::class], $queue);
+    }
+
+    /**
+     * Assert that each iterable's element is instance of the respective class in the tuple.
+     *
+     * @param string[] $expected Expected class names.
+     * @param iterable $actual Actual object.
+     * @return void
+     */
+    protected static function assertInstanceOfTuple(array $expected, iterable $actual): void
+    {
+        static::assertSameSize($expected, $actual);
+
+        reset($expected);
+        foreach ($actual as $it) {
+            static::assertInstanceOf(current($expected), $it);
+            next($expected);
+        }
     }
 }

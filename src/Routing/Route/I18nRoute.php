@@ -68,6 +68,6 @@ class I18nRoute extends Route
             $url['lang'] = $this->getLang();
         }
 
-        return parent::match($url, $context);
+        return parent::match($url, $context) ?: null;
     }
 }

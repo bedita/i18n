@@ -298,7 +298,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->shell, [ $dir ]);
-        static::assertEquals($expected, $this->shell->poResult);
+        static::assertEquals($expected, $this->shell->poResult, '', 0, 10, true);
     }
 
     /**
