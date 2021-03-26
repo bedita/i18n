@@ -244,7 +244,7 @@ class I18nHelper extends Helper
             $translations = Hash::combine(
                 $object['relationships']['translations']['data'],
                 '{n}.attributes.lang',
-                '{n}.attributes.translated_fields',
+                '{n}.attributes.translated_fields'
             );
 
             return Hash::get($translations, sprintf('%s.%s', $lang, $attribute));
