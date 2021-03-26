@@ -300,7 +300,7 @@ class I18nHelperTest extends TestCase
         // 'fr' is not found, fallback to original
         $actual = $this->I18n->field($object, 'description', 'fr');
         static::assertEquals('una descrizione', $actual);
-   }
+    }
 
     /**
      * Data provider for `testExists()`

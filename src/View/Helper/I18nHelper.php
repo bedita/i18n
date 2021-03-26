@@ -246,6 +246,7 @@ class I18nHelper extends Helper
                 '{n}.attributes.lang',
                 '{n}.attributes.translated_fields',
             );
+
             return Hash::get($translations, sprintf('%s.%s', $lang, $attribute));
         }
 
