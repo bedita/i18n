@@ -266,6 +266,43 @@ class I18nHelperTest extends TestCase
     }
 
     /**
+     * Test `field` method with embedded relationships
+     *
+     * @return void
+     * @covers ::field()
+     */
+    public function testFieldEmbedded(): void
+    {
+        $object = [
+            'attributes' => [
+                'description' => 'una descrizione',
+                'lang' => 'it',
+            ],
+            'relationships' => [
+                'translations' => [
+                    'data' => [
+                        [
+                            'attributes' => [
+                                'lang' => 'en',
+                                'status' => 'on',
+                                'translated_fields' => [
+                                    'description' => 'a description',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $actual = $this->I18n->field($object, 'description', 'en');
+        static::assertEquals('a description', $actual);
+        // 'fr' is not found, fallback to original
+        $actual = $this->I18n->field($object, 'description', 'fr');
+        static::assertEquals('una descrizione', $actual);
+   }
+
+    /**
      * Data provider for `testExists()`
      *
      * @return array
