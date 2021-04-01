@@ -270,6 +270,7 @@ class I18nHelperTest extends TestCase
      *
      * @return void
      * @covers ::field()
+     * @covers ::getTranslatedField()
      */
     public function testFieldEmbedded(): void
     {
