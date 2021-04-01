@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -14,7 +16,6 @@ namespace BEdita\I18n\View\Helper;
 
 use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
-use Cake\I18n\I18n;
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
 use Cake\View\Helper;
@@ -159,14 +160,23 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null
      */
-    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []): ?string
-    {
+    public function field(
+        array $object,
+        string $attribute,
+        ?string $lang = null,
+        bool $defaultNull = false,
+        array $included = []
+    ): ?string {
         $defaultValue = null;
         if (!$defaultNull) {
-            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute), Hash::get($object, sprintf('%s', $attribute)));
+            $defaultValue = Hash::get(
+                $object,
+                sprintf('attributes.%s', $attribute),
+                Hash::get($object, sprintf('%s', $attribute))
+            );
         }
-        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
-            $included = $this->getView()->viewVars['included'];
+        if (empty($included) && !empty($this->_View->get('included'))) {
+            $included = $this->_View->get('included');
         }
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
@@ -190,15 +200,15 @@ class I18nHelper extends Helper
      */
     public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []): bool
     {
-        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
-            $included = $this->getView()->viewVars['included'];
+        if (empty($included) && !empty($this->_View->get('included'))) {
+            $included = $this->_View->get('included');
         }
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
         }
         $val = $this->getTranslatedField($object, $attribute, $lang, $included);
 
-        return ($val !== null);
+        return $val !== null;
     }
 
     /**
@@ -229,6 +239,17 @@ class I18nHelper extends Helper
      */
     private function getTranslatedField(array $object, string $attribute, string $lang, array &$included): ?string
     {
+        // first look if embedded relationships are set
+        if (Hash::check($object, 'relationships.translations.data.0.attributes')) {
+            $translations = Hash::combine(
+                $object['relationships']['translations']['data'],
+                '{n}.attributes.lang',
+                '{n}.attributes.translated_fields'
+            );
+
+            return Hash::get($translations, sprintf('%s.%s', $lang, $attribute));
+        }
+
         if (empty($object['id'])) {
             return null;
         }
@@ -254,10 +275,10 @@ class I18nHelper extends Helper
      * Build a language URL using lang prefix.
      *
      * @param array|string $path The current URL path. MUST be an absolute path, starting wih `/`
-     * @param array|bool $options Array of options; bool `full` for BC reasons.
+     * @param array $options Array of options.
      * @return string Full I18n URL.
      */
-    public function buildUrl($path, $options = false): string
+    public function buildUrl($path, $options = []): string
     {
         if (is_string($path) && !$this->isI18nPath($path)) {
             $path = sprintf('/%s%s', $this->getLang(), $path);
