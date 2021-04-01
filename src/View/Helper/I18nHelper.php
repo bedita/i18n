@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * BEdita, API-first content management framework
@@ -160,23 +159,14 @@ class I18nHelper extends Helper
      * @param array $included The included translations data
      * @return string|null
      */
-    public function field(
-        array $object,
-        string $attribute,
-        ?string $lang = null,
-        bool $defaultNull = false,
-        array $included = []
-    ): ?string {
+    public function field(array $object, string $attribute, ?string $lang = null, bool $defaultNull = false, array $included = []): ?string
+    {
         $defaultValue = null;
         if (!$defaultNull) {
-            $defaultValue = Hash::get(
-                $object,
-                sprintf('attributes.%s', $attribute),
-                Hash::get($object, sprintf('%s', $attribute))
-            );
+            $defaultValue = Hash::get($object, sprintf('attributes.%s', $attribute), Hash::get($object, sprintf('%s', $attribute)));
         }
-        if (empty($included) && !empty($this->_View->get('included'))) {
-            $included = $this->_View->get('included');
+        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
+            $included = $this->getView()->viewVars['included'];
         }
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
@@ -275,10 +265,10 @@ class I18nHelper extends Helper
      * Build a language URL using lang prefix.
      *
      * @param array|string $path The current URL path. MUST be an absolute path, starting wih `/`
-     * @param array $options Array of options.
+     * @param array|bool $options Array of options; bool `full` for BC reasons.
      * @return string Full I18n URL.
      */
-    public function buildUrl($path, $options = []): string
+    public function buildUrl($path, $options = false): string
     {
         if (is_string($path) && !$this->isI18nPath($path)) {
             $path = sprintf('/%s%s', $this->getLang(), $path);
