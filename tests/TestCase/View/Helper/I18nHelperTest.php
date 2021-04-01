@@ -183,7 +183,7 @@ class I18nHelperTest extends TestCase
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
-            Router::setRequest($request);
+            Router::pushRequest($request);
         }
 
         static::assertEquals($expected, $this->I18n->changeUrlLang($lang, $switchUrl));
