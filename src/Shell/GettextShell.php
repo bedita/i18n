@@ -268,7 +268,7 @@ class GettextShell extends Shell
         if ($numItems > 0) {
             $percent = number_format($translated * 100. / $numItems, 1);
         }
-        $this->out(sprintf('Translated %s of items - %s %', $translated, $numItems, $percent));
+        $this->out(sprintf('Translated %s of items - %s %s', $translated, $numItems, $percent));
     }
 
     /**
