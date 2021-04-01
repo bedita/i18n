@@ -190,8 +190,8 @@ class I18nHelper extends Helper
      */
     public function exists(array $object, string $attribute, ?string $lang = null, array &$included = []): bool
     {
-        if (empty($included) && !empty($this->_View->get('included'))) {
-            $included = $this->_View->get('included');
+        if (empty($included) && !empty($this->getView()->viewVars['included'])) {
+            $included = $this->getView()->viewVars['included'];
         }
         if (empty($lang)) {
             $lang = Configure::read('I18n.lang', '');
