@@ -1,5 +1,4 @@
 <?php
-
 /**
  * BEdita, API-first content management framework
  * Copyright 2019 ChannelWeb Srl, Chialab Srl
@@ -198,7 +197,7 @@ class I18nHelper extends Helper
         }
         $val = $this->getTranslatedField($object, $attribute, $lang, $included);
 
-        return $val !== null;
+        return ($val !== null);
     }
 
     /**
