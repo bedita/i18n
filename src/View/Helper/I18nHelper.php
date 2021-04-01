@@ -238,6 +238,17 @@ class I18nHelper extends Helper
      */
     private function getTranslatedField(array $object, string $attribute, string $lang, array &$included): ?string
     {
+        // first look if embedded relationships are set
+        if (Hash::check($object, 'relationships.translations.data.0.attributes')) {
+            $translations = Hash::combine(
+                $object['relationships']['translations']['data'],
+                '{n}.attributes.lang',
+                '{n}.attributes.translated_fields'
+            );
+
+            return Hash::get($translations, sprintf('%s.%s', $lang, $attribute));
+        }
+
         if (empty($object['id'])) {
             return null;
         }
