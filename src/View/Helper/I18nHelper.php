@@ -87,7 +87,7 @@ class I18nHelper extends Helper
      * @param string $newLang The new lang you want in URL.
      * @param string $path The current URL path.
      * @param string $query The current URL query.
-     * @return string|null The new lang url or null if no lang prefix was found.
+     * @return string|null The new lang url or null if no lang prefix was found
      */
     protected function newLangUrl($newLang, $path, $query): ?string
     {
