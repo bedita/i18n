@@ -21,8 +21,8 @@ use Cake\Http\ServerRequest;
 use Cake\I18n\I18n;
 use Cake\I18n\Time;
 use Cake\Utility\Hash;
+use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
-use Zend\Diactoros\Response\RedirectResponse;
 
 /**
  * i18n middleware.
