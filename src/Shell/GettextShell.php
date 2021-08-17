@@ -34,9 +34,11 @@ class GettextShell extends Shell
             'help' => 'Update po and pot files',
             'parser' => [
                 'description' => [
-                    'Create or update i18n files',
-                    '`cake gettext update -app <app path>` will update po/pot file for the app',
-                    '`cake gettext update -plugin <plugin path>` will update po/pot file for the plugin',
+                    'Create or update i18n po/pot files',
+                    '',
+                    '`cake gettext update`: update files for current app',
+                    '`cake gettext update -app <app path>`: update files for the app',
+                    '`cake gettext update -plugin <plugin name>`: update files for the plugin',
                 ],
                 'options' => [
                     'app' => [
@@ -45,7 +47,7 @@ class GettextShell extends Shell
                         'required' => false,
                     ],
                     'plugin' => [
-                        'help' => 'The plugin path, for i18n update.',
+                        'help' => 'The plugin name, for i18n update.',
                         'short' => 'p',
                         'required' => false,
                     ],
@@ -132,10 +134,10 @@ class GettextShell extends Shell
             $f = new Folder($this->params['app']);
             $basePath = $f->path;
         } elseif (isset($this->params['plugin'])) {
-            $startPath = ($this->params['startPath']) ? $this->params['startPath'] : getcwd();
+            $startPath = !empty($this->params['startPath']) ? $this->params['startPath'] : getcwd();
             $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
             $basePath = $f->path;
-            $this->poName = $this->params['plugin'] . ".po";
+            $this->poName = $this->params['plugin'] . '.po';
         }
 
         $this->templatePaths = [
@@ -199,7 +201,6 @@ class GettextShell extends Shell
      *
      * @param string $type The file type (can be 'po', 'pot')
      * @return string
-     *
      * @codeCoverageIgnore
      */
     private function header(string $type = 'po'): string
@@ -208,7 +209,7 @@ class GettextShell extends Shell
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date("Y-m-d H:i:s"),
+                'POT-Creation-Date' => date('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -220,7 +221,7 @@ class GettextShell extends Shell
             ],
             'pot' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date("Y-m-d H:i:s"),
+                'POT-Creation-Date' => date('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -260,9 +261,9 @@ class GettextShell extends Shell
         $translated = $numItems - $numNotTranslated;
         $percent = 0;
         if ($numItems > 0) {
-            $percent = number_format(($translated * 100.) / $numItems, 1);
+            $percent = number_format($translated * 100. / $numItems, 1);
         }
-        $this->out(sprintf('Translated %s of items - %s %', $translated, $numItems, $percent));
+        $this->out(sprintf('Translated %s of items - %s %s', $translated, $numItems, $percent));
     }
 
     /**
@@ -308,7 +309,7 @@ class GettextShell extends Shell
      */
     private function parseContent($content): void
     {
-        $p = preg_quote("(");
+        $p = preg_quote('(');
         $q1 = preg_quote("'");
         $q2 = preg_quote('"');
 
@@ -361,7 +362,6 @@ class GettextShell extends Shell
      * Extract translations from javascript files using ttag, if available.
      *
      * @return void
-     *
      * @codeCoverageIgnore
      */
     private function ttagExtract(): void
@@ -375,10 +375,20 @@ class GettextShell extends Shell
         }
         // check template folder exists
         $appDir = 'src/Template';
-        if (!file_exists($appDir)) {
-            $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
+        if (!empty($this->params['plugin'])) {
+            $startPath = !empty($this->params['startPath']) ? $this->params['startPath'] : getcwd();
+            $appDir = sprintf('%s/plugins/%s/src/Template', $startPath, $this->params['plugin']);
+            if (!file_exists($appDir)) {
+                $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
-            return;
+                return;
+            }
+        } else {
+            if (!file_exists($appDir)) {
+                $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
+
+                return;
+            }
         }
 
         // do extract translation strings from js files using ttag
