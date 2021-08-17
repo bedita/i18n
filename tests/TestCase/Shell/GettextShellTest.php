@@ -168,14 +168,14 @@ class GettextShellTest extends ConsoleIntegrationTestCase
 
         // set poResult using reflection class
         $poResult = [
-            'This is a twig sample',
-            'A twig content',
-            'A twig string with \"double quotes\"',
-            "A twig string with \'single quotes\'",
             'This is a php sample',
             'A php content',
             'A php string with \"double quotes\"',
             "A php string with \'single quotes\'",
+            'This is a twig sample',
+            'A twig content',
+            'A twig string with \"double quotes\"',
+            "A twig string with \'single quotes\'",
         ];
         $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
         $reflection->setAccessible(true);
@@ -272,14 +272,14 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             'contents dir' => [
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
-                    'This is a twig sample',
-                    'A twig content',
-                    'A twig string with \"double quotes\"',
-                    "A twig string with 'single quotes'",
                     'This is a php sample',
                     'A php content',
                     'A php string with \"double quotes\"',
                     "A php string with 'single quotes'",
+                    'This is a twig sample',
+                    'A twig content',
+                    'A twig string with \"double quotes\"',
+                    "A twig string with 'single quotes'",
                 ], // result
             ],
         ];
