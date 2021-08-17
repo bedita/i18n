@@ -26,7 +26,6 @@ trait I18nTrait
      * Return the currently configure locale as stored in the `intl.default_locale` PHP setting.
      *
      * @return string The name of the default locale.
-     *
      * @codeCoverageIgnore
      */
     public function getLocale(): string
@@ -38,7 +37,6 @@ trait I18nTrait
      * Return the configured supported locales
      *
      * @return array
-     *
      * @codeCoverageIgnore
      */
     public function getLocales(): array
@@ -50,7 +48,6 @@ trait I18nTrait
      * Return an array of available languages.
      *
      * @return array
-     *
      * @codeCoverageIgnore
      */
     public function getLanguages(): array
@@ -62,7 +59,6 @@ trait I18nTrait
      * Return the current lang usually set by `\BEdita\I18n\Middleware\I18nMiddleware`
      *
      * @return string|null
-     *
      * @codeCoverageIgnore
      */
     public function getLang(): ?string
@@ -89,7 +85,6 @@ trait I18nTrait
      * Return the default lang as configured.
      *
      * @return string|null
-     *
      * @codeCoverageIgnore
      */
     public function getDefaultLang(): ?string
