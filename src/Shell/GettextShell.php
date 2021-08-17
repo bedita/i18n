@@ -263,7 +263,7 @@ class GettextShell extends Shell
         if ($numItems > 0) {
             $percent = number_format($translated * 100. / $numItems, 1);
         }
-        $this->out(sprintf('Translated %s of items - %s %s', $translated, $numItems, $percent));
+        $this->out(sprintf('Translated %s of %s items - %s', $translated, $numItems, $percent));
     }
 
     /**
@@ -378,17 +378,11 @@ class GettextShell extends Shell
         if (!empty($this->params['plugin'])) {
             $startPath = !empty($this->params['startPath']) ? $this->params['startPath'] : getcwd();
             $appDir = sprintf('%s/plugins/%s/src/Template', $startPath, $this->params['plugin']);
-            if (!file_exists($appDir)) {
-                $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
+        }
+        if (!file_exists($appDir)) {
+            $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
-                return;
-            }
-        } else {
-            if (!file_exists($appDir)) {
-                $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
-
-                return;
-            }
+            return;
         }
 
         // do extract translation strings from js files using ttag
