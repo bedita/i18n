@@ -462,7 +462,7 @@ class I18nHelperTest extends TestCase
     public function testMetaHreflang($expected, $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
-        Router::setRequest($request);
+        Router::setRequestContext($request);
 
         $meta = $this->I18n->metaHreflang();
         static::assertEquals($expected, $meta);
