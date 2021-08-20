@@ -9,7 +9,10 @@
     },
     "require": {
         "php": ">=7.1",
-        "cakephp/cakephp": "3.8.*"
+        "cakephp/cakephp": "3.8.*",
+        "ext-intl": "*",
+        "laminas/laminas-diactoros": "^1",
+        "psr/http-message": "^1.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^3.1",
@@ -28,7 +31,6 @@
         }
     },
     "scripts": {
-        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump",
         "check": [
             "@test",
             "@cs-check"
