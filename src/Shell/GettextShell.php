@@ -423,9 +423,6 @@ class GettextShell extends Shell
             } else {
                 $str = substr($str, 1);
             }
-            if (!$str) {
-                continue;
-            }
             $item = $this->fixString($str);
             if (!in_array($item, $this->poResult)) {
                 $this->poResult[] = $item;
