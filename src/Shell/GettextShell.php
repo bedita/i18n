@@ -291,35 +291,61 @@ class GettextShell extends Shell
      */
     private function parseFile($file, $extension)
     {
+        if (!in_array($extension, ['php', 'twig'])) {
+            return;
+        }
         $content = file_get_contents($file);
         if (empty($content)) {
             return;
         }
 
-        if ($extension === 'twig' || $extension === 'php') {
-            $this->parseContent($content);
+        $functions = [
+            '__' => 0, // __( string $singular , ... $args )
+            '__n' => 0, // __n( string $singular , string $plural , integer $count , ... $args )
+            '__d' => 1, // __d( string $domain , string $msg , ... $args )
+            '__dn' => 1, // __dn( string $domain , string $singular , string $plural , integer $count , ... $args )
+            '__x' => 1, // __x( string $context , string $singular , ... $args )
+            '__xn' => 1, // __xn( string $context , string $singular , string $plural , integer $count , ... $args )
+            '__dx' => 2, // __dx( string $domain , string $context , string $msg , ... $args )
+            '__dxn' => 2, // __dxn( string $domain , string $context , string $singular , string $plural , integer $count , ... $args )
+        ];
+
+        // temporarily replace "\'" with "|||||", fixString will replace "|||||" with "\'"
+        // this fixes wrongly matched data in the following regexp
+        $content = str_replace("\'", '|||||', $content);
+
+        $options = [
+            'open_parenthesis' => preg_quote('('),
+            'quote' => preg_quote("'"),
+            'double_quote' => preg_quote('"'),
+        ];
+
+        foreach ($functions as $fname => $singularPosition) {
+            if ($singularPosition === 0) {
+                $this->parseContent($fname, $content, $options);
+            } elseif ($singularPosition === 1) {
+                $this->parseContentSecondArg($fname, $content, $options);
+            } elseif ($singularPosition === 2) {
+                $this->parseContentThirdArg($fname, $content, $options);
+            }
         }
     }
 
     /**
      * Parse file content and put i18n data in poResult array
      *
+     * @param string $start The starting string to search for, the name of the translation method
      * @param string $content The file content
+     * @param array $options The options
      * @return void
      */
-    private function parseContent($content): void
+    private function parseContent($start, $content, $options): void
     {
-        $p = preg_quote('(');
-        $q1 = preg_quote("'");
-        $q2 = preg_quote('"');
-
-        // temporarily replace "\'" with "|||||", fixString will replace "|||||" with "\'"
-        // this fixes wrongly matched data in the following regexp
-        $content = str_replace("\'", '|||||', $content);
-
-        // looks for __("text to translate",true)
-        // or __('text to translate',true), result in matches[1] or in matches[2]
-        $rgxp = "/" . "__\s*{$p}\s*{$q2}" . "([^{$q2}]*)" . "{$q2}" . "|" . "__\s*{$p}\s*{$q1}" . "([^{$q1}]*)" . "{$q1}" . "/";
+        $rgxp = "/" .
+            "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{$options['double_quote']}]*)" . "{$options['double_quote']}" .
+            "|" .
+            "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{$options['quote']}]*)" . "{$options['quote']}" .
+            "/";
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
@@ -333,6 +359,90 @@ class GettextShell extends Shell
                 $this->poResult[] = $item;
             }
         }
+    }
+
+    /**
+     * Parse file content and put i18n data in poResult array
+     *
+     * @param string $start The starting string to search for, the name of the translation method
+     * @param string $content The file content
+     * @param array $options The options
+     * @return void
+     */
+    private function parseContentSecondArg($start, $content, $options): void
+    {
+        $rgxp =
+            "/" . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{)}]*)" . "{$options['double_quote']}" .
+            "|" . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{)}]*)" . "{$options['quote']}" .
+            "/";
+        $matches = [];
+        preg_match_all($rgxp, $content, $matches);
+
+        $limit = count($matches[0]);
+        for ($i = 0; $i < $limit; $i++) {
+            $str = $matches[2][$i];
+            if (substr_count($matches[2][0], ',') === 1) {
+                $str = substr(trim(substr($str, strpos($str, ',') + 1)), 1);
+            } elseif (substr_count($matches[2][0], ',') === 2) {
+                $str = trim(substr($str, strpos($str, ',') + 1));
+                $str = trim(substr($str, 0, strpos($str, ',')));
+                $str = substr($str, 1, -1);
+            } else {
+                continue;
+            }
+            if (!$str) {
+                continue;
+            }
+            $item = $this->fixString($str);
+            if (!in_array($item, $this->poResult)) {
+                $this->poResult[] = $item;
+            }
+        }
+    }
+
+    /**
+     * Parse file content and put i18n data in poResult array
+     *
+     * @param string $start The starting string to search for, the name of the translation method
+     * @param string $content The file content
+     * @param array $options The options
+     * @return void
+     */
+    private function parseContentThirdArg($start, $content, $options): void
+    {
+        $rgxp =
+            "/" . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{)}]*)" . "{$options['double_quote']}" .
+            "|" . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{)}]*)" . "{$options['quote']}" .
+            "/";
+        $matches = [];
+        preg_match_all($rgxp, $content, $matches);
+
+        $limit = count($matches[0]);
+        for ($i = 0; $i < $limit; $i++) {
+            $str = $matches[2][$i];
+            $pos = $this->strposX($str, ',', 2);
+            $str = trim(substr($str, $pos + 1));
+            if (strpos($str, ',') > 0) {
+                $str = substr($str, 1, strpos($str, ',') - 2);
+            } else {
+                $str = substr($str, 1);
+            }
+            if (!$str) {
+                continue;
+            }
+            $item = $this->fixString($str);
+            if (!in_array($item, $this->poResult)) {
+                $this->poResult[] = $item;
+            }
+        }
+    }
+
+    private function strposX($haystack, $needle, $number = 0)
+    {
+        return strpos($haystack, $needle,
+            $number > 1 ?
+            $this->strposX($haystack, $needle, $number - 1) + strlen($needle) : 0
+        );
     }
 
     /**

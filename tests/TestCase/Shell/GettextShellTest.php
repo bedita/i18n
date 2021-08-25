@@ -262,14 +262,25 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             'contents dir' => [
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
-                    'This is a php sample',
+                    '1 test __',
+                    '1 test __d',
+                    '1 test __dn',
+                    '1 test __dx',
+                    '1 test __dxn',
+                    '1 test __n',
+                    '1 test __x',
+                    '1 test __xn',
+                    '2 test __',
+                    '3 test __',
+                    '4 test __',
                     'A php content',
+                    'A php string with \'single quotes\'',
                     'A php string with \"double quotes\"',
-                    "A php string with 'single quotes'",
-                    'This is a twig sample',
                     'A twig content',
+                    'A twig string with \'single quotes\'',
                     'A twig string with \"double quotes\"',
-                    "A twig string with 'single quotes'",
+                    'This is a php sample',
+                    'This is a twig sample',
                 ], // result
             ],
         ];
@@ -286,13 +297,18 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::parseDir()
      * @covers ::parseFile()
      * @covers ::parseContent()
+     * @covers ::parseContentSecondArg()
+     * @covers ::parseContentThirdArg()
      * @covers ::fixString()
      */
     public function testParseDir(string $dir, array $expected)
     {
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->shell, [ $dir ]);
-        static::assertEquals($expected, $this->shell->poResult);
+        $actual = $this->shell->poResult;
+        sort($expected);
+        sort($actual);
+        static::assertEquals($expected, $actual);
     }
 
     /**
