@@ -388,11 +388,6 @@ class GettextShell extends Shell
                 $str = trim(substr($str, strpos($str, ',') + 1));
                 $str = trim(substr($str, 0, strpos($str, ',')));
                 $str = substr($str, 1, -1);
-            } else {
-                continue;
-            }
-            if (!$str) {
-                continue;
             }
             $item = $this->fixString($str);
             if (!in_array($item, $this->poResult)) {

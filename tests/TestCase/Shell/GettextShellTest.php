@@ -293,14 +293,13 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             ],
             'sample twig' => [
                 sprintf('%s/tests/files/gettext/contents/sample.twig', getcwd()),
-                'php',
+                'twig',
                 [
                     'A twig content',
                     'A twig string with \'single quotes\'',
                     'A twig string with \"double quotes\"',
                     'This is a twig sample',
                 ],
-
             ],
         ];
     }
