@@ -437,6 +437,14 @@ class GettextShell extends Shell
         }
     }
 
+    /**
+     * Calculate nth ($number) position of $needle in $haystack.
+     *
+     * @param string $haystack The haystack where to search
+     * @param string $needle The needle to search
+     * @param integer $number The nth position to retrieve
+     * @return int|false
+     */
     private function strposX($haystack, $needle, $number = 0)
     {
         return strpos(

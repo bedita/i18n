@@ -299,6 +299,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::parseContent()
      * @covers ::parseContentSecondArg()
      * @covers ::parseContentThirdArg()
+     * @covers ::strposX()
      * @covers ::fixString()
      */
     public function testParseDir(string $dir, array $expected)
