@@ -26,6 +26,7 @@ class GettextShell extends Shell
      * Get the option parser for this shell.
      *
      * @return \Cake\Console\ConsoleOptionParser
+     * @codeCoverageIgnore
      */
     public function getOptionParser()
     {
