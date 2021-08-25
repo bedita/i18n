@@ -379,8 +379,8 @@ class GettextShell extends Shell
     private function parseContentSecondArg($start, $content, $options): void
     {
         $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{)}]*)" . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{)}]*)" . "{$options['quote']}" .
+            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . '([^{)}]*)' . "{$options['double_quote']}" .
+            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . '([^{)}]*)' . "{$options['quote']}" .
             '/';
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
@@ -413,8 +413,8 @@ class GettextShell extends Shell
     private function parseContentThirdArg($start, $content, $options): void
     {
         $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{)}]*)" . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{)}]*)" . "{$options['quote']}" .
+            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . '([^{)}]*)' . "{$options['double_quote']}" .
+            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . '([^{)}]*)' . "{$options['quote']}" .
             '/';
         $matches = [];
         preg_match_all($rgxp, $content, $matches);

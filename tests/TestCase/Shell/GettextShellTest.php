@@ -318,7 +318,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string $extension The file extension
      * @param array $expected The po result array
      * @return void
-     *
      * @dataProvider parseFileProvider
      * @covers ::parseFile()
      */
