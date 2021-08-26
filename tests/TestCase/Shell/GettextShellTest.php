@@ -35,7 +35,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->shell = new GettextShell();
         parent::setUp();
@@ -45,7 +45,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * {@inheritDoc}
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->cleanFiles();
         parent::tearDown();
@@ -54,9 +54,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * Test update and private methods called inside update
      *
+     * @return void
      * @covers ::update()
      */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $this->shell->params['app'] = sprintf('%s/tests/files/gettext/app', getcwd());
 
@@ -81,7 +82,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return array
      */
-    public function setupPathsProvider()
+    public function setupPathsProvider(): array
     {
         $base = getcwd();
 
@@ -122,7 +123,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
      */
-    public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath)
+    public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
         $expectedPoName = 'default.po';
         if (!empty($appPath)) {
@@ -148,7 +149,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::writeMasterPot()
      * @return void
      */
-    public function testWriteMasterPot()
+    public function testWriteMasterPot(): void
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
@@ -191,7 +192,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::writePoFiles()
      * @covers ::analyzePoFile()
      */
-    public function testWritePoFiles()
+    public function testWritePoFiles(): void
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/files/gettext/app/src/Locale', getcwd());
@@ -215,7 +216,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return array
      */
-    public function fixStringProvider()
+    public function fixStringProvider(): array
     {
         return [
             'quotes' => [
@@ -243,7 +244,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @dataProvider fixStringProvider
      * @covers ::fixString()
      */
-    public function testFixString($input, $expected)
+    public function testFixString($input, $expected): void
     {
         $method = self::getMethod('fixString');
         $args = [ $input ];
@@ -252,24 +253,108 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
+     * Provider for 'testParseFile'
+     *
+     * @return array
+     */
+    public function parseFileProvider(): array
+    {
+        return [
+            'no twig, no php extension file' => [
+                sprintf('%s/tests/files/gettext/contents/sample.js', getcwd()),
+                'js',
+                [],
+            ],
+            'empty php file' => [
+                sprintf('%s/tests/files/gettext/contents/empty.php', getcwd()),
+                'php',
+                [],
+            ],
+            'sample php' => [
+                sprintf('%s/tests/files/gettext/contents/sample.php', getcwd()),
+                'php',
+                [
+                    '1 test __',
+                    '1 test __d',
+                    '1 test __dn',
+                    '1 test __dx',
+                    '1 test __dxn',
+                    '1 test __n',
+                    '1 test __x',
+                    '1 test __xn',
+                    '2 test __',
+                    '3 test __',
+                    '4 test __',
+                    'A php content',
+                    'A php string with \'single quotes\'',
+                    'A php string with \"double quotes\"',
+                    'This is a php sample',
+                ],
+            ],
+            'sample twig' => [
+                sprintf('%s/tests/files/gettext/contents/sample.twig', getcwd()),
+                'twig',
+                [
+                    'A twig content',
+                    'A twig string with \'single quotes\'',
+                    'A twig string with \"double quotes\"',
+                    'This is a twig sample',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test 'parseFile'
+     *
+     * @param string $file The file to parse
+     * @param string $extension The file extension
+     * @param array $expected The po result array
+     * @return void
+     *
+     * @dataProvider parseFileProvider
+     * @covers ::parseFile()
+     */
+    public function testParseFile(string $file, string $extension, array $expected): void
+    {
+        $method = self::getMethod('parseFile');
+        $method->invokeArgs($this->shell, [ $file, $extension ]);
+        $actual = $this->shell->poResult;
+        sort($expected);
+        sort($actual);
+        static::assertEquals($expected, $actual);
+    }
+
+    /**
      * Provider for 'testParseDir'
      *
      * @return array
      */
-    public function parseDirProvider()
+    public function parseDirProvider(): array
     {
         return [
             'contents dir' => [
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
-                    'This is a php sample',
+                    '1 test __',
+                    '1 test __d',
+                    '1 test __dn',
+                    '1 test __dx',
+                    '1 test __dxn',
+                    '1 test __n',
+                    '1 test __x',
+                    '1 test __xn',
+                    '2 test __',
+                    '3 test __',
+                    '4 test __',
                     'A php content',
+                    'A php string with \'single quotes\'',
                     'A php string with \"double quotes\"',
-                    "A php string with 'single quotes'",
-                    'This is a twig sample',
                     'A twig content',
+                    'A twig string with \'single quotes\'',
                     'A twig string with \"double quotes\"',
-                    "A twig string with 'single quotes'",
+                    'This is a php sample',
+                    'This is a twig sample',
                 ], // result
             ],
         ];
@@ -286,13 +371,19 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @covers ::parseDir()
      * @covers ::parseFile()
      * @covers ::parseContent()
+     * @covers ::parseContentSecondArg()
+     * @covers ::parseContentThirdArg()
+     * @covers ::strposX()
      * @covers ::fixString()
      */
-    public function testParseDir(string $dir, array $expected)
+    public function testParseDir(string $dir, array $expected): void
     {
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->shell, [ $dir ]);
-        static::assertEquals($expected, $this->shell->poResult);
+        $actual = $this->shell->poResult;
+        sort($expected);
+        sort($actual);
+        static::assertEquals($expected, $actual);
     }
 
     /**
@@ -301,7 +392,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string $name The method name
      * @return \ReflectionMethod
      */
-    protected static function getMethod($name)
+    protected static function getMethod($name): \ReflectionMethod
     {
         $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
         $method = $class->getMethod($name);
@@ -315,7 +406,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      */
-    private function cleanFiles()
+    private function cleanFiles(): void
     {
         $files = [
             sprintf('%s/tests/files/gettext/app/src/Locale/master.pot', getcwd()),
