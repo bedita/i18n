@@ -102,7 +102,7 @@ jobs:
         with:
           php-version: '7.4'
           tools: 'composer:v2, composer-require-checker'
-          extensions: 'mbstring, intl'
+          extensions: 'mbstring, intl, ext-json'
           coverage: 'none'
 
       - name: 'Discover Composer cache directory'
