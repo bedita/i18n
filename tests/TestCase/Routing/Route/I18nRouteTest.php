@@ -70,30 +70,50 @@ class I18nRouteTest extends TestCase
     {
         return [
             'root' => [
-                '/:lang',
+                '/{lang}',
                 '/',
             ],
             'rootLang' => [
+                '/{lang}',
+                '/{lang}',
+            ],
+            'rootLangSemicolon' => [
                 '/:lang',
                 '/:lang',
             ],
             'simplePath' => [
-                '/:lang/simple/path',
+                '/{lang}/simple/path',
                 '/simple/path',
             ],
             'simplePath2' => [
+                '/{lang}/{controller}/{action}',
+                '/{controller}/{action}',
+            ],
+            'simplePath2Semicolon' => [
                 '/:lang/:controller/:action',
                 '/:controller/:action',
             ],
             'pathStartsWithLang' => [
+                '/{lang}/path/here',
+                '/{lang}/path/here',
+            ],
+            'pathStartsWithLangSemicolon' => [
                 '/:lang/path/here',
                 '/:lang/path/here',
             ],
             'pathContainLangLike' => [
+                '/{lang}/{language}/path/here',
+                '/{language}/path/here',
+            ],
+            'pathContainLangLikeSemicolon' => [
                 '/:lang/:language/path/here',
                 '/:language/path/here',
             ],
             'pathWithLangInside' => [
+                '/{controller}/{lang}/other',
+                '/{controller}/{lang}/other',
+            ],
+            'pathWithLangInsideSemicolon' => [
                 '/:controller/:lang/other',
                 '/:controller/:lang/other',
             ],
@@ -109,6 +129,8 @@ class I18nRouteTest extends TestCase
      * @dataProvider templateProvider
      * @covers ::__construct()
      * @covers ::buildTemplate()
+     * @covers ::setPlaceholder()
+     * @covers ::getSearchPattern()
      */
     public function testBuildTemplate(string $expected, string $template): void
     {
