@@ -77,7 +77,7 @@ class I18nRouteTest extends TestCase
                 '/{lang}',
                 '/{lang}',
             ],
-            'rootLangSemicolon' => [
+            'rootLangColon' => [
                 '/:lang',
                 '/:lang',
             ],
@@ -89,7 +89,7 @@ class I18nRouteTest extends TestCase
                 '/{lang}/{controller}/{action}',
                 '/{controller}/{action}',
             ],
-            'simplePath2Semicolon' => [
+            'simplePath2Colon' => [
                 '/:lang/:controller/:action',
                 '/:controller/:action',
             ],
@@ -97,7 +97,7 @@ class I18nRouteTest extends TestCase
                 '/{lang}/path/here',
                 '/{lang}/path/here',
             ],
-            'pathStartsWithLangSemicolon' => [
+            'pathStartsWithLangColon' => [
                 '/:lang/path/here',
                 '/:lang/path/here',
             ],
@@ -105,7 +105,7 @@ class I18nRouteTest extends TestCase
                 '/{lang}/{language}/path/here',
                 '/{language}/path/here',
             ],
-            'pathContainLangLikeSemicolon' => [
+            'pathContainLangLikeColon' => [
                 '/:lang/:language/path/here',
                 '/:language/path/here',
             ],
@@ -113,7 +113,7 @@ class I18nRouteTest extends TestCase
                 '/{controller}/{lang}/other',
                 '/{controller}/{lang}/other',
             ],
-            'pathWithLangInsideSemicolon' => [
+            'pathWithLangInsideColon' => [
                 '/:controller/:lang/other',
                 '/:controller/:lang/other',
             ],

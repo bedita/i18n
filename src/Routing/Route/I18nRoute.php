@@ -78,7 +78,7 @@ class I18nRoute extends Route
 
     /**
      * Set the right placeholder style.
-     * If it's present some placeholder in old semicolon style it uses `:lang`
+     * If it's present some placeholder in old colon style it uses `:lang`
      * else it uses the braces style `{lang}`.
      *
      * @param string $template The template to analyze
@@ -88,7 +88,7 @@ class I18nRoute extends Route
     {
         $placeholder = '{%s}';
         if (preg_match('/:([a-z0-9-_]+(?<![-_]))/i', $template)) {
-            $placeholder = $searchPattern = ':%s';
+            $placeholder = ':%s';
         }
 
         $this->placeholder = sprintf($placeholder, static::LANG_STRING);
