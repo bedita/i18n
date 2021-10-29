@@ -27,6 +27,20 @@ class I18nRoute extends Route
     use I18nTrait;
 
     /**
+     * Language string used in route template.
+     *
+     * @var string
+     */
+    public const LANG_STRING = 'lang';
+
+    /**
+     * The placeholder to use in route template.
+     *
+     * @var string
+     */
+    protected $placeholder = null;
+
+    /**
      * @inheritDoc
      */
     public function __construct($template, $defaults = [], array $options = [])
@@ -39,24 +53,58 @@ class I18nRoute extends Route
     }
 
     /**
-     * Build the right route template adding :lang if needed.
+     * Build the right route template adding {lang} or :lang if needed.
      *
-     * If :lang is not found add it at the beginning, for example /simple/path becomes /:lang/simple/path
+     * If {lang} or :lang is not found add it at the beginning, for example /simple/path becomes /{lang}/simple/path
      *
      * @param string $template The initial template.
      * @return string
      */
     protected function buildTemplate(string $template): string
     {
+        $this->setPlaceholder($template);
         if ($template === '/') {
-            return '/:lang';
+            return '/' . $this->placeholder;
         }
 
-        if (preg_match('/\/:lang(\/.*|$)/', $template)) {
+        $path = sprintf('/\/%s(\/.*|$)/', $this->getSearchPattern());
+        if (preg_match($path, $template)) {
             return $template;
         }
 
-        return $template = '/:lang' . $template;
+        return sprintf('/%s%s', $this->placeholder, $template);
+    }
+
+    /**
+     * Set the right placeholder style.
+     * If it's present some placeholder in old colon style it uses `:lang`
+     * else it uses the braces style `{lang}`.
+     *
+     * @param string $template The template to analyze
+     * @return void
+     */
+    protected function setPlaceholder(string $template): void
+    {
+        $placeholder = '{%s}';
+        if (preg_match('/:([a-z0-9-_]+(?<![-_]))/i', $template)) {
+            $placeholder = ':%s';
+        }
+
+        $this->placeholder = sprintf($placeholder, static::LANG_STRING);
+    }
+
+    /**
+     * Get search pattern used to know if lang pattern is already present in template.
+     *
+     * @return string
+     */
+    protected function getSearchPattern(): string
+    {
+        if (strpos($this->placeholder, ':' . static::LANG_STRING) === 0) {
+            return $this->placeholder;
+        }
+
+        return sprintf('\{%s\}', static::LANG_STRING);
     }
 
     /**
