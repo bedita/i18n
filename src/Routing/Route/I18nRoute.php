@@ -62,11 +62,10 @@ class I18nRoute extends Route
      */
     protected function buildTemplate(string $template): string
     {
-        if ($template === '/') {
-            return '/{lang}';
-        }
-
         $this->setPlaceholder($template);
+        if ($template === '/') {
+            return '/' . $this->placeholder;
+        }
 
         $path = sprintf('/\/%s(\/.*|$)/', $this->getSearchPattern());
         if (preg_match($path, $template)) {
