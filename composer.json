@@ -9,15 +9,15 @@
     },
     "require": {
         "php": ">=7.1",
-        "cakephp/cakephp": "3.8.*",
+        "cakephp/cakephp": "3.10.*",
         "ext-intl": "*",
         "laminas/laminas-diactoros": "^1",
         "psr/http-message": "^1.0"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^3.1",
+        "cakephp/cakephp-codesniffer": "^4.4",
         "cakephp/plugin-installer": "^1.0",
-        "phpunit/phpunit": "^6.0"
+        "phpunit/phpunit": "^6.5"
     },
     "autoload": {
         "psr-4": {
