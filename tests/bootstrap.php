@@ -72,7 +72,6 @@ Router::reload();
 // Load plugin via custom class
 class MyPlugin extends BasePlugin
 {
-
 }
 
 Plugin::getCollection()->add(new MyPlugin([
