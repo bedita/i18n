@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * BEdita, API-first content management framework
- * Copyright 2018 ChannelWeb Srl, Chialab Srl
+ * Copyright 2022 Atlas Srl, ChannelWeb Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -52,6 +52,8 @@ class I18nMiddleware implements MiddlewareInterface
      *      - 'name': cookie name
      *      - 'create': set to `true` if the middleware is responsible of cookie creation
      *      - 'expire': used when `create` is `true` to define when the cookie must expire
+     *  - 'sessionKey': the session key where store locale. The session is used as fallback to detect locale if cookie is disabled.
+     *                  Set `null` if you don't want session.
      *
      * @var array
      */
@@ -64,6 +66,7 @@ class I18nMiddleware implements MiddlewareInterface
             'create' => false,
             'expire' => '+1 year',
         ],
+        'sessionKey' => null,
     ];
 
     /**
@@ -95,7 +98,7 @@ class I18nMiddleware implements MiddlewareInterface
             $path = rtrim($path, '/'); // remove trailing slashes
         }
 
-        if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
+        if ($path === (string)$this->getConfig('switchLangUrl')) {
             return $this->changeLangAndRedirect($request);
         }
 
@@ -110,6 +113,7 @@ class I18nMiddleware implements MiddlewareInterface
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($locale);
+            $this->updateSession($request, $this->getLocale());
             $response = $handler->handle($request);
 
             return $this->getResponseWithCookie($response, $this->getLocale());
@@ -154,6 +158,11 @@ class I18nMiddleware implements MiddlewareInterface
         }
 
         $locale = (string)$request->getCookie($this->getConfig('cookie.name', ''));
+        if (!empty($locale)) {
+            return $locale;
+        }
+
+        $locale = $this->readSession($request);
         if (!empty($locale)) {
             return $locale;
         }
@@ -220,6 +229,12 @@ class I18nMiddleware implements MiddlewareInterface
      */
     protected function changeLangAndRedirect(ServerRequest $request): ResponseInterface
     {
+        if (!$this->getConfig('cookie.name') && !$this->getSessionKey()) {
+            throw new \LogicException(
+                __('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`')
+            );
+        }
+
         $new = (string)$request->getQuery('new');
         if (empty($new)) {
             throw new BadRequestException(__('Missing required "new" query string'));
@@ -230,11 +245,61 @@ class I18nMiddleware implements MiddlewareInterface
             throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }
 
+        $this->updateSession($request, $locale);
+
         $response = (new Response())
             ->withLocation((string)$request->referer(false))
             ->withDisabledCache()
             ->withStatus(302);
 
         return $this->getResponseWithCookie($response, $locale);
+    }
+
+    /**
+     * Read locale from session.
+     *
+     * @param \Cake\Http\ServerRequest $request The request
+     * @return string|null
+     */
+    protected function readSession(ServerRequest $request): ?string
+    {
+        $sessionKey = $this->getSessionKey();
+        if ($sessionKey === null) {
+            return null;
+        }
+
+        return $request->getSession()->read($sessionKey);
+    }
+
+    /**
+     * Update session with locale.
+     *
+     * @param \Cake\Http\ServerRequest $request The request.
+     * @param string $locale The locale string
+     * @return void
+     */
+    protected function updateSession(ServerRequest $request, string $locale): void
+    {
+        $sessionKey = $this->getSessionKey();
+        if ($sessionKey === null) {
+            return;
+        }
+
+        $request->getSession()->write($sessionKey, $locale);
+    }
+
+    /**
+     * Get the session key used to store locale.
+     *
+     * @return string|null
+     */
+    protected function getSessionKey(): ?string
+    {
+        $sessionKey = $this->getConfig('sessionKey');
+        if (empty($sessionKey) || !is_string($sessionKey)) {
+            return null;
+        }
+
+        return $sessionKey;
     }
 }
