@@ -323,6 +323,7 @@ class I18nMiddlewareTest extends TestCase
      * @return void
      * @dataProvider setupLocaleProvider
      * @covers ::detectLocale()
+     * @covers ::readSession()
      * @covers ::setupLocale()
      */
     public function testSetupLocale(array $expected, array $server): void
