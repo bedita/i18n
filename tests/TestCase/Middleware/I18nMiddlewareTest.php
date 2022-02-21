@@ -86,6 +86,7 @@ class I18nMiddlewareTest extends TestCase
         I18n::setLocale(I18n::getDefaultLocale());
         Configure::delete('I18n');
         $this->requestHandler = null;
+        unset($_SESSION);
     }
 
     /**
@@ -503,6 +504,50 @@ class I18nMiddlewareTest extends TestCase
                     'new' => 'it',
                 ],
             ],
+            'ok session' => [
+                [
+                    'location' => '/home',
+                    'status' => 302,
+                    'session' => 'it_IT',
+                ],
+                [
+                    'sessionKey' => 'I18nSessionLocale',
+                    'switchLangUrl' => '/lang',
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                    'HTTP_REFERER' => '/home',
+                    'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+                ],
+                [
+                    'new' => 'it',
+                ],
+            ],
+            'ok cookie and session' => [
+                [
+                    'location' => '/home',
+                    'status' => 302,
+                    'cookie' => 'it_IT',
+                ],
+                [
+                    'cookie' => [
+                        'name' => 'i18nLocal',
+                        'create' => true,
+                    ],
+                    'sessionKey' => 'I18nSessionLocale',
+                    'switchLangUrl' => '/lang',
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                    'HTTP_REFERER' => '/home',
+                    'HTTP_ACCEPT_LANGUAGE' => 'en-US',
+                ],
+                [
+                    'new' => 'it',
+                ],
+            ],
             'no query' => [
                 new BadRequestException('Missing required "new" query string'),
                 [
@@ -530,11 +575,8 @@ class I18nMiddlewareTest extends TestCase
                     'redirect' => '/home',
                 ],
             ],
-            'no cookie' => [
-                [
-                    'location' => '',
-                    'status' => 200,
-                ],
+            'no cookie, no session' => [
+                new \LogicException('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`'),
                 [
                     'switchLangUrl' => '/lang',
                 ],
@@ -558,6 +600,8 @@ class I18nMiddlewareTest extends TestCase
      * @dataProvider changeLangProvider
      * @covers ::changeLangAndRedirect()
      * @covers ::process()
+     * @covers ::updateSession()
+     * @covers ::getSessionKey()
      */
     public function testChangeLangAndRedirect($expected, $conf, $server, $query): void
     {
@@ -581,5 +625,98 @@ class I18nMiddlewareTest extends TestCase
             static::assertInstanceOf(Cookie::class, $cookie);
             static::assertEquals($expected['cookie'], $cookie->getValue());
         }
+
+        if (array_key_exists('session', $expected)) {
+            static::assertEquals($expected['session'], $request->getSession()->read($conf['sessionKey']));
+        }
+    }
+
+    /**
+     * Test that the session was updated with locale detected from request.
+     *
+     * @return void
+     * @covers ::process()
+     * @covers ::updateSession()
+     */
+    public function testSessionFallback(): void
+    {
+        $sessionKey = 'I18nSessionLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'it-IT',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null);
+
+        static::assertNull($request->getSession()->read($sessionKey));
+        $middleware = new I18nMiddleware(['sessionKey' => $sessionKey]);
+        $middleware->process($request, $this->requestHandler);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+        static::assertEquals('it_IT', $request->getSession()->read($sessionKey));
+    }
+
+    /**
+     * Test that locale is set reading from session.
+     *
+     * @return void
+     * @covers ::process()
+     * @covers ::detectLocale()
+     * @covers ::readSession()
+     * @covers ::updateSession()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testGetLocaleFromSession(): void
+    {
+        $sessionKey = 'I18nSessionLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-EN',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null);
+        $request->getSession()->write($sessionKey, 'it_IT');
+
+        $middleware = new I18nMiddleware(['sessionKey' => $sessionKey]);
+        $middleware->process($request, $this->requestHandler);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+        static::assertEquals('it_IT', $request->getSession()->read($sessionKey));
+    }
+
+    /**
+     * Test that locale is set reading from cookie when cookie and session are both configured.
+     *
+     * @return void
+     * @covers ::process()
+     * @covers ::detectLocale()
+     * @covers ::updateSession()
+     * @covers ::getResponseWithCookie()
+     */
+    public function testGetLocaleFromCookie(): void
+    {
+        $cookieName = 'I18nCookieLocale';
+        $sessionKey = 'I18nSessionLocale';
+        $server = [
+            'HTTP_HOST' => 'example.com',
+            'REQUEST_URI' => '/help',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-EN',
+        ];
+        $request = ServerRequestFactory::fromGlobals($server, null, null, [$cookieName => 'it_IT']);
+        $request->getSession()->write($sessionKey, 'en_EN');
+
+        $middleware = new I18nMiddleware([
+            'sessionKey' => $sessionKey,
+            'cookie' => [
+                'name' => $cookieName,
+                'create' => true,
+            ],
+        ]);
+        /** @var \Cake\Http\Response $response */
+        $response = $middleware->process($request, $this->requestHandler);
+
+        static::assertEquals('it_IT', I18n::getLocale());
+        static::assertEquals('it_IT', $request->getSession()->read($sessionKey)); // session is updated
+        static::assertEquals('it_IT', $response->getCookieCollection()->get($cookieName)->getValue()); // session is updated
     }
 }
