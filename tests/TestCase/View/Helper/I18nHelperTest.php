@@ -98,6 +98,7 @@ class I18nHelperTest extends TestCase
             ['controller' => 'TestApp', 'action' => 'test'],
             ['_name' => 'test']
         );
+        Router::setRouteCollection(Router::getRouteCollection());
     }
 
     /**
