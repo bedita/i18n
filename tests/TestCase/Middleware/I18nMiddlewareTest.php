@@ -615,7 +615,7 @@ class I18nMiddlewareTest extends TestCase
      * Test that the session was updated with locale detected from request.
      *
      * @return void
-     * @covers ::process()
+     * @covers ::__invoke()
      * @covers ::updateSession()
      */
     public function testSessionFallback(): void
@@ -641,7 +641,7 @@ class I18nMiddlewareTest extends TestCase
      * Test that locale is set reading from session.
      *
      * @return void
-     * @covers ::process()
+     * @covers ::__invoke()
      * @covers ::detectLocale()
      * @covers ::readSession()
      * @covers ::updateSession()
@@ -670,7 +670,7 @@ class I18nMiddlewareTest extends TestCase
      * Test that locale is set reading from cookie when cookie and session are both configured.
      *
      * @return void
-     * @covers ::process()
+     * @covers ::__invoke()
      * @covers ::detectLocale()
      * @covers ::updateSession()
      * @covers ::getResponseWithCookie()
