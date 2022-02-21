@@ -22,8 +22,8 @@ use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
+use Cake\I18n\FrozenTime;
 use Cake\I18n\I18n;
-use Cake\I18n\Time;
 use Cake\Utility\Hash;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -213,7 +213,7 @@ class I18nMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $expire = Time::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
+        $expire = FrozenTime::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
 
         return $response->withCookie(new Cookie($name, $locale, $expire));
     }
