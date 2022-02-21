@@ -92,7 +92,8 @@ class I18nHelperTest extends TestCase
             'lang' => 'en',
         ]);
 
-        Router::connect(
+        $routeBuilder = Router::createRouteBuilder('/');
+        $routeBuilder->connect(
             '/test',
             ['controller' => 'TestApp', 'action' => 'test'],
             ['_name' => 'test']
@@ -108,6 +109,7 @@ class I18nHelperTest extends TestCase
 
         $this->I18n = null;
         Configure::delete('I18n');
+        Router::reload();
     }
 
     /**
