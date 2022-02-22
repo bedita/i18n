@@ -49,6 +49,7 @@ jobs:
         run: |
           vendor/bin/phpcs -n -p --extensions=php \
             --standard=vendor/cakephp/cakephp-codesniffer/CakePHP \
+            --ignore=test/files \
             ./config ./src ./tests
 
   stan:

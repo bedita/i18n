@@ -29,12 +29,12 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     /**
      * The shell for test
      *
-     * @var GettextShell
+     * @var \BEdita\I18n\Shell\GettextShell
      */
     protected $shell = null;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -51,7 +51,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tearDown(): void
     {
