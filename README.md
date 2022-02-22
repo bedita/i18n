@@ -59,6 +59,8 @@ Configure::write('I18n', [
          'create' => true, // set to `true` if the middleware is responsible of cookie creation
          'expire' => '+1 year', // used when `create` is `true` to define when the cookie must expire
     ],
+    // session key where store the locale. Set null to disable (default)
+    'sessionKey' => 'i18n-session-locale',
 ]);
 ```
 
