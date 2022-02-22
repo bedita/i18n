@@ -106,11 +106,19 @@ You can also configure the middleware to use a cookie to store the locale
 
 ```php
 $middlewareQueue->add(new I18nMiddleware([
-    'cookie' =>[
+    'cookie' => [
         'name' => 'I18nLocale',
         'create' => true, // the middleware will create the cookie (default false)
         'expire' => '+1 month', // cookie expiring time (default +1 year)
     ],
+]));
+```
+
+Or use session
+
+```php
+$middlewareQueue->add(new I18nMiddleware([
+    'sessionKey' => 'I18nSessionLocale',
 ]));
 ```
 
