@@ -1,7 +1,7 @@
 <?php
 /**
  * BEdita, API-first content management framework
- * Copyright 2018 ChannelWeb Srl, Chialab Srl
+ * Copyright 2022 Atlas Srl, ChannelWeb Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -18,8 +18,8 @@ use Cake\Core\InstanceConfigTrait;
 use Cake\Http\Cookie\Cookie;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\ServerRequest;
+use Cake\I18n\FrozenTime;
 use Cake\I18n\I18n;
-use Cake\I18n\Time;
 use Cake\Utility\Hash;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -45,6 +45,8 @@ class I18nMiddleware
      *      - 'name': cookie name
      *      - 'create': set to `true` if the middleware is responsible of cookie creation
      *      - 'expire': used when `create` is `true` to define when the cookie must expire
+     *  - 'sessionKey': the session key where store locale. The session is used as fallback to detect locale if cookie is disabled.
+     *                  Set `null` if you don't want session.
      *
      * @var array
      */
@@ -57,6 +59,7 @@ class I18nMiddleware
             'create' => false,
             'expire' => '+1 year',
         ],
+        'sessionKey' => null,
     ];
 
     /**
@@ -90,7 +93,7 @@ class I18nMiddleware
             $path = rtrim($path, '/'); // remove trailing slashes
         }
 
-        if ($path === (string)$this->getConfig('switchLangUrl') && $this->getConfig('cookie.name')) {
+        if ($path === (string)$this->getConfig('switchLangUrl')) {
             return $this->changeLangAndRedirect($request, $response);
         }
 
@@ -105,6 +108,7 @@ class I18nMiddleware
 
         if (!$redir && !in_array($path, $this->getConfig('match'))) {
             $this->setupLocale($locale);
+            $this->updateSession($request, $this->getLocale());
             $response = $this->getResponseWithCookie($response, $this->getLocale());
 
             return $next($request, $response);
@@ -136,7 +140,7 @@ class I18nMiddleware
      * 2. then try to detect from cookie
      * 3. finally try to detect it from HTTP Accept-Language header
      *
-     * @param ServerRequest $request The request.
+     * @param \Cake\Http\ServerRequest $request The request.
      * @return string
      */
     protected function detectLocale(ServerRequest $request): string
@@ -149,6 +153,11 @@ class I18nMiddleware
         }
 
         $locale = (string)$request->getCookie($this->getConfig('cookie.name'));
+        if (!empty($locale)) {
+            return $locale;
+        }
+
+        $locale = $this->readSession($request);
         if (!empty($locale)) {
             return $locale;
         }
@@ -193,7 +202,7 @@ class I18nMiddleware
             return $response;
         }
 
-        $expire = Time::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
+        $expire = FrozenTime::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
 
         return $response->withCookie(new Cookie($name, $locale, $expire));
     }
@@ -203,13 +212,19 @@ class I18nMiddleware
      *
      * Require query string `new` and `redirect`
      *
-     * @param ServerRequest $request The request
+     * @param \Cake\Http\ServerRequest $request The request
      * @param \Psr\Http\Message\ResponseInterface $response The response.
-     * @return ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface
      * @throws BadRequestException When missing required query string or unsupported language
      */
     protected function changeLangAndRedirect(ServerRequest $request, ResponseInterface $response): ResponseInterface
     {
+        if (!$this->getConfig('cookie.name') && !$this->getSessionKey()) {
+            throw new \LogicException(
+                __('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`')
+            );
+        }
+
         $new = (string)$request->getQuery('new');
         if (empty($new)) {
             throw new BadRequestException(__('Missing required "new" query string'));
@@ -219,8 +234,58 @@ class I18nMiddleware
         if ($locale === false) {
             throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }
+
+        $this->updateSession($request, $locale);
         $response = $this->getResponseWithCookie($response, $locale);
 
         return $response->withLocation($request->referer())->withDisabledCache()->withStatus(302);
+    }
+
+    /**
+     * Read locale from session.
+     *
+     * @param \Cake\Http\ServerRequest $request The request
+     * @return string|null
+     */
+    protected function readSession(ServerRequest $request): ?string
+    {
+        $sessionKey = $this->getSessionKey();
+        if ($sessionKey === null) {
+            return null;
+        }
+
+        return $request->getSession()->read($sessionKey);
+    }
+
+    /**
+     * Update session with locale.
+     *
+     * @param \Cake\Http\ServerRequest $request The request.
+     * @param string $locale The locale string
+     * @return void
+     */
+    protected function updateSession(ServerRequest $request, string $locale): void
+    {
+        $sessionKey = $this->getSessionKey();
+        if ($sessionKey === null) {
+            return;
+        }
+
+        $request->getSession()->write($sessionKey, $locale);
+    }
+
+    /**
+     * Get the session key used to store locale.
+     *
+     * @return string|null
+     */
+    protected function getSessionKey(): ?string
+    {
+        $sessionKey = $this->getConfig('sessionKey');
+        if (empty($sessionKey) || !is_string($sessionKey)) {
+            return null;
+        }
+
+        return $sessionKey;
     }
 }
