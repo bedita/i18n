@@ -144,13 +144,12 @@ class GettextShell extends Shell
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . '.po';
         }
-
-        $this->templatePaths = [
-            $basePath . '/src',
-            $basePath . '/config',
-            $basePath . '/templates',
-        ];
-        $this->localePath = $basePath . '/resources/locales';
+        $this->templatePaths = [$basePath . '/src', $basePath . '/cfg'];
+        $appTemplatePath = (string)Configure::read('App.paths.templates.0');
+        if (strpos($appTemplatePath, $basePath . '/src') === false) {
+            $this->templatePaths[] = $appTemplatePath;
+        }
+        $this->localePath = (string)Configure::read('App.paths.locales.0');
     }
 
     /**
