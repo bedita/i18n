@@ -149,7 +149,7 @@ class GettextShell extends Shell
 
             return;
         }
-        $app = isset($this->params['app']) ? $this->params['app'] : getcwd();
+        $app = $this->params['app'] ?? getcwd();
         $f = new Folder($app);
         $basePath = $f->path;
         $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
