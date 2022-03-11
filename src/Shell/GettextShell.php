@@ -20,6 +20,7 @@ use Cake\Console\Shell;
 use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
+use Cake\Utility\Hash;
 
 /**
  * Gettext shell
@@ -134,22 +135,27 @@ class GettextShell extends Shell
      */
     private function setupPaths(): void
     {
-        $basePath = getcwd();
+        $appTemplates = (array)Configure::read('App.paths.templates');
         if (isset($this->params['app'])) {
             $f = new Folder($this->params['app']);
             $basePath = $f->path;
+            $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
+            $appTemplatePath = (string)Hash::get($appTemplates, '0');
+            if (strpos($appTemplatePath, $basePath . '/src') === false) {
+                $this->templatePaths[] = $appTemplatePath;
+            }
+            $this->localePath = (string)Configure::read('App.paths.locales.0');
         } elseif (isset($this->params['plugin'])) {
-            $startPath = !empty($this->params['startPath']) ? $this->params['startPath'] : getcwd();
-            $f = new Folder(sprintf('%s/plugins/%s', $startPath, $this->params['plugin']));
+            $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $this->params['plugin']));
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . '.po';
+            $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
+            $appTemplatePath = (string)Hash::get($appTemplates, '1');
+            if (strpos($appTemplatePath, $basePath . '/src') === false) {
+                $this->templatePaths[] = $appTemplatePath;
+            }
+            $this->localePath = (string)Configure::read('App.paths.locales.1');
         }
-        $this->templatePaths = [$basePath . '/src', $basePath . '/cfg'];
-        $appTemplatePath = (string)Configure::read('App.paths.templates.0');
-        if (strpos($appTemplatePath, $basePath . '/src') === false) {
-            $this->templatePaths[] = $appTemplatePath;
-        }
-        $this->localePath = (string)Configure::read('App.paths.locales.0');
     }
 
     /**

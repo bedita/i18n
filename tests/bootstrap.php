@@ -44,8 +44,15 @@ Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'utf-8',
     'paths' => [
-        'plugins' => [ROOT . 'Plugin' . DS],
-        'templates' => [ROOT . 'templates' . DS],
+        'locales' => [
+            APP . 'Locale' . DS,
+            ROOT . 'plugins' . DS . 'Dummy' . DS . 'Locale' . DS,
+        ],
+        'plugins' => [ROOT . 'plugins' . DS],
+        'templates' => [
+            APP . 'Template' . DS,
+            ROOT . 'plugins' . DS . 'Dummy' . DS . 'Template' . DS,
+        ],
     ],
     'base' => '',
     'webroot' => '/',
