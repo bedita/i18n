@@ -136,16 +136,7 @@ class GettextShell extends Shell
     private function setupPaths(): void
     {
         $appTemplates = (array)Configure::read('App.paths.templates');
-        if (isset($this->params['app'])) {
-            $f = new Folder($this->params['app']);
-            $basePath = $f->path;
-            $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
-            $appTemplatePath = (string)Hash::get($appTemplates, '0');
-            if (strpos($appTemplatePath, $basePath . '/src') === false) {
-                $this->templatePaths[] = $appTemplatePath;
-            }
-            $this->localePath = (string)Configure::read('App.paths.locales.0');
-        } elseif (isset($this->params['plugin'])) {
+        if (isset($this->params['plugin'])) {
             $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $this->params['plugin']));
             $basePath = $f->path;
             $this->poName = $this->params['plugin'] . '.po';
@@ -155,7 +146,18 @@ class GettextShell extends Shell
                 $this->templatePaths[] = $appTemplatePath;
             }
             $this->localePath = (string)Configure::read('App.paths.locales.1');
+
+            return;
         }
+        $app = isset($this->params['app']) ? $this->params['app'] : getcwd();
+        $f = new Folder($app);
+        $basePath = $f->path;
+        $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
+        $appTemplatePath = (string)Hash::get($appTemplates, '0');
+        if (strpos($appTemplatePath, $basePath . '/src') === false) {
+            $this->templatePaths[] = $appTemplatePath;
+        }
+        $this->localePath = (string)Configure::read('App.paths.locales.0');
     }
 
     /**
