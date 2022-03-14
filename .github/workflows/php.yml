@@ -132,7 +132,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: [7.2, 7.3, 7.4]
+        php-version: [7.4, 8.0, 8.1]
 
     steps:
       - name: 'Checkout current revision'
@@ -207,8 +207,8 @@ jobs:
       - name: 'Setup PHP'
         uses: 'shivammathur/setup-php@v2'
         with:
-          php-version: '7.2'
-          tools: 'composer:v1'
+          php-version: '7.4'
+          tools: 'composer:v2'
           extensions: 'mbstring, intl, pdo_sqlite'
 
       - name: 'Discover Composer cache directory'
