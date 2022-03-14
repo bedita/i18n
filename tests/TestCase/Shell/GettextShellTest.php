@@ -67,10 +67,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      */
     public function testUpdate(): void
     {
-        $this->shell->params['app'] = sprintf('%s/tests/files/gettext/app', getcwd());
+        $this->shell->params['app'] = sprintf('%s/tests/test_app/TestApp', getcwd());
 
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -96,26 +96,26 @@ class GettextShellTest extends ConsoleIntegrationTestCase
 
         return [
             'app' => [
-                'tests/files/gettext/app', // app path
+                'tests/test_app/TestApp', // app path
                 null, // start path
                 null, // plugin path
                 [
-                    sprintf('%s/tests/files/gettext/app/src', $base),
-                    sprintf('%s/tests/files/gettext/app/config', $base),
-                    sprintf('%s/tests/files/gettext/app/templates', $base),
+                    sprintf('%s/tests/test_app/TestApp/src', $base),
+                    sprintf('%s/tests/test_app/TestApp/config', $base),
+                    sprintf('%s/tests/test_app/TestApp/Template', $base),
                 ], // template paths
-                sprintf('%s/tests/files/gettext/app/resources/locales', $base), // locale path
+                sprintf('%s/tests/test_app/TestApp/Locale', $base), // locale path
             ],
             'plugin' => [
                 null, // app path
-                sprintf('%s/tests/files/gettext', $base), // start path
-                'dummy', // plugin name
+                sprintf('%s/tests/test_app/TestApp', $base), // start path
+                'Dummy', // plugin name
                 [
-                    sprintf('%s/tests/files/gettext/plugins/dummy/src', $base),
-                    sprintf('%s/tests/files/gettext/plugins/dummy/config', $base),
-                    sprintf('%s/tests/files/gettext/plugins/dummy/templates', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/Template', $base),
                 ], // template paths
-                sprintf('%s/tests/files/gettext/plugins/dummy/resources/locales', $base), // locale path
+                sprintf('%s/tests/test_app/plugins/Dummy/Locale', $base), // locale path
             ],
         ];
     }
@@ -147,8 +147,19 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         }
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
-        static::assertEquals($expectedTemplatePaths, $this->shell->templatePaths);
-        static::assertEquals($expectedLocalePath, $this->shell->localePath);
+        $i = 0;
+        $actualPaths = $this->shell->templatePaths;
+        foreach ($actualPaths as &$actual) {
+            if (strlen($actual) !== strlen($expectedTemplatePaths[$i++])) {
+                $actual = substr($actual, 0, -1);
+            }
+        }
+        static::assertEquals($expectedTemplatePaths, $actualPaths);
+        $actual = $this->shell->localePath;
+        if (strlen($actual) !== strlen($expectedLocalePath)) {
+            $actual = substr($actual, 0, -1);
+        }
+        static::assertEquals($expectedLocalePath, $actual);
         static::assertEquals($expectedPoName, $this->shell->poName);
     }
 
@@ -161,7 +172,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testWriteMasterPot(): void
     {
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -203,7 +214,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testWritePoFiles(): void
     {
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/files/gettext/app/resources/locales', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -414,9 +425,9 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     private function cleanFiles(): void
     {
         $files = [
-            sprintf('%s/tests/files/gettext/app/resources/locales/master.pot', getcwd()),
-            sprintf('%s/tests/files/gettext/app/resources/locales/en_US/default.po', getcwd()),
-            sprintf('%s/tests/files/gettext/app/resources/locales/it_IT/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/master.pot', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/en_US/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/it_IT/default.po', getcwd()),
         ];
         foreach ($files as $file) {
             if (file_exists($file)) {
