@@ -180,13 +180,13 @@ class I18nMiddleware implements MiddlewareInterface
     protected function setupLocale(?string $locale): void
     {
         $locales = $this->getLocales();
-        $lang = Hash::get($locales, (string)$locale);
-        if ($lang === null) {
+        $lang = (string)Hash::get($locales, (string)$locale);
+        if (empty($lang)) {
             $lang = $this->getDefaultLang();
             $locale = array_search($lang, $locales);
         }
 
-        if ($lang === null || $locale === false) {
+        if (empty($lang) || $locale === false) {
             throw new InternalErrorException(
                 __('Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"')
             );
