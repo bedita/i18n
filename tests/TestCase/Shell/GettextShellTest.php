@@ -88,8 +88,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
-        $this->assertIsArray($this->shell->getPoResult());
-        $this->assertIsArray($this->shell->getPoResult());
+        static::assertTrue(gettype($this->shell->getPoResult()) === 'array');
+        static::assertTrue(gettype($this->shell->getTemplatePaths()) === 'array');
         static::assertIsString($this->shell->getLocalePath());
         static::assertIsString($this->shell->getPoName());
     }
