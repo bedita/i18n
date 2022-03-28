@@ -90,8 +90,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         }
         static::assertTrue(gettype($this->shell->getPoResult()) === 'array');
         static::assertTrue(gettype($this->shell->getTemplatePaths()) === 'array');
-        static::assertTrue(gettype($this->shell->getLocalePath() === 'string'));
-        static::assertTrue(gettype($this->shell->getPoName() === 'string'));
+        static::assertTrue(gettype($this->shell->getLocalePath()) === 'string');
+        static::assertTrue(gettype($this->shell->getPoName()) === 'string');
     }
 
     /**
