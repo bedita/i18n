@@ -56,6 +56,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function tearDown(): void
     {
         $this->cleanFiles();
+        unset($this->shell);
         parent::tearDown();
     }
 
@@ -64,6 +65,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::getPoResult()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
+     * @covers ::getPoName()
      */
     public function testUpdate(): void
     {
@@ -83,6 +88,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
+        static::assertIsArray($this->shell->getPoResult());
+        static::assertIsArray($this->shell->getPoResult());
+        static::assertIsString($this->shell->getLocalePath());
+        static::assertIsString($this->shell->getPoName());
     }
 
     /**
