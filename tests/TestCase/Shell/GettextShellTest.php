@@ -247,8 +247,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 "something 'quoted'", // expected
             ],
             'new lines' => [
-                sprintf('something%swith%snew%slines', "\n", "\n", "\n", "\n"), // input
-                sprintf('something%swith%snew%slines', '\n', '\n', '\n', '\n'), // expected
+                sprintf('something%swith%snew%slines', "\n", "\n", "\n"), // input
+                sprintf('something%swith%snew%slines', '\n', '\n', '\n'), // expected
             ],
         ];
     }
