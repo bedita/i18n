@@ -201,11 +201,11 @@ class I18nMiddleware implements MiddlewareInterface
      *
      * The cookie is added only if the middleware is configured to create cookie.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response.
+     * @param \Cake\Http\Response $response The response.
      * @param string $locale The locale string to set in cookie.
      * @return \Psr\Http\Message\ResponseInterface
      */
-    protected function getResponseWithCookie(ResponseInterface $response, string $locale): ResponseInterface
+    protected function getResponseWithCookie(Response $response, string $locale): ResponseInterface
     {
         $name = $this->getConfig('cookie.name');
         $create = $this->getConfig('cookie.create', false);
