@@ -148,19 +148,19 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
         $i = 0;
-        $actualPaths = $this->shell->templatePaths;
+        $actualPaths = $this->shell->getTemplatePaths();
         foreach ($actualPaths as &$actual) {
             if (strlen($actual) !== strlen($expectedTemplatePaths[$i++])) {
                 $actual = substr($actual, 0, -1);
             }
         }
         static::assertEquals($expectedTemplatePaths, $actualPaths);
-        $actual = $this->shell->localePath;
+        $actual = $this->shell->getLocalePath();
         if (strlen($actual) !== strlen($expectedLocalePath)) {
             $actual = substr($actual, 0, -1);
         }
         static::assertEquals($expectedLocalePath, $actual);
-        static::assertEquals($expectedPoName, $this->shell->poName);
+        static::assertEquals($expectedPoName, $this->shell->getPoName());
     }
 
     /**
@@ -336,7 +336,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $method = self::getMethod('parseFile');
         $method->invokeArgs($this->shell, [ $file, $extension ]);
-        $actual = $this->shell->poResult;
+        $actual = $this->shell->getPoResult();
         sort($expected);
         sort($actual);
         static::assertEquals($expected, $actual);
@@ -396,7 +396,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->shell, [ $dir ]);
-        $actual = $this->shell->poResult;
+        $actual = $this->shell->getPoResult();
         sort($expected);
         sort($actual);
         static::assertEquals($expected, $actual);

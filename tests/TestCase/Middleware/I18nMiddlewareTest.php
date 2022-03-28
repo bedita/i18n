@@ -85,7 +85,7 @@ class I18nMiddlewareTest extends TestCase
         // reset locale to default value
         I18n::setLocale(I18n::getDefaultLocale());
         Configure::delete('I18n');
-        $this->requestHandler = null;
+        unset($this->requestHandler);
         unset($_SESSION);
     }
 
@@ -606,7 +606,8 @@ class I18nMiddlewareTest extends TestCase
      */
     public function testChangeLangAndRedirect($expected, $conf, $server, $query): void
     {
-        if ($expected instanceof \Exception) {
+        $isException = $expected instanceof \Exception;
+        if ($isException) {
             $this->expectException(get_class($expected));
             $this->expectExceptionCode($expected->getCode());
             $this->expectExceptionMessage($expected->getMessage());
@@ -617,18 +618,19 @@ class I18nMiddlewareTest extends TestCase
         /** @var \Cake\Http\Response $response */
         $response = $middleware->process($request, $this->requestHandler);
 
-        static::assertEquals($expected['status'], $response->getStatusCode());
-        static::assertEquals($expected['location'], $response->getHeaderLine('Location'));
+        if (!$isException) {
+            static::assertEquals($expected['status'], $response->getStatusCode());
+            static::assertEquals($expected['location'], $response->getHeaderLine('Location'));
+            $cookieName = (string)Hash::get($conf, 'cookie.name', '');
+            if ($cookieName) {
+                $cookie = $response->getCookieCollection()->get($cookieName);
+                static::assertInstanceOf(Cookie::class, $cookie);
+                static::assertEquals($expected['cookie'], $cookie->getValue());
+            }
 
-        $cookieName = Hash::get($conf, 'cookie.name');
-        if ($cookieName) {
-            $cookie = $response->getCookieCollection()->get($cookieName);
-            static::assertInstanceOf(Cookie::class, $cookie);
-            static::assertEquals($expected['cookie'], $cookie->getValue());
-        }
-
-        if (array_key_exists('session', $expected)) {
-            static::assertEquals($expected['session'], $request->getSession()->read($conf['sessionKey']));
+            if (array_key_exists('session', $expected)) {
+                static::assertEquals($expected['session'], $request->getSession()->read($conf['sessionKey']));
+            }
         }
     }
 

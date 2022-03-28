@@ -66,7 +66,7 @@ class I18nTraitTest extends TestCase
     {
         parent::tearDown();
 
-        $this->subject = null;
+        unset($this->subject);
         Configure::delete('I18n');
     }
 
@@ -96,6 +96,8 @@ class I18nTraitTest extends TestCase
     /**
      * Test `getLangName()`
      *
+     * @param string|null $expected The expected lang
+     * @param string|null $lang The lang in input
      * @return void
      * @dataProvider getLangNameProvider
      * @covers ::getLangName()
