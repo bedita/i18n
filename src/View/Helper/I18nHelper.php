@@ -57,7 +57,7 @@ class I18nHelper extends Helper
      */
     public function changeUrlLang($newLang, $switchUrl = null): string
     {
-        $request = Router::getRequest(true);
+        $request = Router::getRequest();
         if (empty($request)) {
             return '';
         }
