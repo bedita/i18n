@@ -108,7 +108,7 @@ class I18nHelperTest extends TestCase
     {
         parent::tearDown();
 
-        $this->I18n = null;
+        unset($this->I18n);
         Configure::delete('I18n');
         Router::reload();
     }
@@ -174,7 +174,7 @@ class I18nHelperTest extends TestCase
      * @param string $expected The string expected
      * @param array $server The server vars
      * @param string $lang The language to change
-     * @param string $lang The switch language url
+     * @param string $switchUrl The switch language url
      * @return void
      * @dataProvider changeUrlLangProvider
      * @covers ::changeUrlLang()
@@ -199,8 +199,9 @@ class I18nHelperTest extends TestCase
      */
     public function fieldProvider(): array
     {
-        $objectBase = ['id' => $this->object['id']] + $this->object['attributes'];
-        $objectStructured = $this->object;
+        $objectStructured = (array)$this->object;
+        $objectBase = (array)$objectStructured['attributes'];
+        $objectBase['id'] = $objectStructured['id'];
 
         $included = $this->included;
 

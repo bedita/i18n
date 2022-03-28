@@ -56,6 +56,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function tearDown(): void
     {
         $this->cleanFiles();
+        unset($this->shell);
         parent::tearDown();
     }
 
@@ -64,6 +65,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::getPoResult()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
+     * @covers ::getPoName()
      */
     public function testUpdate(): void
     {
@@ -83,6 +88,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
+        static::assertTrue(gettype($this->shell->getPoResult()) === 'array');
+        static::assertTrue(gettype($this->shell->getTemplatePaths()) === 'array');
+        static::assertTrue(gettype($this->shell->getLocalePath()) === 'string');
+        static::assertTrue(gettype($this->shell->getPoName()) === 'string');
     }
 
     /**
@@ -148,19 +157,19 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
         $i = 0;
-        $actualPaths = $this->shell->templatePaths;
+        $actualPaths = $this->shell->getTemplatePaths();
         foreach ($actualPaths as &$actual) {
             if (strlen($actual) !== strlen($expectedTemplatePaths[$i++])) {
                 $actual = substr($actual, 0, -1);
             }
         }
         static::assertEquals($expectedTemplatePaths, $actualPaths);
-        $actual = $this->shell->localePath;
+        $actual = $this->shell->getLocalePath();
         if (strlen($actual) !== strlen($expectedLocalePath)) {
             $actual = substr($actual, 0, -1);
         }
         static::assertEquals($expectedLocalePath, $actual);
-        static::assertEquals($expectedPoName, $this->shell->poName);
+        static::assertEquals($expectedPoName, $this->shell->getPoName());
     }
 
     /**
@@ -247,8 +256,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 "something 'quoted'", // expected
             ],
             'new lines' => [
-                sprintf('something%swith%snew%slines', "\n", "\n", "\n", "\n"), // input
-                sprintf('something%swith%snew%slines', '\n', '\n', '\n', '\n'), // expected
+                sprintf('something%swith%snew%slines', "\n", "\n", "\n"), // input
+                sprintf('something%swith%snew%slines', '\n', '\n', '\n'), // expected
             ],
         ];
     }
@@ -336,7 +345,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $method = self::getMethod('parseFile');
         $method->invokeArgs($this->shell, [ $file, $extension ]);
-        $actual = $this->shell->poResult;
+        $actual = $this->shell->getPoResult();
         sort($expected);
         sort($actual);
         static::assertEquals($expected, $actual);
@@ -396,7 +405,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     {
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->shell, [ $dir ]);
-        $actual = $this->shell->poResult;
+        $actual = $this->shell->getPoResult();
         sort($expected);
         sort($actual);
         static::assertEquals($expected, $actual);

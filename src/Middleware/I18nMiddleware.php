@@ -180,13 +180,13 @@ class I18nMiddleware implements MiddlewareInterface
     protected function setupLocale(?string $locale): void
     {
         $locales = $this->getLocales();
-        $lang = Hash::get($locales, (string)$locale);
-        if ($lang === null) {
+        $lang = (string)Hash::get($locales, (string)$locale);
+        if (empty($lang)) {
             $lang = $this->getDefaultLang();
             $locale = array_search($lang, $locales);
         }
 
-        if ($lang === null || $locale === false) {
+        if (empty($lang) || $locale === false) {
             throw new InternalErrorException(
                 __('Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"')
             );
@@ -201,11 +201,11 @@ class I18nMiddleware implements MiddlewareInterface
      *
      * The cookie is added only if the middleware is configured to create cookie.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response.
+     * @param \Cake\Http\Response $response The response.
      * @param string $locale The locale string to set in cookie.
      * @return \Psr\Http\Message\ResponseInterface
      */
-    protected function getResponseWithCookie(ResponseInterface $response, string $locale): ResponseInterface
+    protected function getResponseWithCookie(Response $response, string $locale): ResponseInterface
     {
         $name = $this->getConfig('cookie.name');
         $create = $this->getConfig('cookie.create', false);

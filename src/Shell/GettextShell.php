@@ -93,6 +93,38 @@ class GettextShell extends Shell
     protected $poName = 'default.po';
 
     /**
+     * Get po result
+     */
+    public function getPoResult(): array
+    {
+        return $this->poResult;
+    }
+
+    /**
+     * Get templatePaths
+     */
+    public function getTemplatePaths(): array
+    {
+        return $this->templatePaths;
+    }
+
+    /**
+     * Get localePath
+     */
+    public function getLocalePath(): string
+    {
+        return $this->localePath;
+    }
+
+    /**
+     * Get po name
+     */
+    public function getPoName(): string
+    {
+        return $this->poName;
+    }
+
+    /**
      * Update gettext po files
      *
      * @return void
