@@ -36,6 +36,13 @@ class I18nHelperTest extends TestCase
     protected $I18n = null;
 
     /**
+     * Test view
+     *
+     * @var \Cake\View\View
+     */
+    protected $View = null;
+
+    /**
      * Test `object`
      *
      * @var array
@@ -75,7 +82,8 @@ class I18nHelperTest extends TestCase
     {
         parent::setUp();
 
-        $this->I18n = new I18nHelper(new View());
+        $this->View = new View();
+        $this->I18n = new I18nHelper($this->View);
 
         Configure::write('I18n', [
             'locales' => [
@@ -269,6 +277,19 @@ class I18nHelperTest extends TestCase
     }
 
     /**
+     * Test `field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false)` method
+     *
+     * @return void
+     * @covers ::field()
+     */
+    public function testFieldIncludedFromView(): void
+    {
+        $this->View->set('included', $this->included);
+        $actual = $this->I18n->field($this->object, 'title', 'it', false, []);
+        static::assertEquals('Esempio', $actual);
+    }
+
+    /**
      * Test `field` method with embedded relationships
      *
      * @return void
@@ -368,6 +389,20 @@ class I18nHelperTest extends TestCase
         }
         $actual = $this->I18n->exists($object, $attribute, $lang, $included);
         static::assertEquals($expected, $actual);
+    }
+
+    /**
+     * Test `exists(array $object, array $included, string $attribute, string $lang)` method
+     *
+     * @return void
+     * @covers ::exists()
+     */
+    public function testExistsIncludedFromView(): void
+    {
+        $this->View->set('included', $this->included);
+        $included = [];
+        $actual = $this->I18n->exists($this->object, 'title', 'it', $included);
+        static::assertTrue($actual);
     }
 
     /**
