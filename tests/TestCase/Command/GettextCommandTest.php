@@ -363,8 +363,8 @@ class GettextCommandTest extends TestCase
         $method = self::getMethod('parseFile');
         $method->invokeArgs($this->command, [$file, $extension]);
         $actual = $this->command->getPoResult();
-        $this->recursiveKsort($expected);
-        $this->recursiveKsort($actual);
+        $this->recursiveSort($expected);
+        $this->recursiveSort($actual);
         static::assertEquals($expected, $actual);
     }
 
@@ -430,24 +430,30 @@ class GettextCommandTest extends TestCase
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->command, [$dir]);
         $actual = $this->command->getPoResult();
-        $this->recursiveKsort($expected);
-        $this->recursiveKsort($actual);
+        $this->recursiveSort($expected);
+        $this->recursiveSort($actual);
         static::assertEquals($expected, $actual);
     }
 
     /**
-     * Recursive ksort used in tests
+     * Recursive ksort/sort arrays used in tests
      *
      * @param array $array Array to sort
      * @return void
      */
-    protected function recursiveKsort(array &$array): void
+    protected function recursiveSort(array &$array): void
     {
         foreach ($array as &$value) {
             if (is_array($value)) {
-                $this->recursiveKsort($value);
+                $this->recursiveSort($value);
            }
         }
+        if (array_values($array) === $array) {
+            sort($array);
+
+            return;
+        }
+
         ksort($array);
      }
 
