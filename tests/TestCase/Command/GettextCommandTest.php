@@ -363,8 +363,8 @@ class GettextCommandTest extends TestCase
         $method = self::getMethod('parseFile');
         $method->invokeArgs($this->command, [$file, $extension]);
         $actual = $this->command->getPoResult();
-        ksort($expected);
-        ksort($actual);
+        $this->recursiveKsort($expected);
+        $this->recursiveKsort($actual);
         static::assertEquals($expected, $actual);
     }
 
@@ -430,10 +430,26 @@ class GettextCommandTest extends TestCase
         $method = self::getMethod('parseDir');
         $method->invokeArgs($this->command, [$dir]);
         $actual = $this->command->getPoResult();
-        ksort($expected);
-        ksort($actual);
+        $this->recursiveKsort($expected);
+        $this->recursiveKsort($actual);
         static::assertEquals($expected, $actual);
     }
+
+    /**
+     * Recursive ksort used in tests
+     *
+     * @param array $array Array to sort
+     * @return void
+     */
+    protected function recursiveKsort(array &$array): void
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->recursiveKsort($value);
+           }
+        }
+        ksort($array);
+     }
 
     /**
      * Get GettextShell method by name, making it accessible
