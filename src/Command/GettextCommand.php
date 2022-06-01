@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * BEdita, API-first content management framework
- * Copyright 2019 ChannelWeb Srl, Chialab Srl
+ * Copyright 2022 Atlas Srl, Chialab Srl
  *
  * This file is part of BEdita: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -13,19 +13,21 @@ declare(strict_types=1);
  * See LICENSE.LGPL or <http://gnu.org/licenses/lgpl-3.0.html> for more details.
  */
 
-namespace BEdita\I18n\Shell;
+namespace BEdita\I18n\Command;
 
+use Cake\Command\Command;
+use Cake\Console\Arguments;
+use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Console\Shell;
 use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Hash;
 
 /**
- * Gettext shell
+ * Gettext command.
  */
-class GettextShell extends Shell
+class GettextCommand extends Command
 {
     /**
      * The Po results
@@ -56,40 +58,28 @@ class GettextShell extends Shell
     protected $defaultDomain = 'default';
 
     /**
-     * Get the option parser for this shell.
-     *
-     * @return \Cake\Console\ConsoleOptionParser
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
-    public function getOptionParser(): ConsoleOptionParser
+    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
-        $parser = parent::getOptionParser();
-        $parser->addSubcommand('update', [
-            'help' => 'Update po and pot files',
-            'parser' => [
-                'description' => [
-                    'Create or update i18n po/pot files',
-                    '',
-                    '`cake gettext update`: update files for current app',
-                    '`cake gettext update -app <app path>`: update files for the app',
-                    '`cake gettext update -plugin <plugin name>`: update files for the plugin',
-                ],
-                'options' => [
-                    'app' => [
-                        'help' => 'The app path, for i18n update.',
-                        'short' => 'a',
-                        'required' => false,
-                    ],
-                    'plugin' => [
-                        'help' => 'The plugin name, for i18n update.',
-                        'short' => 'p',
-                        'required' => false,
-                    ],
-                ],
-            ],
-        ]);
-
-        return $parser;
+        return parent::buildOptionParser($parser)
+            ->setDescription([
+                'Create or update i18n po/pot files',
+                '',
+                '`bin/cake gettext`: update files for current app',
+                '`bin/cake gettext -app <app path>`: update files for the app',
+                '`bin/cake gettext -plugin <plugin name>`: update files for the plugin',
+            ])
+            ->addOption('app', [
+                'help' => 'The app path, for i18n update.',
+                'short' => 'a',
+                'required' => false,
+            ])
+            ->addOption('plugin', [
+                'help' => 'The plugin name, for i18n update.',
+                'short' => 'p',
+                'required' => false,
+            ]);
     }
 
     /**
@@ -125,51 +115,55 @@ class GettextShell extends Shell
     /**
      * Update gettext po files.
      *
-     * @return void
+     * @param \Cake\Console\Arguments $args The command arguments.
+     * @param \Cake\Console\ConsoleIo $io The console io
+     * @return null|void|int The exit code or null for success
      */
-    public function update(): void
+    public function execute(Arguments $args, ConsoleIo $io)
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         if (empty($resCmd[0])) {
-            $this->out('ERROR: msgmerge not available. Please install gettext utilities.');
-
-            return;
+            $io->abort('ERROR: msgmerge not available. Please install gettext utilities.');
         }
 
-        $this->out('Updating .pot and .po files...');
+        $io->out('Updating .pot and .po files...');
 
-        $this->setupPaths();
+        $this->setupPaths($args);
         foreach ($this->templatePaths as $path) {
-            $this->out(sprintf('Search in: %s', $path));
+            $io->out(sprintf('Search in: %s', $path));
             $this->parseDir($path);
         }
 
-        $this->out('Creating master .pot file');
-        $this->writeMasterPot();
-        $this->ttagExtract();
+        $io->out('Creating master .pot file');
+        $this->writeMasterPot($io);
+        $this->ttagExtract($args, $io);
 
-        $this->hr();
-        $this->out('Merging master .pot with current .po files');
-        $this->hr();
+        $io->hr();
+        $io->out('Merging master .pot with current .po files');
+        $io->hr();
 
-        $this->writePoFiles();
+        $this->writePoFiles($io);
 
-        $this->out('Done');
+        $io->out('Done');
+
+        return null;
     }
 
     /**
      * Setup template paths and locale path
      *
+     * @param \Cake\Console\Arguments $args The command arguments.
      * @return void
      */
-    private function setupPaths(): void
+    private function setupPaths(Arguments $args): void
     {
         $appTemplates = (array)Configure::read('App.paths.templates');
-        if (isset($this->params['plugin'])) {
-            $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $this->params['plugin']));
+        $plugin = $args->getOption('plugin');
+        if ($plugin) {
+            $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $plugin));
             $basePath = $f->path;
-            $this->defaultDomain = $this->params['plugin'];
+            $this->defaultDomain = $plugin;
             $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
             $appTemplatePath = (string)Hash::get($appTemplates, '1');
             if (strpos($appTemplatePath, $basePath . '/src') === false) {
@@ -179,7 +173,7 @@ class GettextShell extends Shell
 
             return;
         }
-        $app = $this->params['app'] ?? getcwd();
+        $app = $args->getOption('app') ?? getcwd();
         $f = new Folder($app);
         $basePath = $f->path;
         $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
@@ -193,13 +187,14 @@ class GettextShell extends Shell
     /**
      * Write `master.pot` file
      *
+     * @param \Cake\Console\ConsoleIo $io The console io
      * @return void
      */
-    private function writeMasterPot(): void
+    private function writeMasterPot(ConsoleIo $io): void
     {
         foreach ($this->poResult as $domain => $poResult) {
             $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
-            $this->out(sprintf('Writing new .pot file: %s', $potFilename));
+            $io->out(sprintf('Writing new .pot file: %s', $potFilename));
             $pot = new File($potFilename, true);
             $pot->write($this->header('pot'));
             sort($poResult);
@@ -215,9 +210,10 @@ class GettextShell extends Shell
     /**
      * Write `.po` files
      *
+     * @param \Cake\Console\ConsoleIo $io The console io
      * @return void
      */
-    private function writePoFiles(): void
+    private function writePoFiles(ConsoleIo $io): void
     {
         $header = $this->header('po');
         $locales = array_keys((array)Configure::read('I18n.locales', []));
@@ -226,7 +222,7 @@ class GettextShell extends Shell
             if (!file_exists($potDir)) {
                 mkdir($potDir);
             }
-            $this->out(sprintf('Language: %s', $loc));
+            $io->out(sprintf('Language: %s', $loc));
 
             foreach (array_keys($this->poResult) as $domain) {
                 $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
@@ -236,11 +232,11 @@ class GettextShell extends Shell
                     $newPoFile->write($header);
                     $newPoFile->close();
                 }
-                $this->out(sprintf('Merging %s', $poFile));
+                $io->out(sprintf('Merging %s', $poFile));
                 $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
                 exec($mergeCmd);
-                $this->analyzePoFile($poFile);
-                $this->hr();
+                $this->analyzePoFile($poFile, $io);
+                $io->hr();
             }
         }
     }
@@ -289,9 +285,10 @@ class GettextShell extends Shell
      * Analyze po file and translate it
      *
      * @param string $filename The po file name
+     * @param \Cake\Console\ConsoleIo $io The console io
      * @return void
      */
-    private function analyzePoFile($filename): void
+    private function analyzePoFile($filename, ConsoleIo $io): void
     {
         $lines = file($filename);
         $numItems = $numNotTranslated = 0;
@@ -312,7 +309,7 @@ class GettextShell extends Shell
         if ($numItems > 0) {
             $percent = number_format($translated * 100. / $numItems, 1);
         }
-        $this->out(sprintf('Translated %d of %d items - %s %%', $translated, $numItems, $percent));
+        $io->out(sprintf('Translated %d of %d items - %s %%', $translated, $numItems, $percent));
     }
 
     /**
@@ -549,32 +546,35 @@ class GettextShell extends Shell
     /**
      * Extract translations from javascript files using ttag, if available.
      *
+     * @param \Cake\Console\Arguments $args The command arguments.
+     * @param \Cake\Console\ConsoleIo $io The console io
      * @return void
      * @codeCoverageIgnore
      */
-    private function ttagExtract(): void
+    private function ttagExtract(Arguments $args, ConsoleIo $io): void
     {
         // check ttag command exists
         $ttag = 'node_modules/ttag-cli/bin/ttag';
         if (!file_exists($ttag)) {
-            $this->out(sprintf('Skip javascript parsing - %s command not found', $ttag));
+            $io->out(sprintf('Skip javascript parsing - %s command not found', $ttag));
 
             return;
         }
         // check template folder exists
         $appDir = 'src/Template';
-        if (!empty($this->params['plugin'])) {
-            $startPath = !empty($this->params['startPath']) ? $this->params['startPath'] : getcwd();
-            $appDir = sprintf('%s/plugins/%s/src/Template', $startPath, $this->params['plugin']);
+        $plugin = $args->getOption('plugin');
+        if (!empty($plugin)) {
+            $startPath = $args->getOption('startPath') ?? getcwd();
+            $appDir = sprintf('%s/plugins/%s/src/Template', $startPath, $plugin);
         }
         if (!file_exists($appDir)) {
-            $this->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
+            $io->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
             return;
         }
 
         // do extract translation strings from js files using ttag
-        $this->out('Extracting translation string from javascript files using ttag');
+        $io->out('Extracting translation string from javascript files using ttag');
         $masterJs = sprintf('%s/master-js.pot', $this->localePath);
         exec(sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir));
 
