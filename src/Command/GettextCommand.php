@@ -426,10 +426,14 @@ class GettextCommand extends Command
      */
     private function parseContentSecondArg($start, $content, $options): void
     {
+        $capturePath = "([^']*)',\s*'([^']*)";
+        $doubleQuoteCapture = str_replace("'", $options['double_quote'], $capturePath);
+        $quoteCapture = str_replace("'", $options['quote'], $capturePath);
+
         // phpcs:disable
         $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . '([^{)}]*)' . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . '([^{)}]*)' . "{$options['quote']}" .
+            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . $doubleQuoteCapture . "{$options['double_quote']}" .
+            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . $quoteCapture . "{$options['quote']}" .
             '/';
         // phpcs:enable
         $matches = [];
@@ -437,16 +441,14 @@ class GettextCommand extends Command
 
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
-            $str = $matches[2][$i];
-            // context not handled yet
-            $domain = strpos($start, '__x') === 0 ? $this->defaultDomain : substr(trim($str), 0, strpos($str, ',') - 1);
-            if (substr_count($matches[2][0], ',') === 1) {
-                $str = substr(trim(substr($str, strpos($str, ',') + 1)), 1);
-            } elseif (substr_count($matches[2][0], ',') === 2) {
-                $str = trim(substr($str, strpos($str, ',') + 1));
-                $str = trim(substr($str, 0, strpos($str, ',')));
-                $str = substr($str, 1, -1);
+            $domain = $matches[3][$i];
+            $str = $matches[4][$i];
+
+            // context not handled for now
+            if (strpos($start, '__x') === 0) {
+                $domain = $this->defaultDomain;
             }
+
             $item = $this->fixString($str);
 
             if (!array_key_exists($domain, $this->poResult)) {
