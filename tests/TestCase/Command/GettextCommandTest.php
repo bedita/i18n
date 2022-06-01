@@ -446,7 +446,7 @@ class GettextCommandTest extends TestCase
         foreach ($array as &$value) {
             if (is_array($value)) {
                 $this->recursiveSort($value);
-           }
+            }
         }
         if (array_values($array) === $array) {
             sort($array);
@@ -455,7 +455,7 @@ class GettextCommandTest extends TestCase
         }
 
         ksort($array);
-     }
+    }
 
     /**
      * Get GettextShell method by name, making it accessible
