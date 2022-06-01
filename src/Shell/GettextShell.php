@@ -28,6 +28,34 @@ use Cake\Utility\Hash;
 class GettextShell extends Shell
 {
     /**
+     * The Po results
+     *
+     * @var array
+     */
+    protected $poResult = [];
+
+    /**
+     * The template paths
+     *
+     * @var array
+     */
+    protected $templatePaths = [];
+
+    /**
+     * The locale path
+     *
+     * @var string
+     */
+    protected $localePath = null;
+
+    /**
+     * The name of default domain if not specified. Used for pot and po file names.
+     *
+     * @var string
+     */
+    protected $defaultDomain = 'default';
+
+    /**
      * Get the option parser for this shell.
      *
      * @return \Cake\Console\ConsoleOptionParser
@@ -65,35 +93,9 @@ class GettextShell extends Shell
     }
 
     /**
-     * The Po results
+     * Get po result.
      *
-     * @var array
-     */
-    protected $poResult = [];
-
-    /**
-     * The template paths
-     *
-     * @var array
-     */
-    protected $templatePaths = [];
-
-    /**
-     * The locale path
-     *
-     * @var string
-     */
-    protected $localePath = null;
-
-    /**
-     * PO file name
-     *
-     * @var string
-     */
-    protected $poName = 'default.po';
-
-    /**
-     * Get po result
+     * @return array
      */
     public function getPoResult(): array
     {
@@ -101,7 +103,9 @@ class GettextShell extends Shell
     }
 
     /**
-     * Get templatePaths
+     * Get templatePaths.
+     *
+     * @return array
      */
     public function getTemplatePaths(): array
     {
@@ -110,6 +114,8 @@ class GettextShell extends Shell
 
     /**
      * Get localePath
+     *
+     * @return string
      */
     public function getLocalePath(): string
     {
@@ -117,15 +123,7 @@ class GettextShell extends Shell
     }
 
     /**
-     * Get po name
-     */
-    public function getPoName(): string
-    {
-        return $this->poName;
-    }
-
-    /**
-     * Update gettext po files
+     * Update gettext po files.
      *
      * @return void
      */
@@ -171,7 +169,7 @@ class GettextShell extends Shell
         if (isset($this->params['plugin'])) {
             $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $this->params['plugin']));
             $basePath = $f->path;
-            $this->poName = $this->params['plugin'] . '.po';
+            $this->defaultDomain = $this->params['plugin'];
             $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
             $appTemplatePath = (string)Hash::get($appTemplates, '1');
             if (strpos($appTemplatePath, $basePath . '/src') === false) {
@@ -199,17 +197,19 @@ class GettextShell extends Shell
      */
     private function writeMasterPot(): void
     {
-        $potFilename = sprintf('%s/master.pot', $this->localePath);
-        $this->out(sprintf('Writing new .pot file: %s', $potFilename));
-        $pot = new File($potFilename, true);
-        $pot->write($this->header('pot'));
-        sort($this->poResult);
-        foreach ($this->poResult as $res) {
-            if (!empty($res)) {
-                $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+        foreach ($this->poResult as $domain => $poResult) {
+            $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
+            $this->out(sprintf('Writing new .pot file: %s', $potFilename));
+            $pot = new File($potFilename, true);
+            $pot->write($this->header('pot'));
+            sort($poResult);
+            foreach ($poResult as $res) {
+                if (!empty($res)) {
+                    $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+                }
             }
+            $pot->close();
         }
-        $pot->close();
     }
 
     /**
@@ -220,7 +220,6 @@ class GettextShell extends Shell
     private function writePoFiles(): void
     {
         $header = $this->header('po');
-        $potFilename = sprintf('%s/master.pot', $this->localePath);
         $locales = array_keys((array)Configure::read('I18n.locales', []));
         foreach ($locales as $loc) {
             $potDir = $this->localePath . DS . $loc;
@@ -228,17 +227,21 @@ class GettextShell extends Shell
                 mkdir($potDir);
             }
             $this->out(sprintf('Language: %s', $loc));
-            $poFile = sprintf('%s/%s', $potDir, $this->poName);
-            if (!file_exists($poFile)) {
-                $newPoFile = new File($poFile, true);
-                $newPoFile->write($header);
-                $newPoFile->close();
+
+            foreach (array_keys($this->poResult) as $domain) {
+                $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
+                $poFile = sprintf('%s/%s.po', $potDir, $domain);
+                if (!file_exists($poFile)) {
+                    $newPoFile = new File($poFile, true);
+                    $newPoFile->write($header);
+                    $newPoFile->close();
+                }
+                $this->out(sprintf('Merging %s', $poFile));
+                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
+                exec($mergeCmd);
+                $this->analyzePoFile($poFile);
+                $this->hr();
             }
-            $this->out(sprintf('Merging %s', $poFile));
-            $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-            exec($mergeCmd);
-            $this->analyzePoFile($poFile);
-            $this->hr();
         }
     }
 
@@ -397,14 +400,21 @@ class GettextShell extends Shell
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
+        $domain = $this->defaultDomain;
+
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
             $item = $this->fixString($matches[1][$i]);
             if (empty($item)) {
                 $item = $this->fixString($matches[2][$i]);
             }
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }
@@ -431,6 +441,8 @@ class GettextShell extends Shell
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
             $str = $matches[2][$i];
+            // context not handled yet
+            $domain = strpos($start, '__x') === 0 ? $this->defaultDomain : substr(trim($str), 0, strpos($str, ',') - 1);
             if (substr_count($matches[2][0], ',') === 1) {
                 $str = substr(trim(substr($str, strpos($str, ',') + 1)), 1);
             } elseif (substr_count($matches[2][0], ',') === 2) {
@@ -439,8 +451,13 @@ class GettextShell extends Shell
                 $str = substr($str, 1, -1);
             }
             $item = $this->fixString($str);
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }
@@ -464,6 +481,8 @@ class GettextShell extends Shell
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
+        $domain = $this->defaultDomain; // domain and context not handled yet
+
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
             $str = $matches[2][$i];
@@ -475,8 +494,13 @@ class GettextShell extends Shell
                 $str = substr($str, 1);
             }
             $item = $this->fixString($str);
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }
