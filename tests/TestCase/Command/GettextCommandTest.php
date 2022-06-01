@@ -72,6 +72,9 @@ class GettextCommandTest extends TestCase
      *
      * @return void
      * @covers ::execute()
+     * @covers ::getPoResult()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
      */
     public function testExecute(): void
     {
