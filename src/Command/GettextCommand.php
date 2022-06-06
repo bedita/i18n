@@ -180,6 +180,10 @@ class GettextCommand extends Command
             return;
         }
         $this->templatePaths = [APP, CONFIG];
+        $app = $args->getOption('app');
+        if ($app) {
+            $this->templatePaths = [$app . DS . 'src', $app . DS . 'config'];
+        }
         $this->templatePaths = array_merge($this->templatePaths, App::path(View::NAME_TEMPLATE));
         $this->templatePaths = array_filter($this->templatePaths, function ($path) {
             return strpos($path, 'plugins') === false;
