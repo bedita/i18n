@@ -15,7 +15,7 @@ on:
 jobs:
   cs:
     name: 'Check coding style'
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - name: 'Checkout current revision'
@@ -55,7 +55,7 @@ jobs:
   stan:
     name: 'Static code analyzer'
     if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
     continue-on-error: true
 
     steps:
@@ -91,7 +91,7 @@ jobs:
 
   undeclared-dependencies:
     name: 'Check missing dependencies'
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - name: 'Checkout current revision'
@@ -127,7 +127,7 @@ jobs:
   unit:
     name: 'Run unit tests'
     if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
 
     strategy:
       matrix:
@@ -191,7 +191,7 @@ jobs:
   unit-lowest:
     name: 'Run unit tests with lowest-matching dependencies versions'
     if: "!contains(github.event.commits[0].message, '[skip ci]') && !contains(github.event.commits[0].message, '[ci skip]')"
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - name: 'Checkout current revision'
