@@ -163,7 +163,7 @@ class GettextCommand extends Command
     {
         $plugin = $args->getOption('plugin');
         $localesPaths = (array)App::path('locales');
-        if ($plugin) {
+        if ($plugin && is_string($plugin)) {
             $paths = [
                 Plugin::classPath($plugin),
                 Plugin::configPath($plugin),
