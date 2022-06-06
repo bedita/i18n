@@ -151,6 +151,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $this->shell->params['startPath'] = $startPath;
         }
         if (!empty($pluginName)) {
+            $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
             $expectedPoName = sprintf('%s.po', $pluginName);
         }
