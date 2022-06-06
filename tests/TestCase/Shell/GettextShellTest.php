@@ -16,8 +16,10 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\Shell;
 
 use BEdita\I18n\Shell\GettextShell;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
+use Cake\View\View;
 
 /**
  * {@see \BEdita\I18n\Shell\GettextShell} Test Case
@@ -122,7 +124,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 [
                     sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
                     sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
-                    sprintf('%s/tests/test_app/plugins/Dummy/templates', $base),
                 ], // template paths
                 sprintf('%s/tests/test_app/plugins/Dummy/Locale', $base), // locale path
             ],
@@ -154,6 +155,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
             $expectedPoName = sprintf('%s.po', $pluginName);
+            $expectedTemplatePaths = array_merge($expectedTemplatePaths, App::path(View::NAME_TEMPLATE, $pluginName));
         }
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
