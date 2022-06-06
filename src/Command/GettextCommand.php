@@ -19,10 +19,13 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
+use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Hash;
+use Cake\View\View;
 
 /**
  * Gettext command.
@@ -158,30 +161,30 @@ class GettextCommand extends Command
      */
     private function setupPaths(Arguments $args): void
     {
-        $appTemplates = (array)Configure::read('App.paths.templates');
         $plugin = $args->getOption('plugin');
+        $localesPaths = (array)App::path('locales');
         if ($plugin) {
-            $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $plugin));
-            $basePath = $f->path;
+            $paths = [
+                Plugin::classPath($plugin),
+                Plugin::configPath($plugin),
+            ];
+            $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
             $this->defaultDomain = $plugin;
-            $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
-            $appTemplatePath = (string)Hash::get($appTemplates, '1');
-            if (strpos($appTemplatePath, $basePath . '/src') === false) {
-                $this->templatePaths[] = $appTemplatePath;
+            foreach ($localesPaths as $path) {
+                if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
+                    $this->localePath = $path;
+                    break;
+                }
             }
-            $this->localePath = (string)Configure::read('App.paths.locales.1');
 
             return;
         }
-        $app = $args->getOption('app') ?? getcwd();
-        $f = new Folder($app);
-        $basePath = $f->path;
-        $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
-        $appTemplatePath = (string)Hash::get($appTemplates, '0');
-        if (strpos($appTemplatePath, $basePath . '/src') === false) {
-            $this->templatePaths[] = $appTemplatePath;
-        }
-        $this->localePath = (string)Configure::read('App.paths.locales.0');
+        $this->templatePaths = [APP, CONFIG];
+        $this->templatePaths = array_merge($this->templatePaths, App::path(View::NAME_TEMPLATE));
+        $this->templatePaths = array_filter($this->templatePaths, function ($path) {
+            return strpos($path, 'plugins') === false;
+        });
+        $this->localePath = (string)Hash::get($localesPaths, 0);
     }
 
     /**
@@ -563,12 +566,8 @@ class GettextCommand extends Command
             return;
         }
         // check template folder exists
-        $appDir = 'src/Template';
         $plugin = $args->getOption('plugin');
-        if (!empty($plugin)) {
-            $startPath = $args->getOption('startPath') ?? getcwd();
-            $appDir = sprintf('%s/plugins/%s/src/Template', $startPath, $plugin);
-        }
+        $appDir = empty($plugin) ? App::path(View::NAME_TEMPLATE)[0] : Plugin::templatePath($plugin);
         if (!file_exists($appDir)) {
             $io->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
@@ -577,14 +576,14 @@ class GettextCommand extends Command
 
         // do extract translation strings from js files using ttag
         $io->out('Extracting translation string from javascript files using ttag');
-        $masterJs = sprintf('%s/master-js.pot', $this->localePath);
-        exec(sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir));
+        $defaultJs = sprintf('%s/default-js.pot', $this->localePath);
+        exec(sprintf('%s extract --o %s --l en %s', $ttag, $defaultJs, $appDir));
 
-        // merge master-js.pot and master.pot
-        $master = sprintf('%s/master.pot', $this->localePath);
-        exec(sprintf('msgcat --use-first %s %s -o %s', $master, $masterJs, $master));
+        // merge default-js.pot and default.pot
+        $default = sprintf('%s/default.pot', $this->localePath);
+        exec(sprintf('msgcat --use-first %s %s -o %s', $default, $defaultJs, $default));
 
-        // remove master-js.pot
-        unlink($masterJs);
+        // remove default-js.pot
+        unlink($defaultJs);
     }
 }
