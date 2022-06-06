@@ -569,7 +569,7 @@ class GettextCommand extends Command
         }
         // check template folder exists
         $plugin = $args->getOption('plugin');
-        $appDir = empty($plugin) ? App::path(View::NAME_TEMPLATE)[0] : Plugin::templatePath($plugin);
+        $appDir = (!empty($plugin) && is_string($plugin)) ? Plugin::templatePath($plugin) : App::path(View::NAME_TEMPLATE)[0];
         if (!file_exists($appDir)) {
             $io->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
 
