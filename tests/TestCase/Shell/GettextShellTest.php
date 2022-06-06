@@ -122,7 +122,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 [
                     sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
                     sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
-                    sprintf('%s/tests/test_app/plugins/Dummy/Template', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/templates', $base),
                 ], // template paths
                 sprintf('%s/tests/test_app/plugins/Dummy/Locale', $base), // locale path
             ],

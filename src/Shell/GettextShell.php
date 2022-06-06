@@ -19,6 +19,7 @@ use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Hash;
@@ -169,10 +170,13 @@ class GettextShell extends Shell
      */
     private function setupPaths(): void
     {
-        $appTemplates = (array)Configure::read('App.paths.templates');
         if (isset($this->params['plugin'])) {
             $plugin = (string)$this->params['plugin'];
-            $this->templatePaths = App::path(View::NAME_TEMPLATE, $plugin);
+            $paths = [
+                Plugin::classPath($plugin),
+                Plugin::configPath($plugin),
+            ];
+            $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
             $this->poName = $this->params['plugin'] . '.po';
             $localesPaths = (array)Configure::read('App.paths.locales');
             foreach ($localesPaths as $path) {
@@ -188,6 +192,7 @@ class GettextShell extends Shell
         $f = new Folder($app);
         $basePath = $f->path;
         $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
+        $appTemplates = (array)Configure::read('App.paths.templates');
         $appTemplatePath = (string)Hash::get($appTemplates, '0');
         if (strpos($appTemplatePath, $basePath . '/src') === false) {
             $this->templatePaths[] = $appTemplatePath;
