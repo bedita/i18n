@@ -7,7 +7,7 @@ use BEdita\I18n\Command\GettextCommand;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Core\Configure;
-use Cake\TestSuite\ConsoleIntegrationTestTrait;
+use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
 /**
