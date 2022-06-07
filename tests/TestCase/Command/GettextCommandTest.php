@@ -17,7 +17,7 @@ use Cake\TestSuite\TestCase;
  */
 class GettextCommandTest extends TestCase
 {
-    use ConsoleIntegrationTestTrait;
+    use ConsoleIntegrationTestTrait; /** @phpstan-ignore-line */
 
     /**
      * The command used in test
@@ -40,7 +40,7 @@ class GettextCommandTest extends TestCase
             ],
         ]);
         parent::setUp();
-        $this->useCommandRunner();
+        $this->useCommandRunner(); /** @phpstan-ignore-line */
         $this->command = new GettextCommand();
         $this->cleanFiles();
     }
@@ -62,7 +62,7 @@ class GettextCommandTest extends TestCase
      */
     public function testBuildOptionParser(): void
     {
-        $this->exec('gettext --help');
+        $this->exec('gettext --help'); /** @phpstan-ignore-line */
         $this->assertOutputContains('Create or update i18n po/pot files');
         $this->assertOutputContains('bin/cake gettext');
     }
@@ -84,7 +84,7 @@ class GettextCommandTest extends TestCase
 
         // call the method
         $appPath = sprintf('%s/tests/test_app/TestApp', getcwd());
-        $this->exec('gettext --app ' . $appPath);
+        $this->exec('gettext --app ' . $appPath); /** @phpstan-ignore-line */
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
