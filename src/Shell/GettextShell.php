@@ -17,10 +17,13 @@ namespace BEdita\I18n\Shell;
 
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
+use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Hash;
+use Cake\View\View;
 
 /**
  * Gettext shell
@@ -167,17 +170,21 @@ class GettextShell extends Shell
      */
     private function setupPaths(): void
     {
-        $appTemplates = (array)Configure::read('App.paths.templates');
         if (isset($this->params['plugin'])) {
-            $f = new Folder(sprintf('%s%s', (string)Configure::read('App.paths.plugins.0'), $this->params['plugin']));
-            $basePath = $f->path;
+            $plugin = (string)$this->params['plugin'];
+            $paths = [
+                Plugin::classPath($plugin),
+                Plugin::configPath($plugin),
+            ];
+            $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
             $this->poName = $this->params['plugin'] . '.po';
-            $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
-            $appTemplatePath = (string)Hash::get($appTemplates, '1');
-            if (strpos($appTemplatePath, $basePath . '/src') === false) {
-                $this->templatePaths[] = $appTemplatePath;
+            $localesPaths = (array)Configure::read('App.paths.locales');
+            foreach ($localesPaths as $path) {
+                if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
+                    $this->localePath = $path;
+                    break;
+                }
             }
-            $this->localePath = (string)Configure::read('App.paths.locales.1');
 
             return;
         }
@@ -185,6 +192,7 @@ class GettextShell extends Shell
         $f = new Folder($app);
         $basePath = $f->path;
         $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
+        $appTemplates = (array)Configure::read('App.paths.templates');
         $appTemplatePath = (string)Hash::get($appTemplates, '0');
         if (strpos($appTemplatePath, $basePath . '/src') === false) {
             $this->templatePaths[] = $appTemplatePath;
