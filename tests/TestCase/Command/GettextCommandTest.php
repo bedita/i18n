@@ -7,7 +7,7 @@ use BEdita\I18n\Command\GettextCommand;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Core\Configure;
-use Cake\TestSuite\ConsoleIntegrationTestTrait;
+use Cake\TestSuite\ConsoleIntegrationTestTrait;/** @phpstan-ignore-line */
 use Cake\TestSuite\TestCase;
 
 /**
@@ -17,7 +17,7 @@ use Cake\TestSuite\TestCase;
  */
 class GettextCommandTest extends TestCase
 {
-    use ConsoleIntegrationTestTrait; /** @phpstan-ignore-line */
+    use ConsoleIntegrationTestTrait;
 
     /**
      * The command used in test
@@ -40,7 +40,7 @@ class GettextCommandTest extends TestCase
             ],
         ]);
         parent::setUp();
-        $this->useCommandRunner(); /** @phpstan-ignore-line */
+        $this->useCommandRunner();/** @phpstan-ignore-line */
         $this->command = new GettextCommand();
         $this->cleanFiles();
     }
@@ -62,9 +62,9 @@ class GettextCommandTest extends TestCase
      */
     public function testBuildOptionParser(): void
     {
-        $this->exec('gettext --help'); /** @phpstan-ignore-line */
-        $this->assertOutputContains('Create or update i18n po/pot files');
-        $this->assertOutputContains('bin/cake gettext');
+        $this->exec('gettext --help');/** @phpstan-ignore-line */
+        $this->assertOutputContains('Create or update i18n po/pot files');/** @phpstan-ignore-line */
+        $this->assertOutputContains('bin/cake gettext');/** @phpstan-ignore-line */
     }
 
     /**
@@ -84,7 +84,7 @@ class GettextCommandTest extends TestCase
 
         // call the method
         $appPath = sprintf('%s/tests/test_app/TestApp', getcwd());
-        $this->exec('gettext --app ' . $appPath); /** @phpstan-ignore-line */
+        $this->exec('gettext --app ' . $appPath);/** @phpstan-ignore-line */
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
