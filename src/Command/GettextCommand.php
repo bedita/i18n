@@ -579,7 +579,7 @@ class GettextCommand extends Command
         // do extract translation strings from js files using ttag
         $io->out('Extracting translation string from javascript files using ttag');
         $defaultJs = sprintf('%s/default-js.pot', $this->localePath);
-        exec(sprintf('%s extract --o %s --l en %s', $ttag, $defaultJs, $appDir));
+        exec(sprintf('%s extract --extractLocation never --o %s --l en %s', $ttag, $defaultJs, $appDir));
 
         // merge default-js.pot and <plugin>.pot|default.pot
         $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';
