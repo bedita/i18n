@@ -581,8 +581,9 @@ class GettextCommand extends Command
         $defaultJs = sprintf('%s/default-js.pot', $this->localePath);
         exec(sprintf('%s extract --o %s --l en %s', $ttag, $defaultJs, $appDir));
 
-        // merge default-js.pot and default.pot
-        $default = sprintf('%s/default.pot', $this->localePath);
+        // merge default-js.pot and <plugin>.pot|default.pot
+        $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';
+        $default = sprintf('%s/%s', $this->localePath, $potFile);
         exec(sprintf('msgcat --use-first %s %s -o %s', $default, $defaultJs, $default));
 
         // remove default-js.pot
