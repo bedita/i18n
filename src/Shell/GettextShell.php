@@ -89,6 +89,13 @@ class GettextShell extends Shell
     protected $localePath = null;
 
     /**
+     * The name of default domain if not specified. Used for pot and po file names.
+     *
+     * @var string
+     */
+    protected $defaultDomain = 'default';
+
+    /**
      * PO file name
      *
      * @var string
@@ -405,14 +412,21 @@ class GettextShell extends Shell
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
+        $domain = $this->defaultDomain;
+
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
             $item = $this->fixString($matches[1][$i]);
             if (empty($item)) {
                 $item = $this->fixString($matches[2][$i]);
             }
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }
@@ -442,17 +456,22 @@ class GettextShell extends Shell
 
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
-            $str = $matches[2][$i];
-            if (substr_count($matches[2][0], ',') === 1) {
-                $str = substr(trim(substr($str, strpos($str, ',') + 1)), 1);
-            } elseif (substr_count($matches[2][0], ',') === 2) {
-                $str = trim(substr($str, strpos($str, ',') + 1));
-                $str = trim(substr($str, 0, strpos($str, ',')));
-                $str = substr($str, 1, -1);
+            $domain = $matches[3][$i];
+            $str = $matches[4][$i];
+
+            // context not handled for now
+            if (strpos($start, '__x') === 0) {
+                $domain = $this->defaultDomain;
             }
+
             $item = $this->fixString($str);
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }
@@ -476,6 +495,8 @@ class GettextShell extends Shell
         $matches = [];
         preg_match_all($rgxp, $content, $matches);
 
+        $domain = $this->defaultDomain; // domain and context not handled yet
+
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
             $str = $matches[2][$i];
@@ -487,8 +508,13 @@ class GettextShell extends Shell
                 $str = substr($str, 1);
             }
             $item = $this->fixString($str);
-            if (!in_array($item, $this->poResult)) {
-                $this->poResult[] = $item;
+
+            if (!array_key_exists($domain, $this->poResult)) {
+                $this->poResult[$domain] = [];
+            }
+
+            if (!in_array($item, $this->poResult[$domain])) {
+                $this->poResult[$domain][] = $item;
             }
         }
     }

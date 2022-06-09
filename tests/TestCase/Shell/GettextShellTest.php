@@ -304,31 +304,42 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 sprintf('%s/tests/files/gettext/contents/sample.php', getcwd()),
                 'php',
                 [
-                    '1 test __',
-                    '1 test __d',
-                    '1 test __dn',
-                    '1 test __dx',
-                    '1 test __dxn',
-                    '1 test __n',
-                    '1 test __x',
-                    '1 test __xn',
-                    '2 test __',
-                    '3 test __',
-                    '4 test __',
-                    'A php content',
-                    'A php string with \'single quotes\'',
-                    'A php string with \"double quotes\"',
-                    'This is a php sample',
+                    'default' => [
+                        'This is a php sample',
+                        'A php content',
+                        'A php string with \"double quotes\"',
+                        'A php string with \'single quotes\'',
+                        '1 test __',
+                        '2 test __',
+                        '3 test __',
+                        '4 test __',
+                        '1 test __n',
+                        '1 test __x',
+                        '1 test __xn',
+                        '1 test __dx',
+                        '1 test __dxn',
+                    ],
+                    'DomainSampleD' => [
+                        '1 test __d',
+                    ],
+                    'DomainSampleDN' => [
+                        '1 test __dn',
+                    ],
                 ],
             ],
             'sample twig' => [
                 sprintf('%s/tests/files/gettext/contents/sample.twig', getcwd()),
                 'twig',
                 [
-                    'A twig content',
-                    'A twig string with \'single quotes\'',
-                    'A twig string with \"double quotes\"',
-                    'This is a twig sample',
+                    'default' => [
+                        'This is a twig sample',
+                        'A twig content',
+                        'A twig string with \"double quotes\"',
+                        'A twig string with \'single quotes\'',
+                    ],
+                    'DomainSampleD' => [
+                        'A twig string in a domain',
+                    ],
                 ],
             ],
         ];
@@ -347,11 +358,33 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testParseFile(string $file, string $extension, array $expected): void
     {
         $method = self::getMethod('parseFile');
-        $method->invokeArgs($this->shell, [ $file, $extension ]);
+        $method->invokeArgs($this->shell, [$file, $extension]);
         $actual = $this->shell->getPoResult();
-        sort($expected);
-        sort($actual);
+        $this->recursiveSort($expected);
+        $this->recursiveSort($actual);
         static::assertEquals($expected, $actual);
+    }
+
+    /**
+     * Recursive ksort/sort arrays used in tests
+     *
+     * @param array $array Array to sort
+     * @return void
+     */
+    protected function recursiveSort(array &$array): void
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->recursiveSort($value);
+            }
+        }
+        if (array_values($array) === $array) {
+            sort($array);
+
+            return;
+        }
+
+        ksort($array);
     }
 
     /**
@@ -365,25 +398,32 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             'contents dir' => [
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
-                    '1 test __',
-                    '1 test __d',
-                    '1 test __dn',
-                    '1 test __dx',
-                    '1 test __dxn',
-                    '1 test __n',
-                    '1 test __x',
-                    '1 test __xn',
-                    '2 test __',
-                    '3 test __',
-                    '4 test __',
-                    'A php content',
-                    'A php string with \'single quotes\'',
-                    'A php string with \"double quotes\"',
-                    'A twig content',
-                    'A twig string with \'single quotes\'',
-                    'A twig string with \"double quotes\"',
-                    'This is a php sample',
-                    'This is a twig sample',
+                    'default' => [
+                        'This is a twig sample',
+                        'A twig content',
+                        'A twig string with \"double quotes\"',
+                        "A twig string with 'single quotes'",
+                        'This is a php sample',
+                        'A php content',
+                        'A php string with \"double quotes\"',
+                        'A php string with \'single quotes\'',
+                        '1 test __',
+                        '2 test __',
+                        '3 test __',
+                        '4 test __',
+                        '1 test __n',
+                        '1 test __x',
+                        '1 test __xn',
+                        '1 test __dx',
+                        '1 test __dxn',
+                    ],
+                    'DomainSampleD' => [
+                        'A twig string in a domain',
+                        '1 test __d',
+                    ],
+                    'DomainSampleDN' => [
+                        '1 test __dn',
+                    ],
                 ], // result
             ],
         ];
@@ -407,10 +447,10 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testParseDir(string $dir, array $expected): void
     {
         $method = self::getMethod('parseDir');
-        $method->invokeArgs($this->shell, [ $dir ]);
+        $method->invokeArgs($this->shell, [$dir]);
         $actual = $this->shell->getPoResult();
-        sort($expected);
-        sort($actual);
+        $this->recursiveSort($expected);
+        $this->recursiveSort($actual);
         static::assertEquals($expected, $actual);
     }
 
