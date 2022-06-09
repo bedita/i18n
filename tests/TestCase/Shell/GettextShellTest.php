@@ -58,19 +58,17 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function tearDown(): void
     {
         $this->cleanFiles();
-        unset($this->shell);
         parent::tearDown();
     }
 
     /**
-     * Test update and private methods called inside update
+     * Test execute method
      *
      * @return void
      * @covers ::update()
      * @covers ::getPoResult()
      * @covers ::getTemplatePaths()
      * @covers ::getLocalePath()
-     * @covers ::getPoName()
      */
     public function testUpdate(): void
     {
@@ -90,10 +88,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
-        static::assertTrue(gettype($this->shell->getPoResult()) === 'array');
-        static::assertTrue(gettype($this->shell->getTemplatePaths()) === 'array');
-        static::assertTrue(gettype($this->shell->getLocalePath()) === 'string');
-        static::assertTrue(gettype($this->shell->getPoName()) === 'string');
     }
 
     /**
@@ -144,7 +138,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      */
     public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
-        $expectedPoName = 'default.po';
         if (!empty($appPath)) {
             $this->shell->params['app'] = sprintf('%s/%s', getcwd(), $appPath);
         }
@@ -154,7 +147,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         if (!empty($pluginName)) {
             $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
-            $expectedPoName = sprintf('%s.po', $pluginName);
             $expectedTemplatePaths = array_merge($expectedTemplatePaths, App::path(View::NAME_TEMPLATE, $pluginName));
         }
         $method = self::getMethod('setupPaths');
@@ -172,7 +164,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             $actual = substr($actual, 0, -1);
         }
         static::assertEquals($expectedLocalePath, $actual);
-        static::assertEquals($expectedPoName, $this->shell->getPoName());
     }
 
     /**
@@ -190,7 +181,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // set poResult using reflection class
-        $poResult = [
+        $poResult['default'] = [
             'This is a php sample',
             'A php content',
             'A php string with \"double quotes\"',
@@ -210,8 +201,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $method->setAccessible(true);
         $method->invokeArgs($this->shell, []);
 
-        // file master.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
-        $content = file_get_contents(sprintf('%s/master.pot', $localePath));
+        // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
+        $content = file_get_contents(sprintf('%s/default.pot', $localePath));
         static::assertNotEmpty($content);
     }
 
@@ -230,6 +221,15 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
+
+        // set poResult using reflection class
+        $poResult['default'] = [
+            'This is a php sample',
+            'A php content',
+        ];
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $poResult);
 
         // invoke writePoFiles
         $method = self::getMethod('writePoFiles');
@@ -277,7 +277,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function testFixString($input, $expected): void
     {
         $method = self::getMethod('fixString');
-        $args = [ $input ];
+        $args = [$input];
         $result = $method->invokeArgs($this->shell, $args);
         static::assertEquals($expected, $result);
     }
@@ -339,6 +339,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain',
+                        'A twig string in a domain with {0}',
                     ],
                 ],
             ],
@@ -363,28 +364,6 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $this->recursiveSort($expected);
         $this->recursiveSort($actual);
         static::assertEquals($expected, $actual);
-    }
-
-    /**
-     * Recursive ksort/sort arrays used in tests
-     *
-     * @param array $array Array to sort
-     * @return void
-     */
-    protected function recursiveSort(array &$array): void
-    {
-        foreach ($array as &$value) {
-            if (is_array($value)) {
-                $this->recursiveSort($value);
-            }
-        }
-        if (array_values($array) === $array) {
-            sort($array);
-
-            return;
-        }
-
-        ksort($array);
     }
 
     /**
@@ -419,6 +398,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain',
+                        'A twig string in a domain with {0}',
                         '1 test __d',
                     ],
                     'DomainSampleDN' => [
@@ -455,6 +435,28 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
+     * Recursive ksort/sort arrays used in tests
+     *
+     * @param array $array Array to sort
+     * @return void
+     */
+    protected function recursiveSort(array &$array): void
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->recursiveSort($value);
+            }
+        }
+        if (array_values($array) === $array) {
+            sort($array);
+
+            return;
+        }
+
+        ksort($array);
+    }
+
+    /**
      * Get GettextShell method by name, making it accessible
      *
      * @param string $name The method name
@@ -477,7 +479,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     private function cleanFiles(): void
     {
         $files = [
-            sprintf('%s/tests/test_app/TestApp/Locale/master.pot', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()),
             sprintf('%s/tests/test_app/TestApp/Locale/en_US/default.po', getcwd()),
             sprintf('%s/tests/test_app/TestApp/Locale/it_IT/default.po', getcwd()),
         ];

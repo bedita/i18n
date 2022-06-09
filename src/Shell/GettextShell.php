@@ -96,13 +96,6 @@ class GettextShell extends Shell
     protected $defaultDomain = 'default';
 
     /**
-     * PO file name
-     *
-     * @var string
-     */
-    protected $poName = 'default.po';
-
-    /**
      * Get po result
      */
     public function getPoResult(): array
@@ -124,14 +117,6 @@ class GettextShell extends Shell
     public function getLocalePath(): string
     {
         return $this->localePath;
-    }
-
-    /**
-     * Get po name
-     */
-    public function getPoName(): string
-    {
-        return $this->poName;
     }
 
     /**
@@ -184,7 +169,7 @@ class GettextShell extends Shell
                 Plugin::configPath($plugin),
             ];
             $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
-            $this->poName = $this->params['plugin'] . '.po';
+            $this->defaultDomain = $plugin;
             $localesPaths = (array)Configure::read('App.paths.locales');
             foreach ($localesPaths as $path) {
                 if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
@@ -214,17 +199,19 @@ class GettextShell extends Shell
      */
     private function writeMasterPot(): void
     {
-        $potFilename = sprintf('%s/master.pot', $this->localePath);
-        $this->out(sprintf('Writing new .pot file: %s', $potFilename));
-        $pot = new File($potFilename, true);
-        $pot->write($this->header('pot'));
-        sort($this->poResult);
-        foreach ($this->poResult as $res) {
-            if (!empty($res)) {
-                $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+        foreach ($this->poResult as $domain => $poResult) {
+            $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
+            $this->out(sprintf('Writing new .pot file: %s', $potFilename));
+            $pot = new File($potFilename, true);
+            $pot->write($this->header('pot'));
+            sort($poResult);
+            foreach ($poResult as $res) {
+                if (!empty($res)) {
+                    $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+                }
             }
+            $pot->close();
         }
-        $pot->close();
     }
 
     /**
@@ -235,7 +222,6 @@ class GettextShell extends Shell
     private function writePoFiles(): void
     {
         $header = $this->header('po');
-        $potFilename = sprintf('%s/master.pot', $this->localePath);
         $locales = array_keys((array)Configure::read('I18n.locales', []));
         foreach ($locales as $loc) {
             $potDir = $this->localePath . DS . $loc;
@@ -243,17 +229,21 @@ class GettextShell extends Shell
                 mkdir($potDir);
             }
             $this->out(sprintf('Language: %s', $loc));
-            $poFile = sprintf('%s/%s', $potDir, $this->poName);
-            if (!file_exists($poFile)) {
-                $newPoFile = new File($poFile, true);
-                $newPoFile->write($header);
-                $newPoFile->close();
+
+            foreach (array_keys($this->poResult) as $domain) {
+                $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
+                $poFile = sprintf('%s/%s.po', $potDir, $domain);
+                if (!file_exists($poFile)) {
+                    $newPoFile = new File($poFile, true);
+                    $newPoFile->write($header);
+                    $newPoFile->close();
+                }
+                $this->out(sprintf('Merging %s', $poFile));
+                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
+                exec($mergeCmd);
+                $this->analyzePoFile($poFile);
+                $this->hr();
             }
-            $this->out(sprintf('Merging %s', $poFile));
-            $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-            exec($mergeCmd);
-            $this->analyzePoFile($poFile);
-            $this->hr();
         }
     }
 
@@ -592,8 +582,8 @@ class GettextShell extends Shell
         $masterJs = sprintf('%s/master-js.pot', $this->localePath);
         exec(sprintf('%s extract --o %s --l en %s', $ttag, $masterJs, $appDir));
 
-        // merge master-js.pot and master.pot
-        $master = sprintf('%s/master.pot', $this->localePath);
+        // merge master-js.pot and default.pot
+        $master = sprintf('%s/default.pot', $this->localePath);
         exec(sprintf('msgcat --use-first %s %s -o %s', $master, $masterJs, $master));
 
         // remove master-js.pot
