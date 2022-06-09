@@ -345,6 +345,8 @@ class GettextCommandTest extends TestCase
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain',
+                        'A twig string in a domain in double quotes',
+                        'A twig string in a domain with {0}',
                     ],
                 ],
             ],
@@ -403,6 +405,8 @@ class GettextCommandTest extends TestCase
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain',
+                        'A twig string in a domain in double quotes',
+                        'A twig string in a domain with {0}',
                         '1 test __d',
                     ],
                     'DomainSampleDN' => [
