@@ -427,10 +427,14 @@ class GettextShell extends Shell
      */
     private function parseContentSecondArg($start, $content, $options): void
     {
+        $capturePath = "([^']*)',\s*'([^']*)";
+        $doubleQuoteCapture = str_replace("'", $options['double_quote'], $capturePath);
+        $quoteCapture = str_replace("'", $options['quote'], $capturePath);
+
         // phpcs:disable
         $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . '([^{)}]*)' . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . '([^{)}]*)' . "{$options['quote']}" .
+            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . $doubleQuoteCapture . "{$options['double_quote']}" .
+            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . $quoteCapture . "{$options['quote']}" .
             '/';
         // phpcs:enable
         $matches = [];
