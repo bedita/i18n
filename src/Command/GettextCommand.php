@@ -446,8 +446,8 @@ class GettextCommand extends Command
 
         $limit = count($matches[0]);
         for ($i = 0; $i < $limit; $i++) {
-            $domain = $matches[3][$i];
-            $str = $matches[4][$i];
+            $domain = !empty($matches[1][$i]) ? $matches[1][$i] : $matches[3][$i];
+            $str = !empty($matches[2][$i]) ? $matches[2][$i] : $matches[4][$i];
 
             // context not handled for now
             if (strpos($start, '__x') === 0) {
