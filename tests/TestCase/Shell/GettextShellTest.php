@@ -226,7 +226,7 @@ msgstr \"\"
                     'A twig content' => [''],
                     'A twig string with \"double quotes\"' => [''],
                     "A twig string with \'single quotes\'" => [''],
-                    "A twig string with context" => ['', 'SampleContext'],
+                    'A twig string with context' => ['', 'SampleContext'],
                 ],
             ],
         ];
