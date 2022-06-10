@@ -241,7 +241,8 @@ msgstr \"\"
      */
     public function testWriteMasterPot($expected, $values): void
     {
-        FrozenTime::setTestNow('2022-01-01 00:00:00');
+        $time = new FrozenTime('2022-01-01 00:00:00');
+        FrozenTime::setTestNow($time);
 
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
