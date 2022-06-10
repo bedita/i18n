@@ -182,14 +182,14 @@ class GettextShellTest extends ConsoleIntegrationTestCase
 
         // set poResult using reflection class
         $poResult['default'] = [
-            'This is a php sample',
-            'A php content',
-            'A php string with \"double quotes\"',
-            "A php string with \'single quotes\'",
-            'This is a twig sample',
-            'A twig content',
-            'A twig string with \"double quotes\"',
-            "A twig string with \'single quotes\'",
+            'This is a php sample' => [''],
+            'A php content' => [''],
+            'A php string with \"double quotes\"' => [''],
+            "A php string with \'single quotes\'" => [''],
+            'This is a twig sample' => [''],
+            'A twig content' => [''],
+            'A twig string with \"double quotes\"' => [''],
+            "A twig string with \'single quotes\'" => [''],
         ];
         $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
         $reflection->setAccessible(true);
@@ -305,25 +305,29 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 'php',
                 [
                     'default' => [
-                        'This is a php sample',
-                        'A php content',
-                        'A php string with \"double quotes\"',
-                        'A php string with \'single quotes\'',
-                        '1 test __',
-                        '2 test __',
-                        '3 test __',
-                        '4 test __',
-                        '1 test __n',
-                        '1 test __x',
-                        '1 test __xn',
-                        '1 test __dx',
-                        '1 test __dxn',
+                        'This is a php sample' => [''],
+                        'A php content' => [''],
+                        'A php string with \"double quotes\"' => [''],
+                        'A php string with \'single quotes\'' => [''],
+                        '1 test __' => [''],
+                        '2 test __' => [''],
+                        '3 test __' => [''],
+                        '4 test __' => [''],
+                        '1 test __n' => [''],
+                        '1 test __x' => ['', 'ContextSampleX'],
+                        '1 test __xn' => ['', 'ContextSampleXN'],
                     ],
                     'DomainSampleD' => [
-                        '1 test __d',
+                        '1 test __d' => [''],
                     ],
                     'DomainSampleDN' => [
-                        '1 test __dn',
+                        '1 test __dn' => [''],
+                    ],
+                    'DomainSampleDX' => [
+                        '1 test __dx' => ['', 'ContextSampleDX'],
+                    ],
+                    'DomainSampleDXN' => [
+                        '1 test __dxn' => ['', 'ContextSampleDXN'],
                     ],
                 ],
             ],
@@ -332,14 +336,14 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 'twig',
                 [
                     'default' => [
-                        'This is a twig sample',
-                        'A twig content',
-                        'A twig string with \"double quotes\"',
-                        'A twig string with \'single quotes\'',
+                        'This is a twig sample' => [''],
+                        'A twig content' => [''],
+                        'A twig string with \"double quotes\"' => [''],
+                        'A twig string with \'single quotes\'' => [''],
                     ],
                     'DomainSampleD' => [
-                        'A twig string in a domain',
-                        'A twig string in a domain with {0}',
+                        'A twig string in a domain' => [''],
+                        'A twig string in a domain with {0}' => [''],
                     ],
                 ],
             ],
@@ -378,31 +382,35 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
                     'default' => [
-                        'This is a twig sample',
-                        'A twig content',
-                        'A twig string with \"double quotes\"',
-                        "A twig string with 'single quotes'",
-                        'This is a php sample',
-                        'A php content',
-                        'A php string with \"double quotes\"',
-                        'A php string with \'single quotes\'',
-                        '1 test __',
-                        '2 test __',
-                        '3 test __',
-                        '4 test __',
-                        '1 test __n',
-                        '1 test __x',
-                        '1 test __xn',
-                        '1 test __dx',
-                        '1 test __dxn',
+                        'This is a twig sample' => [''],
+                        'A twig content' => [''],
+                        'A twig string with \"double quotes\"' => [''],
+                        "A twig string with 'single quotes'" => [''],
+                        'This is a php sample' => [''],
+                        'A php content' => [''],
+                        'A php string with \"double quotes\"' => [''],
+                        'A php string with \'single quotes\'' => [''],
+                        '1 test __' => [''],
+                        '2 test __' => [''],
+                        '3 test __' => [''],
+                        '4 test __' => [''],
+                        '1 test __n' => [''],
+                        '1 test __x' => ['', 'ContextSampleX'],
+                        '1 test __xn' => ['', 'ContextSampleXN'],
                     ],
                     'DomainSampleD' => [
-                        'A twig string in a domain',
-                        'A twig string in a domain with {0}',
-                        '1 test __d',
+                        'A twig string in a domain' => [''],
+                        'A twig string in a domain with {0}' => [''],
+                        '1 test __d' => [''],
                     ],
                     'DomainSampleDN' => [
-                        '1 test __dn',
+                        '1 test __dn' => [''],
+                    ],
+                    'DomainSampleDX' => [
+                        '1 test __dx' => ['', 'ContextSampleDX'],
+                    ],
+                    'DomainSampleDXN' => [
+                        '1 test __dxn' => ['', 'ContextSampleDXN'],
                     ],
                 ], // result
             ],
@@ -418,10 +426,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @dataProvider parseDirProvider
      * @covers ::parseDir()
      * @covers ::parseFile()
-     * @covers ::parseContent()
-     * @covers ::parseContentSecondArg()
-     * @covers ::parseContentThirdArg()
      * @covers ::strposX()
+     * @covers ::unquoteString()
      * @covers ::fixString()
      */
     public function testParseDir(string $dir, array $expected): void
