@@ -18,6 +18,7 @@ namespace BEdita\I18n\Test\Shell;
 use BEdita\I18n\Shell\GettextShell;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\I18n\FrozenTime;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
 use Cake\View\View;
 
@@ -167,13 +168,81 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
+     * Provider for 'testWriteMasterPot'
+     *
+     * @return array
+     */
+    public function writeMasterPotProvider(): array
+    {
+        return [
+            'sample' => [
+                "msgid \"\"
+msgstr \"\"
+\"Project-Id-Version: BEdita 4 \\n\"
+\"POT-Creation-Date: 2022-01-01 00:00:00 \\n\"
+\"MIME-Version: 1.0 \\n\"
+\"Content-Transfer-Encoding: 8bit \\n\"
+\"Language-Team: BEdita I18N & I10N Team \\n\"
+\"Plural-Forms: nplurals=2; plural=(n != 1); \\n\"
+\"Content-Type: text/plain; charset=utf-8 \\n\"
+
+msgid \"A php content\"
+msgstr \"\"
+
+msgid \"A php string with \\\"double quotes\\\"\"
+msgstr \"\"
+
+msgid \"A php string with \'single quotes\'\"
+msgstr \"\"
+
+msgid \"A twig content\"
+msgstr \"\"
+
+msgid \"A twig string with \\\"double quotes\\\"\"
+msgstr \"\"
+
+msgid \"A twig string with \'single quotes\'\"
+msgstr \"\"
+
+msgid \"A twig string with context\"
+msgstr \"\"
+
+msgctxt \"SampleContext\"
+msgid \"A twig string with context\"
+msgstr \"\"
+
+msgid \"This is a php sample\"
+msgstr \"\"
+
+msgid \"This is a twig sample\"
+msgstr \"\"
+",
+                [
+                    'This is a php sample' => [''],
+                    'A php content' => [''],
+                    'A php string with \"double quotes\"' => [''],
+                    "A php string with \'single quotes\'" => [''],
+                    'This is a twig sample' => [''],
+                    'A twig content' => [''],
+                    'A twig string with \"double quotes\"' => [''],
+                    "A twig string with \'single quotes\'" => [''],
+                    "A twig string with context" => ['', 'SampleContext'],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Test writeMasterPot
      *
      * @covers ::writeMasterPot()
+     * @dataProvider writeMasterPotProvider
      * @return void
      */
-    public function testWriteMasterPot(): void
+    public function testWriteMasterPot($expected, $values): void
     {
+        FrozenTime::setTestNow('2022-01-01 00:00:00');
+
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
@@ -181,16 +250,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // set poResult using reflection class
-        $poResult['default'] = [
-            'This is a php sample' => [''],
-            'A php content' => [''],
-            'A php string with \"double quotes\"' => [''],
-            "A php string with \'single quotes\'" => [''],
-            'This is a twig sample' => [''],
-            'A twig content' => [''],
-            'A twig string with \"double quotes\"' => [''],
-            "A twig string with \'single quotes\'" => [''],
-        ];
+        $poResult['default'] = $values;
+
         $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $poResult);
@@ -203,7 +264,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
 
         // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
         $content = file_get_contents(sprintf('%s/default.pot', $localePath));
-        static::assertNotEmpty($content);
+
+        static::assertSame($expected, $content);
     }
 
     /**

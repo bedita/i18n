@@ -22,6 +22,7 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
+use Cake\I18n\FrozenTime;
 use Cake\Utility\Hash;
 use Cake\View\View;
 
@@ -267,7 +268,7 @@ class GettextShell extends Shell
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date('Y-m-d H:i:s'),
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -279,7 +280,7 @@ class GettextShell extends Shell
             ],
             'pot' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date('Y-m-d H:i:s'),
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',
                 'Language-Team' => 'BEdita I18N & I10N Team',
