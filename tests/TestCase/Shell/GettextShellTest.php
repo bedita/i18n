@@ -340,10 +340,12 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                         'A twig content' => [''],
                         'A twig string with \"double quotes\"' => [''],
                         'A twig string with \'single quotes\'' => [''],
+                        'A twig string with context' => ['', 'SampleContext'],
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain' => [''],
                         'A twig string in a domain with {0}' => [''],
+                        'A twig string in a domain with context' => ['', 'DomainSampleContext'],
                     ],
                 ],
             ],
@@ -397,11 +399,13 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                         '1 test __n' => [''],
                         '1 test __x' => ['', 'ContextSampleX'],
                         '1 test __xn' => ['', 'ContextSampleXN'],
+                        'A twig string with context' => ['', 'SampleContext'],
                     ],
                     'DomainSampleD' => [
                         'A twig string in a domain' => [''],
                         'A twig string in a domain with {0}' => [''],
                         '1 test __d' => [''],
+                        'A twig string in a domain with context' => ['', 'DomainSampleContext'],
                     ],
                     'DomainSampleDN' => [
                         '1 test __dn' => [''],
