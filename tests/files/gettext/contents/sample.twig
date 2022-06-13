@@ -1,3 +1,6 @@
+{# ignore this #}
+{{ __('') }}
+
 <h1>{{ __('This is a twig sample', true) }}</h1>
 
 <div>{{ __('A twig content', true) }}</div>
@@ -6,8 +9,10 @@
 
 {{ __('A twig string with \'single quotes\'', true) }}
 
+{{ __x('SampleContext', 'A twig string with context', true) }}
+
 {{ __d('DomainSampleD', 'A twig string in a domain') }}
 
-{{ __d("DomainSampleD", "A twig string in a domain in double quotes") }}
-
 {{ __d('DomainSampleD', 'A twig string in a domain with {0}') }}
+
+{{ __dx('DomainSampleD', 'DomainSampleContext', 'A twig string in a domain with context') }}
