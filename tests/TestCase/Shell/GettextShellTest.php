@@ -82,13 +82,46 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // call the method
-        $this->shell->update();
+        static::assertTrue($this->shell->update());
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
+    }
+
+    /**
+     * Test execute method with ci flag
+     *
+     * @return void
+     * @covers ::update()
+     * @covers ::getPoResult()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
+     */
+    public function testUpdateWithCi(): void
+    {
+        $this->shell->params['app'] = sprintf('%s/tests/test_app/TestApp', getcwd());
+        $this->shell->params['ci'] = true;
+
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $localePath);
+
+        // call the method
+        static::assertFalse($this->shell->update());
+
+        // check po files are not empty
+        foreach (['en_US', 'it_IT'] as $locale) {
+            $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
+            static::assertNotEmpty($content);
+        }
+
+        // call method again
+        static::assertTrue($this->shell->update());
     }
 
     /**
@@ -241,45 +274,6 @@ msgstr \"\"
      */
     public function testWriteMasterPot($expected, $values): void
     {
-        $time = new FrozenTime('2022-01-01 00:00:00');
-        FrozenTime::setTestNow($time);
-
-        // set localePath using reflection class
-        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
-        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
-        $reflection->setAccessible(true);
-        $reflection->setValue($this->shell, $localePath);
-
-        // set poResult using reflection class
-        $poResult['default'] = $values;
-
-        $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
-        $reflection->setAccessible(true);
-        $reflection->setValue($this->shell, $poResult);
-
-        // call writeMasterPot using reflection class
-        $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
-        $method = $class->getMethod('writeMasterPot');
-        $method->setAccessible(true);
-        $method->invokeArgs($this->shell, []);
-
-        // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
-        $content = file_get_contents(sprintf('%s/default.pot', $localePath));
-
-        static::assertSame($expected, $content);
-    }
-
-    /**
-     * Test writeMasterPot
-     *
-     * @covers ::writeMasterPot()
-     * @dataProvider writeMasterPotProvider
-     * @return void
-     */
-    public function testWriteMasterPotWithCi($expected, $values): void
-    {
-        $this->shell->params['ci'] = true;
-
         $time = new FrozenTime('2022-01-01 00:00:00');
         FrozenTime::setTestNow($time);
 
