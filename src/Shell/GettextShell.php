@@ -254,6 +254,7 @@ class GettextShell extends Shell
      */
     private function writePoFiles(): void
     {
+        $header = $this->header('po');
         $locales = array_keys((array)Configure::read('I18n.locales', []));
         foreach ($locales as $loc) {
             $potDir = $this->localePath . DS . $loc;
@@ -266,8 +267,6 @@ class GettextShell extends Shell
                 $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
                 $poFile = sprintf('%s/%s.po', $potDir, $domain);
                 if (!file_exists($poFile)) {
-                    $header = $this->header('po');
-
                     $newPoFile = new File($poFile, true);
                     $newPoFile->write($header);
                     $newPoFile->close();
