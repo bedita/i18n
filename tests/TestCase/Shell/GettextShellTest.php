@@ -267,6 +267,60 @@ msgstr \"\"
         $content = file_get_contents(sprintf('%s/default.pot', $localePath));
 
         static::assertSame($expected, $content);
+
+        $time = new FrozenTime('2022-01-01 00:00:00');
+        $this->shell->params['ci'] = true;
+        static::assertTrue($method->invokeArgs($this->shell, []));
+    }
+
+    /**
+     * Test writeMasterPot
+     *
+     * @covers ::writeMasterPot()
+     * @dataProvider writeMasterPotProvider
+     * @return void
+     */
+    public function testWriteMasterPotWithCi($expected, $values): void
+    {
+        $this->shell->params['ci'] = true;
+
+        $time = new FrozenTime('2022-01-01 00:00:00');
+        FrozenTime::setTestNow($time);
+
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $localePath);
+
+        // set poResult using reflection class
+        $poResult['default'] = $values;
+
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $poResult);
+
+        // call writeMasterPot using reflection class
+        $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
+        $method = $class->getMethod('writeMasterPot');
+        $method->setAccessible(true);
+        $result = $method->invokeArgs($this->shell, []);
+
+        // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
+        $content = file_get_contents(sprintf('%s/default.pot', $localePath));
+
+        static::assertSame($expected, $content);
+        static::assertTrue($result);
+
+        $time = new FrozenTime('2022-01-02 00:00:00');
+
+        $result = $method->invokeArgs($this->shell, []);
+
+        // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
+        $content = file_get_contents(sprintf('%s/default.pot', $localePath));
+
+        static::assertSame($expected, $content);
+        static::assertFalse($result);
     }
 
     /**
