@@ -219,11 +219,8 @@ class GettextShell extends Shell
             $pot = new File($potFilename, true);
 
             $contents = $pot->read();
-            $contents = trim(preg_replace('/^msgid ""\nmsgstr ""/', '', $contents));
-            $headers = $this->generatePotHeaders();
-            foreach ($headers as $k => $v) {
-                $contents = trim(preg_replace('/"' . $k . ':([^"]+)"/', '', $contents));
-            }
+            $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
+            $contents = trim(preg_replace('/^"([^"]*?)"$/m', '', $contents));
 
             $lines = [];
             ksort($poResult);
@@ -240,12 +237,7 @@ class GettextShell extends Shell
 
             $result = implode("\n\n", $lines);
             if ($contents !== $result) {
-                $header = ["msgid \"\"\nmsgstr \"\""];
-                foreach ($headers as $k => $v) {
-                    $header[] = sprintf('"%s: %s \n"', $k, $v);
-                }
-
-                $pot->write(implode("\n", $header) . "\n\n" . $result . "\n");
+                $pot->write($this->header('pot') . "\n" . $result . "\n");
                 $updated = true;
             }
 
@@ -274,11 +266,7 @@ class GettextShell extends Shell
                 $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
                 $poFile = sprintf('%s/%s.po', $potDir, $domain);
                 if (!file_exists($poFile)) {
-                    $header = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
-                    $headers = $this->generatePoHeaders();
-                    foreach ($headers as $k => $v) {
-                        $header .= sprintf('"%s: %s \n"', $k, $v) . "\n";
-                    }
+                    $header = $this->header('po');
 
                     $newPoFile = new File($poFile, true);
                     $newPoFile->write($header);
@@ -294,44 +282,43 @@ class GettextShell extends Shell
     }
 
     /**
-     * Get a list of headers for po file
+     * Header lines for po/pot file
      *
-     * @return array
+     * @param string $type The file type (can be 'po', 'pot')
+     * @return string
      * @codeCoverageIgnore
      */
-    private function generatePoHeaders(): array
+    private function header(string $type = 'po'): string
     {
-        return [
-            'Project-Id-Version' => 'BEdita 4',
-            'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-            'PO-Revision-Date' => '',
-            'Last-Translator' => '',
-            'Language-Team' => 'BEdita I18N & I10N Team',
-            'Language' => '',
-            'MIME-Version' => '1.0',
-            'Content-Transfer-Encoding' => '8bit',
-            'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-            'Content-Type' => 'text/plain; charset=utf-8',
+        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
+        $contents = [
+            'po' => [
+                'Project-Id-Version' => 'BEdita 4',
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'PO-Revision-Date' => '',
+                'Last-Translator' => '',
+                'Language-Team' => 'BEdita I18N & I10N Team',
+                'Language' => '',
+                'MIME-Version' => '1.0',
+                'Content-Transfer-Encoding' => '8bit',
+                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ],
+            'pot' => [
+                'Project-Id-Version' => 'BEdita 4',
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'MIME-Version' => '1.0',
+                'Content-Transfer-Encoding' => '8bit',
+                'Language-Team' => 'BEdita I18N & I10N Team',
+                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ],
         ];
-    }
+        foreach ($contents[$type] as $k => $v) {
+            $result .= sprintf('"%s: %s \n"', $k, $v) . "\n";
+        }
 
-    /**
-     * Get a list of headers for pot file
-     *
-     * @return array
-     * @codeCoverageIgnore
-     */
-    private function generatePotHeaders(): array
-    {
-        return [
-            'Project-Id-Version' => 'BEdita 4',
-            'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-            'MIME-Version' => '1.0',
-            'Content-Transfer-Encoding' => '8bit',
-            'Language-Team' => 'BEdita I18N & I10N Team',
-            'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-            'Content-Type' => 'text/plain; charset=utf-8',
-        ];
+        return $result;
     }
 
     /**

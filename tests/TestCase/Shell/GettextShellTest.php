@@ -267,10 +267,6 @@ msgstr \"\"
         $content = file_get_contents(sprintf('%s/default.pot', $localePath));
 
         static::assertSame($expected, $content);
-
-        $time = new FrozenTime('2022-01-01 00:00:00');
-        $this->shell->params['ci'] = true;
-        static::assertTrue($method->invokeArgs($this->shell, []));
     }
 
     /**
