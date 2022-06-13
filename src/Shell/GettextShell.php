@@ -22,6 +22,7 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
+use Cake\I18n\FrozenTime;
 use Cake\Utility\Hash;
 use Cake\View\View;
 
@@ -204,12 +205,19 @@ class GettextShell extends Shell
             $this->out(sprintf('Writing new .pot file: %s', $potFilename));
             $pot = new File($potFilename, true);
             $pot->write($this->header('pot'));
-            sort($poResult);
-            foreach ($poResult as $res) {
-                if (!empty($res)) {
-                    $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+            ksort($poResult);
+
+            foreach ($poResult as $res => $contexts) {
+                sort($contexts);
+                foreach ($contexts as $ctx) {
+                    if (!empty($ctx)) {
+                        $pot->write(sprintf('%smsgctxt "%s"%smsgid "%s"%smsgstr ""%s', "\n", $ctx, "\n", $res, "\n", "\n"));
+                    } else {
+                        $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+                    }
                 }
             }
+
             $pot->close();
         }
     }
@@ -260,7 +268,7 @@ class GettextShell extends Shell
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date('Y-m-d H:i:s'),
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -272,7 +280,7 @@ class GettextShell extends Shell
             ],
             'pot' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => date('Y-m-d H:i:s'),
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -315,6 +323,17 @@ class GettextShell extends Shell
             $percent = number_format($translated * 100. / $numItems, 1);
         }
         $this->out(sprintf('Translated %d of %d items - %s %%', $translated, $numItems, $percent));
+    }
+
+    /**
+     * Remove leading and trailing quotes from string
+     *
+     * @param string $str The string
+     * @return string The new string
+     */
+    private function unquoteString($str): string
+    {
+        return substr($str, 1, -1);
     }
 
     /**
@@ -372,159 +391,55 @@ class GettextShell extends Shell
         ];
 
         foreach ($functions as $fname => $singularPosition) {
-            if ($singularPosition === 0) {
-                $this->parseContent($fname, $content, $options);
-            } elseif ($singularPosition === 1) {
-                $this->parseContentSecondArg($fname, $content, $options);
-            } elseif ($singularPosition === 2) {
-                $this->parseContentThirdArg($fname, $content, $options);
-            }
-        }
-    }
+            $capturePath = "'[^']*'";
+            $doubleQuoteCapture = str_replace("'", $options['double_quote'], $capturePath);
+            $quoteCapture = str_replace("'", $options['quote'], $capturePath);
 
-    /**
-     * Parse file content and put i18n data in poResult array
-     *
-     * @param string $start The starting string to search for, the name of the translation method
-     * @param string $content The file content
-     * @param array $options The options
-     * @return void
-     */
-    private function parseContent($start, $content, $options): void
-    {
-        // phpcs:disable
-        $rgxp = '/' .
-            "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . "([^{$options['double_quote']}]*)" . "{$options['double_quote']}" .
-            '|' .
-            "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . "([^{$options['quote']}]*)" . "{$options['quote']}" .
-            '/';
-        // phpcs:enable
-        $matches = [];
-        preg_match_all($rgxp, $content, $matches);
+            // phpcs:disable
+            $rgxp = '/' . $fname . '\s*' . $options['open_parenthesis'] . str_repeat('((?:' . $doubleQuoteCapture . ')|(?:' . $quoteCapture . '))\s*[,)]\s*', $singularPosition + 1) . '/';
+            // phpcs:enable
 
-        $domain = $this->defaultDomain;
+            $matches = [];
+            preg_match_all($rgxp, $content, $matches);
 
-        $limit = count($matches[0]);
-        for ($i = 0; $i < $limit; $i++) {
-            $item = $this->fixString($matches[1][$i]);
-            if (empty($item)) {
-                $item = $this->fixString($matches[2][$i]);
-            }
-
-            if (!array_key_exists($domain, $this->poResult)) {
-                $this->poResult[$domain] = [];
-            }
-
-            if (!in_array($item, $this->poResult[$domain])) {
-                $this->poResult[$domain][] = $item;
-            }
-        }
-    }
-
-    /**
-     * Parse file content and put i18n data in poResult array
-     *
-     * @param string $start The starting string to search for, the name of the translation method
-     * @param string $content The file content
-     * @param array $options The options
-     * @return void
-     */
-    private function parseContentSecondArg($start, $content, $options): void
-    {
-        $capturePath = "([^']*)',\s*'([^']*)";
-        $doubleQuoteCapture = str_replace("'", $options['double_quote'], $capturePath);
-        $quoteCapture = str_replace("'", $options['quote'], $capturePath);
-
-        // phpcs:disable
-        $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . $doubleQuoteCapture . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . $quoteCapture . "{$options['quote']}" .
-            '/';
-        // phpcs:enable
-        $matches = [];
-        preg_match_all($rgxp, $content, $matches);
-
-        $limit = count($matches[0]);
-        for ($i = 0; $i < $limit; $i++) {
-            $domain = !empty($matches[1][$i]) ? $matches[1][$i] : $matches[3][$i];
-            $str = !empty($matches[2][$i]) ? $matches[2][$i] : $matches[4][$i];
-
-            // context not handled for now
-            if (strpos($start, '__x') === 0) {
+            $limit = count($matches[0]);
+            for ($i = 0; $i < $limit; $i++) {
                 $domain = $this->defaultDomain;
-            }
+                $ctx = '';
+                $str = $this->unquoteString($matches[1][$i]);
 
-            $item = $this->fixString($str);
+                if (strpos($fname, '__d') === 0) {
+                    $domain = $this->unquoteString($matches[1][$i]);
 
-            if (!array_key_exists($domain, $this->poResult)) {
-                $this->poResult[$domain] = [];
-            }
+                    if (strpos($fname, '__dx') === 0) {
+                        $ctx = $this->unquoteString($matches[2][$i]);
+                        $str = $this->unquoteString($matches[3][$i]);
+                    } else {
+                        $str = $this->unquoteString($matches[2][$i]);
+                    }
+                } elseif (strpos($fname, '__x') === 0) {
+                    $ctx = $this->unquoteString($matches[1][$i]);
+                    $str = $this->unquoteString($matches[2][$i]);
+                }
 
-            if (!in_array($item, $this->poResult[$domain])) {
-                $this->poResult[$domain][] = $item;
-            }
-        }
-    }
+                $str = $this->fixString($str);
+                if (empty($str)) {
+                    continue;
+                }
 
-    /**
-     * Parse file content and put i18n data in poResult array
-     *
-     * @param string $start The starting string to search for, the name of the translation method
-     * @param string $content The file content
-     * @param array $options The options
-     * @return void
-     */
-    private function parseContentThirdArg($start, $content, $options): void
-    {
-        // phpcs:disable
-        $rgxp =
-            '/' . "${start}\s*{$options['open_parenthesis']}\s*{$options['double_quote']}" . '([^{)}]*)' . "{$options['double_quote']}" .
-            '|' . "${start}\s*{$options['open_parenthesis']}\s*{$options['quote']}" . '([^{)}]*)' . "{$options['quote']}" .
-            '/';
-        // phpcs:enable
-        $matches = [];
-        preg_match_all($rgxp, $content, $matches);
+                if (!array_key_exists($domain, $this->poResult)) {
+                    $this->poResult[$domain] = [];
+                }
 
-        $domain = $this->defaultDomain; // domain and context not handled yet
+                if (!array_key_exists($str, $this->poResult[$domain])) {
+                    $this->poResult[$domain][$str] = [''];
+                }
 
-        $limit = count($matches[0]);
-        for ($i = 0; $i < $limit; $i++) {
-            $str = $matches[2][$i];
-            $pos = $this->strposX($str, ',', 2);
-            $str = trim(substr($str, $pos + 1));
-            if (strpos($str, ',') > 0) {
-                $str = substr($str, 1, strpos($str, ',') - 2);
-            } else {
-                $str = substr($str, 1);
-            }
-            $item = $this->fixString($str);
-
-            if (!array_key_exists($domain, $this->poResult)) {
-                $this->poResult[$domain] = [];
-            }
-
-            if (!in_array($item, $this->poResult[$domain])) {
-                $this->poResult[$domain][] = $item;
+                if (!in_array($ctx, $this->poResult[$domain][$str])) {
+                    $this->poResult[$domain][$str][] = $ctx;
+                }
             }
         }
-    }
-
-    /**
-     * Calculate nth ($number) position of $needle in $haystack.
-     *
-     * @param string $haystack The haystack where to search
-     * @param string $needle The needle to search
-     * @param int $number The nth position to retrieve
-     * @return int|false
-     */
-    private function strposX($haystack, $needle, $number = 0)
-    {
-        return strpos(
-            $haystack,
-            $needle,
-            $number > 1 ?
-            $this->strposX($haystack, $needle, $number - 1) + strlen($needle) : 0
-        );
     }
 
     /**

@@ -18,6 +18,7 @@ namespace BEdita\I18n\Test\Shell;
 use BEdita\I18n\Shell\GettextShell;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\I18n\FrozenTime;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
 use Cake\View\View;
 
@@ -167,13 +168,82 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     }
 
     /**
+     * Provider for 'testWriteMasterPot'
+     *
+     * @return array
+     */
+    public function writeMasterPotProvider(): array
+    {
+        return [
+            'sample' => [
+                "msgid \"\"
+msgstr \"\"
+\"Project-Id-Version: BEdita 4 \\n\"
+\"POT-Creation-Date: 2022-01-01 00:00:00 \\n\"
+\"MIME-Version: 1.0 \\n\"
+\"Content-Transfer-Encoding: 8bit \\n\"
+\"Language-Team: BEdita I18N & I10N Team \\n\"
+\"Plural-Forms: nplurals=2; plural=(n != 1); \\n\"
+\"Content-Type: text/plain; charset=utf-8 \\n\"
+
+msgid \"A php content\"
+msgstr \"\"
+
+msgid \"A php string with \\\"double quotes\\\"\"
+msgstr \"\"
+
+msgid \"A php string with \'single quotes\'\"
+msgstr \"\"
+
+msgid \"A twig content\"
+msgstr \"\"
+
+msgid \"A twig string with \\\"double quotes\\\"\"
+msgstr \"\"
+
+msgid \"A twig string with \'single quotes\'\"
+msgstr \"\"
+
+msgid \"A twig string with context\"
+msgstr \"\"
+
+msgctxt \"SampleContext\"
+msgid \"A twig string with context\"
+msgstr \"\"
+
+msgid \"This is a php sample\"
+msgstr \"\"
+
+msgid \"This is a twig sample\"
+msgstr \"\"
+",
+                [
+                    'This is a php sample' => [''],
+                    'A php content' => [''],
+                    'A php string with \"double quotes\"' => [''],
+                    "A php string with \'single quotes\'" => [''],
+                    'This is a twig sample' => [''],
+                    'A twig content' => [''],
+                    'A twig string with \"double quotes\"' => [''],
+                    "A twig string with \'single quotes\'" => [''],
+                    'A twig string with context' => ['', 'SampleContext'],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Test writeMasterPot
      *
      * @covers ::writeMasterPot()
+     * @dataProvider writeMasterPotProvider
      * @return void
      */
-    public function testWriteMasterPot(): void
+    public function testWriteMasterPot($expected, $values): void
     {
+        $time = new FrozenTime('2022-01-01 00:00:00');
+        FrozenTime::setTestNow($time);
+
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
@@ -181,16 +251,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // set poResult using reflection class
-        $poResult['default'] = [
-            'This is a php sample',
-            'A php content',
-            'A php string with \"double quotes\"',
-            "A php string with \'single quotes\'",
-            'This is a twig sample',
-            'A twig content',
-            'A twig string with \"double quotes\"',
-            "A twig string with \'single quotes\'",
-        ];
+        $poResult['default'] = $values;
+
         $reflection = new \ReflectionProperty(get_class($this->shell), 'poResult');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $poResult);
@@ -203,7 +265,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
 
         // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
         $content = file_get_contents(sprintf('%s/default.pot', $localePath));
-        static::assertNotEmpty($content);
+
+        static::assertSame($expected, $content);
     }
 
     /**
@@ -305,25 +368,29 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 'php',
                 [
                     'default' => [
-                        'This is a php sample',
-                        'A php content',
-                        'A php string with \"double quotes\"',
-                        'A php string with \'single quotes\'',
-                        '1 test __',
-                        '2 test __',
-                        '3 test __',
-                        '4 test __',
-                        '1 test __n',
-                        '1 test __x',
-                        '1 test __xn',
-                        '1 test __dx',
-                        '1 test __dxn',
+                        'This is a php sample' => [''],
+                        'A php content' => [''],
+                        'A php string with \"double quotes\"' => [''],
+                        'A php string with \'single quotes\'' => [''],
+                        '1 test __' => [''],
+                        '2 test __' => [''],
+                        '3 test __' => [''],
+                        '4 test __' => [''],
+                        '1 test __n' => [''],
+                        '1 test __x' => ['', 'ContextSampleX'],
+                        '1 test __xn' => ['', 'ContextSampleXN'],
                     ],
                     'DomainSampleD' => [
-                        '1 test __d',
+                        '1 test __d' => [''],
                     ],
                     'DomainSampleDN' => [
-                        '1 test __dn',
+                        '1 test __dn' => [''],
+                    ],
+                    'DomainSampleDX' => [
+                        '1 test __dx' => ['', 'ContextSampleDX'],
+                    ],
+                    'DomainSampleDXN' => [
+                        '1 test __dxn' => ['', 'ContextSampleDXN'],
                     ],
                 ],
             ],
@@ -332,14 +399,16 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 'twig',
                 [
                     'default' => [
-                        'This is a twig sample',
-                        'A twig content',
-                        'A twig string with \"double quotes\"',
-                        'A twig string with \'single quotes\'',
+                        'This is a twig sample' => [''],
+                        'A twig content' => [''],
+                        'A twig string with \"double quotes\"' => [''],
+                        'A twig string with \'single quotes\'' => [''],
+                        'A twig string with context' => ['', 'SampleContext'],
                     ],
                     'DomainSampleD' => [
-                        'A twig string in a domain',
-                        'A twig string in a domain with {0}',
+                        'A twig string in a domain' => [''],
+                        'A twig string in a domain with {0}' => [''],
+                        'A twig string in a domain with context' => ['', 'DomainSampleContext'],
                     ],
                 ],
             ],
@@ -378,31 +447,37 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 sprintf('%s/tests/files/gettext/contents', getcwd()), // dir
                 [
                     'default' => [
-                        'This is a twig sample',
-                        'A twig content',
-                        'A twig string with \"double quotes\"',
-                        "A twig string with 'single quotes'",
-                        'This is a php sample',
-                        'A php content',
-                        'A php string with \"double quotes\"',
-                        'A php string with \'single quotes\'',
-                        '1 test __',
-                        '2 test __',
-                        '3 test __',
-                        '4 test __',
-                        '1 test __n',
-                        '1 test __x',
-                        '1 test __xn',
-                        '1 test __dx',
-                        '1 test __dxn',
+                        'This is a twig sample' => [''],
+                        'A twig content' => [''],
+                        'A twig string with \"double quotes\"' => [''],
+                        "A twig string with 'single quotes'" => [''],
+                        'This is a php sample' => [''],
+                        'A php content' => [''],
+                        'A php string with \"double quotes\"' => [''],
+                        'A php string with \'single quotes\'' => [''],
+                        '1 test __' => [''],
+                        '2 test __' => [''],
+                        '3 test __' => [''],
+                        '4 test __' => [''],
+                        '1 test __n' => [''],
+                        '1 test __x' => ['', 'ContextSampleX'],
+                        '1 test __xn' => ['', 'ContextSampleXN'],
+                        'A twig string with context' => ['', 'SampleContext'],
                     ],
                     'DomainSampleD' => [
-                        'A twig string in a domain',
-                        'A twig string in a domain with {0}',
-                        '1 test __d',
+                        'A twig string in a domain' => [''],
+                        'A twig string in a domain with {0}' => [''],
+                        '1 test __d' => [''],
+                        'A twig string in a domain with context' => ['', 'DomainSampleContext'],
                     ],
                     'DomainSampleDN' => [
-                        '1 test __dn',
+                        '1 test __dn' => [''],
+                    ],
+                    'DomainSampleDX' => [
+                        '1 test __dx' => ['', 'ContextSampleDX'],
+                    ],
+                    'DomainSampleDXN' => [
+                        '1 test __dxn' => ['', 'ContextSampleDXN'],
                     ],
                 ], // result
             ],
@@ -418,10 +493,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @dataProvider parseDirProvider
      * @covers ::parseDir()
      * @covers ::parseFile()
-     * @covers ::parseContent()
-     * @covers ::parseContentSecondArg()
-     * @covers ::parseContentThirdArg()
      * @covers ::strposX()
+     * @covers ::unquoteString()
      * @covers ::fixString()
      */
     public function testParseDir(string $dir, array $expected): void
