@@ -217,6 +217,8 @@ class GettextShell extends Shell
             $pot = new File($potFilename, true);
 
             $contents = $pot->read();
+
+            // remove headers from pot file
             $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
             $contents = trim(preg_replace('/^"([^"]*?)"$/m', '', $contents));
 
@@ -235,7 +237,7 @@ class GettextShell extends Shell
 
             $result = implode("\n\n", $lines);
             if ($contents !== $result) {
-                $pot->write($this->header('pot') . "\n" . $result . "\n");
+                $pot->write(sprintf("%s\n%s\n", $this->header('pot'), $result));
                 $updated = true;
             }
 
