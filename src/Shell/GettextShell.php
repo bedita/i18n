@@ -135,9 +135,7 @@ class GettextShell extends Shell
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         if (empty($resCmd[0])) {
-            $this->out('ERROR: msgmerge not available. Please install gettext utilities.');
-
-            return false;
+            $this->abort('ERROR: msgmerge not available. Please install gettext utilities.');
         }
 
         $this->out('Updating .pot and .po files...');
