@@ -82,7 +82,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // call the method
-        static::assertTrue($this->shell->update());
+        static::assertSame(GettextShell::CODE_SUCCESS, $this->shell->update());
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
@@ -112,7 +112,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // call the method
-        static::assertFalse($this->shell->update());
+        static::assertSame(GettextShell::CODE_CHANGES, $this->shell->update());
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
@@ -121,7 +121,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         }
 
         // call method again
-        static::assertTrue($this->shell->update());
+        static::assertSame(GettextShell::CODE_SUCCESS, $this->shell->update());
     }
 
     /**

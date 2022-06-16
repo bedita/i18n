@@ -32,6 +32,16 @@ use Cake\View\View;
 class GettextShell extends Shell
 {
     /**
+     * @var int
+     */
+    public const CODE_SUCCESS = 0;
+
+    /**
+     * @var int
+     */
+    public const CODE_CHANGES = 2;
+
+    /**
      * Get the option parser for this shell.
      *
      * @return \Cake\Console\ConsoleOptionParser
@@ -128,9 +138,9 @@ class GettextShell extends Shell
     /**
      * Update gettext po files
      *
-     * @return bool
+     * @return int
      */
-    public function update(): bool
+    public function update(): int
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
@@ -158,11 +168,11 @@ class GettextShell extends Shell
 
         $this->out('Done');
 
-        if (isset($this->params['ci']) && $this->params['ci']) {
-            return !$hasChanges;
+        if ($this->param('ci') && $hasChanges) {
+            return GettextShell::CODE_CHANGES;
         }
 
-        return true;
+        return GettextShell::CODE_SUCCESS;
     }
 
     /**
