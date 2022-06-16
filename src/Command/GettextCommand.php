@@ -34,6 +34,11 @@ use Cake\View\View;
 class GettextCommand extends Command
 {
     /**
+     * @var int
+     */
+    public const CODE_CHANGES = 2;
+
+    /**
      * The Po results
      *
      * @var array
@@ -83,6 +88,11 @@ class GettextCommand extends Command
                 'help' => 'The plugin name, for i18n update.',
                 'short' => 'p',
                 'required' => false,
+            ])
+            ->addOption('ci', [
+                'help' => 'Run in CI mode. Exit with error if PO files are changed.',
+                'required' => false,
+                'boolean' => true,
             ]);
     }
 
@@ -123,7 +133,7 @@ class GettextCommand extends Command
      * @param \Cake\Console\ConsoleIo $io The console io
      * @return null|void|int The exit code or null for success
      */
-    public function execute(Arguments $args, ConsoleIo $io)
+    public function execute(Arguments $args, ConsoleIo $io): int
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
@@ -140,7 +150,7 @@ class GettextCommand extends Command
         }
 
         $io->out('Creating master .pot file');
-        $this->writeMasterPot($io);
+        $hasChanges = $this->writeMasterPot($io);
         $this->ttagExtract($args, $io);
 
         $io->hr();
@@ -151,7 +161,11 @@ class GettextCommand extends Command
 
         $io->out('Done');
 
-        return null;
+        if ($args->getOption('ci') && $hasChanges) {
+            return GettextCommand::CODE_CHANGES;
+        }
+
+        return GettextCommand::CODE_SUCCESS;
     }
 
     /**
@@ -194,30 +208,46 @@ class GettextCommand extends Command
      * Write `master.pot` file
      *
      * @param \Cake\Console\ConsoleIo $io The console io
-     * @return void
+     * @return bool True if file was updated, false otherwise
      */
-    private function writeMasterPot(ConsoleIo $io): void
+    private function writeMasterPot(ConsoleIo $io): bool
     {
+        $updated = false;
+
         foreach ($this->poResult as $domain => $poResult) {
             $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
             $io->out(sprintf('Writing new .pot file: %s', $potFilename));
             $pot = new File($potFilename, true);
-            $pot->write($this->header('pot'));
-            ksort($poResult);
 
+            $contents = $pot->read();
+
+            // remove headers from pot file
+            $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
+            $contents = trim(preg_replace('/^"([^"]*?)"$/m', '', $contents));
+
+            $lines = [];
+            ksort($poResult);
             foreach ($poResult as $res => $contexts) {
                 sort($contexts);
                 foreach ($contexts as $ctx) {
                     if (!empty($ctx)) {
-                        $pot->write(sprintf('%smsgctxt "%s"%smsgid "%s"%smsgstr ""%s', "\n", $ctx, "\n", $res, "\n", "\n"));
+                        $lines[] = sprintf('msgctxt "%s"%smsgid "%s"%smsgstr ""', $ctx, "\n", $res, "\n");
                     } else {
-                        $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+                        $lines[] = sprintf('msgid "%s"%smsgstr ""', $res, "\n");
                     }
                 }
             }
 
+            $result = implode("\n\n", $lines);
+            if ($contents !== $result) {
+                $pot->write(sprintf("%s\n%s\n", $this->header('pot'), $result));
+                $updated = true;
+            }
+
             $pot->close();
         }
+
+        return $updated;
     }
 
     /**
