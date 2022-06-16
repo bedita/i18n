@@ -32,6 +32,16 @@ use Cake\View\View;
 class GettextShell extends Shell
 {
     /**
+     * @var int
+     */
+    public const CODE_SUCCESS = 0;
+
+    /**
+     * @var int
+     */
+    public const CODE_CHANGES = 2;
+
+    /**
      * Get the option parser for this shell.
      *
      * @return \Cake\Console\ConsoleOptionParser
@@ -60,6 +70,11 @@ class GettextShell extends Shell
                         'help' => 'The plugin name, for i18n update.',
                         'short' => 'p',
                         'required' => false,
+                    ],
+                    'ci' => [
+                        'help' => 'Run in CI mode. Exit with error if PO files are changed.',
+                        'required' => false,
+                        'boolean' => true,
                     ],
                 ],
             ],
@@ -123,16 +138,14 @@ class GettextShell extends Shell
     /**
      * Update gettext po files
      *
-     * @return void
+     * @return int
      */
-    public function update(): void
+    public function update(): int
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         if (empty($resCmd[0])) {
-            $this->out('ERROR: msgmerge not available. Please install gettext utilities.');
-
-            return;
+            $this->abort('ERROR: msgmerge not available. Please install gettext utilities.');
         }
 
         $this->out('Updating .pot and .po files...');
@@ -144,7 +157,7 @@ class GettextShell extends Shell
         }
 
         $this->out('Creating master .pot file');
-        $this->writeMasterPot();
+        $hasChanges = $this->writeMasterPot();
         $this->ttagExtract();
 
         $this->hr();
@@ -154,6 +167,12 @@ class GettextShell extends Shell
         $this->writePoFiles();
 
         $this->out('Done');
+
+        if ($this->param('ci') && $hasChanges) {
+            return GettextShell::CODE_CHANGES;
+        }
+
+        return GettextShell::CODE_SUCCESS;
     }
 
     /**
@@ -196,30 +215,46 @@ class GettextShell extends Shell
     /**
      * Write `master.pot` file
      *
-     * @return void
+     * @return bool True if file was updated, false otherwise
      */
-    private function writeMasterPot(): void
+    private function writeMasterPot(): bool
     {
+        $updated = false;
+
         foreach ($this->poResult as $domain => $poResult) {
             $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
             $this->out(sprintf('Writing new .pot file: %s', $potFilename));
             $pot = new File($potFilename, true);
-            $pot->write($this->header('pot'));
-            ksort($poResult);
 
+            $contents = $pot->read();
+
+            // remove headers from pot file
+            $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
+            $contents = trim(preg_replace('/^"([^"]*?)"$/m', '', $contents));
+
+            $lines = [];
+            ksort($poResult);
             foreach ($poResult as $res => $contexts) {
                 sort($contexts);
                 foreach ($contexts as $ctx) {
                     if (!empty($ctx)) {
-                        $pot->write(sprintf('%smsgctxt "%s"%smsgid "%s"%smsgstr ""%s', "\n", $ctx, "\n", $res, "\n", "\n"));
+                        $lines[] = sprintf('msgctxt "%s"%smsgid "%s"%smsgstr ""', $ctx, "\n", $res, "\n");
                     } else {
-                        $pot->write(sprintf('%smsgid "%s"%smsgstr ""%s', "\n", $res, "\n", "\n"));
+                        $lines[] = sprintf('msgid "%s"%smsgstr ""', $res, "\n");
                     }
                 }
             }
 
+            $result = implode("\n\n", $lines);
+            if ($contents !== $result) {
+                $pot->write(sprintf("%s\n%s\n", $this->header('pot'), $result));
+                $updated = true;
+            }
+
             $pot->close();
         }
+
+        return $updated;
     }
 
     /**

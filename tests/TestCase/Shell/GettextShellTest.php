@@ -82,13 +82,46 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $reflection->setValue($this->shell, $localePath);
 
         // call the method
-        $this->shell->update();
+        static::assertSame(GettextShell::CODE_SUCCESS, $this->shell->update());
 
         // check po files are not empty
         foreach (['en_US', 'it_IT'] as $locale) {
             $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
             static::assertNotEmpty($content);
         }
+    }
+
+    /**
+     * Test execute method with ci flag
+     *
+     * @return void
+     * @covers ::update()
+     * @covers ::getPoResult()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
+     */
+    public function testUpdateWithCi(): void
+    {
+        $this->shell->params['app'] = sprintf('%s/tests/test_app/TestApp', getcwd());
+        $this->shell->params['ci'] = true;
+
+        // set localePath using reflection class
+        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->shell, $localePath);
+
+        // call the method
+        static::assertSame(GettextShell::CODE_CHANGES, $this->shell->update());
+
+        // check po files are not empty
+        foreach (['en_US', 'it_IT'] as $locale) {
+            $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
+            static::assertNotEmpty($content);
+        }
+
+        // call method again
+        static::assertSame(GettextShell::CODE_SUCCESS, $this->shell->update());
     }
 
     /**
@@ -261,12 +294,23 @@ msgstr \"\"
         $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
         $method = $class->getMethod('writeMasterPot');
         $method->setAccessible(true);
-        $method->invokeArgs($this->shell, []);
+        $result = $method->invokeArgs($this->shell, []);
 
         // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
         $content = file_get_contents(sprintf('%s/default.pot', $localePath));
 
         static::assertSame($expected, $content);
+        static::assertTrue($result);
+
+        $time = new FrozenTime('2022-01-02 00:00:00');
+
+        $result = $method->invokeArgs($this->shell, []);
+
+        // file default.pot have been override, check again content (it should be unchanged), except for POT-Creation-Date
+        $content = file_get_contents(sprintf('%s/default.pot', $localePath));
+
+        static::assertSame($expected, $content);
+        static::assertFalse($result);
     }
 
     /**
