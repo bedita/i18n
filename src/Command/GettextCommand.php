@@ -133,7 +133,7 @@ class GettextCommand extends Command
      * @param \Cake\Console\ConsoleIo $io The console io
      * @return null|void|int The exit code or null for success
      */
-    public function execute(Arguments $args, ConsoleIo $io): int
+    public function execute(Arguments $args, ConsoleIo $io)
     {
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
