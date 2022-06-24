@@ -176,11 +176,10 @@ class GettextShell extends Shell
     {
         if ($this->param('plugin')) {
             $plugin = (string)$this->param('plugin');
-            $this->templatePaths = [
-                Plugin::classPath($plugin),
-                Plugin::configPath($plugin),
-                ...App::path('Template', $plugin),
-            ];
+            $this->templatePaths = array_merge(
+                [Plugin::classPath($plugin), Plugin::configPath($plugin)],
+                App::path('Template', $plugin)
+            );
 
             $localesPaths = (array)Configure::read('App.paths.locales');
             foreach ($localesPaths as $path) {
@@ -194,20 +193,19 @@ class GettextShell extends Shell
         }
 
         $localesPath = App::path('Locale');
-        $templatePaths = [
-            APP,
-            dirname(APP) . DS . 'config',
-            ...App::path('Template'),
-        ];
+        $templatePaths = array_merge(
+            [APP, dirname(APP) . DS . 'config'],
+            App::path('Template'),
+        );
 
         if ($this->param('includePlugins')) {
             $plugins = $this->getPlugins();
             foreach ($plugins as $plugin) {
-                $templatePaths = array_merge($templatePaths, [
-                    Plugin::classPath($plugin),
-                    Plugin::configPath($plugin),
-                    ...App::path('Template', $plugin),
-                ]);
+                $templatePaths = array_merge(
+                    $templatePaths,
+                    [Plugin::classPath($plugin), Plugin::configPath($plugin)],
+                    App::path('Template', $plugin)
+                );
             }
         }
 
@@ -235,15 +233,14 @@ class GettextShell extends Shell
      */
     protected function getPlugins(): array
     {
-        /**
-         * @var array $loadedPlugins
-         */
-        $loadedPlugins = array_map(
-            fn ($path) => $this->getLoadedPlugins($path),
-            App::path('Plugin')
-        );
+        $plugins = App::path('Plugin');
 
-        return array_merge(...$loadedPlugins);
+        $loadedPlugins = [];
+        foreach ($plugins as $pluginPath) {
+            $loadedPlugins = array_merge($loadedPlugins, $this->getLoadedPlugins($pluginPath));
+        }
+
+        return $loadedPlugins;
     }
 
     /**
