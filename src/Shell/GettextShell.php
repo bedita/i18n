@@ -23,19 +23,12 @@ use Cake\Core\Plugin;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\I18n\FrozenTime;
-use Cake\Utility\Hash;
-use Cake\View\View;
 
 /**
  * Gettext shell
  */
 class GettextShell extends Shell
 {
-    /**
-     * @var int
-     */
-    public const CODE_SUCCESS = 0;
-
     /**
      * @var int
      */
@@ -64,6 +57,10 @@ class GettextShell extends Shell
                     'app' => [
                         'help' => 'The app path, for i18n update.',
                         'short' => 'a',
+                        'required' => false,
+                    ],
+                    'includePlugins' => [
+                        'help' => 'Discover translations in plugin folders.',
                         'required' => false,
                     ],
                     'plugin' => [
@@ -105,13 +102,6 @@ class GettextShell extends Shell
     protected $localePath = null;
 
     /**
-     * The name of default domain if not specified. Used for pot and po file names.
-     *
-     * @var string
-     */
-    protected $defaultDomain = 'default';
-
-    /**
      * Get po result
      */
     public function getPoResult(): array
@@ -145,28 +135,29 @@ class GettextShell extends Shell
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         if (empty($resCmd[0])) {
-            $this->abort('ERROR: msgmerge not available. Please install gettext utilities.');
+            $this->abort('msgmerge not available. Please install gettext utilities.');
         }
 
-        $this->out('Updating .pot and .po files...');
-
         $this->setupPaths();
+
+        $this->hr();
+        $this->out('Paths:');
+        $this->hr();
         foreach ($this->templatePaths as $path) {
-            $this->out(sprintf('Search in: %s', $path));
+            $this->out('   ' . $path);
             $this->parseDir($path);
         }
 
-        $this->out('Creating master .pot file');
-        $hasChanges = $this->writeMasterPot();
+        $this->hr();
+        $this->out('Creating .pot file');
+        $this->hr();
+        $hasChanges = $this->writePotFiles();
         $this->ttagExtract();
 
         $this->hr();
         $this->out('Merging master .pot with current .po files');
         $this->hr();
-
         $this->writePoFiles();
-
-        $this->out('Done');
 
         if ($this->param('ci') && $hasChanges) {
             return GettextShell::CODE_CHANGES;
@@ -180,16 +171,16 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    private function setupPaths(): void
+    protected function setupPaths(): void
     {
-        if (isset($this->params['plugin'])) {
-            $plugin = (string)$this->params['plugin'];
-            $paths = [
+        if ($this->param('plugin')) {
+            $plugin = (string)$this->param('plugin');
+            $this->templatePaths = [
                 Plugin::classPath($plugin),
                 Plugin::configPath($plugin),
+                ...App::path('Template', $plugin),
             ];
-            $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
-            $this->defaultDomain = $plugin;
+
             $localesPaths = (array)Configure::read('App.paths.locales');
             foreach ($localesPaths as $path) {
                 if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
@@ -200,30 +191,72 @@ class GettextShell extends Shell
 
             return;
         }
-        $app = $this->params['app'] ?? getcwd();
-        $f = new Folder($app);
-        $basePath = $f->path;
-        $this->templatePaths = [$basePath . '/src', $basePath . '/config'];
-        $appTemplates = (array)Configure::read('App.paths.templates');
-        $appTemplatePath = (string)Hash::get($appTemplates, '0');
-        if (strpos($appTemplatePath, $basePath . '/src') === false) {
-            $this->templatePaths[] = $appTemplatePath;
+
+        $localesPath = App::path('Locale');
+        $templatePaths = [
+            APP,
+            dirname(APP) . DS . 'config',
+            ...App::path('Template'),
+        ];
+
+        if ($this->param('includePlugins')) {
+            $plugins = $this->getPlugins();
+            foreach ($plugins as $plugin) {
+                $templatePaths = array_merge($templatePaths, [
+                    Plugin::classPath($plugin),
+                    Plugin::configPath($plugin),
+                    ...App::path('Template', $plugin),
+                ]);
+            }
         }
-        $this->localePath = (string)Configure::read('App.paths.locales.0');
+
+        $this->templatePaths = $templatePaths;
+        $this->localePath = $localesPath[0];
     }
 
     /**
-     * Write `master.pot` file
+     * Get a list of loaded plugins at the given path.
+     *
+     * @param string $path The path to check.
+     * @return string[] A list of loaded plugins.
+     */
+    protected function getLoadedPlugins(string $path): array
+    {
+        $dirs = scandir($path);
+
+        return array_filter($dirs, fn ($file) => Plugin::getCollection()->has($file));
+    }
+
+    /**
+     * Get the list of plugins loaded by the application.
+     *
+     * @return string[] A list of loaded plugins.
+     */
+    protected function getPlugins(): array
+    {
+        /**
+         * @var array $loadedPlugins
+         */
+        $loadedPlugins = array_map(
+            fn ($path) => $this->getLoadedPlugins($path),
+            App::path('Plugin')
+        );
+
+        return array_merge(...$loadedPlugins);
+    }
+
+    /**
+     * Write `.pot` files
      *
      * @return bool True if file was updated, false otherwise
      */
-    private function writeMasterPot(): bool
+    protected function writePotFiles(): bool
     {
         $updated = false;
 
         foreach ($this->poResult as $domain => $poResult) {
             $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
-            $this->out(sprintf('Writing new .pot file: %s', $potFilename));
+            $this->out('    ' . $potFilename);
             $pot = new File($potFilename, true);
 
             $contents = $pot->read();
@@ -262,16 +295,17 @@ class GettextShell extends Shell
      *
      * @return void
      */
-    private function writePoFiles(): void
+    protected function writePoFiles(): void
     {
         $header = $this->header('po');
         $locales = array_keys((array)Configure::read('I18n.locales', []));
         foreach ($locales as $loc) {
+            $this->out(sprintf('Language: %s', $loc));
+
             $potDir = $this->localePath . DS . $loc;
             if (!file_exists($potDir)) {
                 mkdir($potDir);
             }
-            $this->out(sprintf('Language: %s', $loc));
 
             foreach (array_keys($this->poResult) as $domain) {
                 $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
@@ -281,11 +315,15 @@ class GettextShell extends Shell
                     $newPoFile->write($header);
                     $newPoFile->close();
                 }
-                $this->out(sprintf('Merging %s', $poFile));
-                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-                exec($mergeCmd);
-                $this->analyzePoFile($poFile);
-                $this->hr();
+
+                $this->msgMerge($potFilename, $poFile);
+
+                $info = $this->analyzePoFile($poFile);
+                $percent = 0;
+                if ($info['total'] > 0) {
+                    $percent = number_format(($info['total'] - $info['missed']) * 100. / $info['total'], 1);
+                }
+                $this->out(sprintf('    %s (translated %d of %d items - %s%%)', $poFile, $info['total'] - $info['missed'], $info['total'], $percent));
             }
         }
     }
@@ -297,7 +335,7 @@ class GettextShell extends Shell
      * @return string
      * @codeCoverageIgnore
      */
-    private function header(string $type = 'po'): string
+    protected function header(string $type = 'po'): string
     {
         $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
         $contents = [
@@ -331,12 +369,31 @@ class GettextShell extends Shell
     }
 
     /**
+     * Run the msgmerge command.
+     *
+     * @param string $input The input .pot file.
+     * @param string $output The output .po file.
+     * @return int Exit code of the process.
+     */
+    protected function msgMerge(string $input, string $output): int
+    {
+        $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $output, $input);
+        $process = proc_open($mergeCmd, [
+            ['pipe', 'r'],
+            ['pipe', 'w'],
+            ['pipe', 'w'],
+        ], $pipes);
+
+        return proc_close($process);
+    }
+
+    /**
      * Analyze po file and translate it
      *
      * @param string $filename The po file name
-     * @return void
+     * @return array
      */
-    private function analyzePoFile($filename): void
+    protected function analyzePoFile($filename): array
     {
         $lines = file($filename);
         $numItems = $numNotTranslated = 0;
@@ -352,12 +409,11 @@ class GettextShell extends Shell
                 }
             }
         }
-        $translated = $numItems - $numNotTranslated;
-        $percent = 0;
-        if ($numItems > 0) {
-            $percent = number_format($translated * 100. / $numItems, 1);
-        }
-        $this->out(sprintf('Translated %d of %d items - %s %%', $translated, $numItems, $percent));
+
+        return [
+            'total' => $numItems,
+            'missed' => $numNotTranslated,
+        ];
     }
 
     /**
@@ -366,7 +422,7 @@ class GettextShell extends Shell
      * @param string $str The string
      * @return string The new string
      */
-    private function unquoteString($str): string
+    protected function unquoteString($str): string
     {
         return substr($str, 1, -1);
     }
@@ -377,7 +433,7 @@ class GettextShell extends Shell
      * @param string $str The string
      * @return string The new string
      */
-    private function fixString($str): string
+    protected function fixString($str): string
     {
         $str = stripslashes($str);
         $str = str_replace('"', '\"', $str);
@@ -394,7 +450,7 @@ class GettextShell extends Shell
      * @param string $extension The file extension
      * @return void
      */
-    private function parseFile($file, $extension)
+    protected function parseFile($file, $extension)
     {
         if (!in_array($extension, ['php', 'twig'])) {
             return;
@@ -439,7 +495,7 @@ class GettextShell extends Shell
 
             $limit = count($matches[0]);
             for ($i = 0; $i < $limit; $i++) {
-                $domain = $this->defaultDomain;
+                $domain = 'default';
                 $ctx = '';
                 $str = $this->unquoteString($matches[1][$i]);
 
@@ -483,7 +539,7 @@ class GettextShell extends Shell
      * @param string $dir The directory
      * @return void
      */
-    private function parseDir($dir): void
+    protected function parseDir($dir): void
     {
         $folder = new Folder($dir);
         $tree = $folder->tree($dir, false);
@@ -506,7 +562,7 @@ class GettextShell extends Shell
      * @return void
      * @codeCoverageIgnore
      */
-    private function ttagExtract(): void
+    protected function ttagExtract(): void
     {
         // check ttag command exists
         $ttag = 'node_modules/ttag-cli/bin/ttag';
