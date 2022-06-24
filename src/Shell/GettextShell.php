@@ -62,6 +62,7 @@ class GettextShell extends Shell
                     'includePlugins' => [
                         'help' => 'Discover translations in plugin folders.',
                         'required' => false,
+                        'boolean' => true,
                     ],
                     'plugin' => [
                         'help' => 'The plugin name, for i18n update.',
