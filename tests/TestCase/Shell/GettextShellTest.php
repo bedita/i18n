@@ -65,6 +65,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::msgMerge()
      * @covers ::getPoResult()
      * @covers ::getTemplatePaths()
      * @covers ::getLocalePath()
@@ -94,6 +95,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::msgMerge()
      * @covers ::getPoResult()
      * @covers ::getTemplatePaths()
      * @covers ::getLocalePath()
