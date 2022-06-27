@@ -243,7 +243,6 @@ class GettextShell extends Shell
             $loadedPlugins = array_merge($loadedPlugins, $this->getLoadedPlugins($pluginPath));
         }
 
-
         return $loadedPlugins;
     }
 
