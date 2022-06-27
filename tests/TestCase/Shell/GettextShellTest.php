@@ -144,7 +144,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                     sprintf('%s/tests/test_app/TestApp/config', $base),
                     sprintf('%s/tests/test_app/TestApp/src/Template', $base),
                 ], // template paths
-                sprintf('%s/tests/test_app/TestApp/src/Locale', $base) // locale path
+                sprintf('%s/tests/test_app/TestApp/src/Locale', $base), // locale path
             ],
             'plugin' => [
                 null, // app path
