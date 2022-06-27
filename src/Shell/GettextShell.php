@@ -195,7 +195,7 @@ class GettextShell extends Shell
         $localesPath = App::path('locales');
         $templatePaths = array_merge(
             [APP, dirname(APP) . DS . 'config'],
-            App::path('templates'),
+            App::path('templates')
         );
 
         if ($this->param('includePlugins')) {
