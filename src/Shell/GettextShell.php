@@ -193,7 +193,7 @@ class GettextShell extends Shell
 
         $localesPath = App::path($localeKeyName);
         $templatePaths = array_merge(
-            [APP, dirname(APP) . DS . 'config'],
+            [constant('APP'), dirname(constant('APP')) . DS . 'config'],
             App::path($templateKeyName)
         );
 
