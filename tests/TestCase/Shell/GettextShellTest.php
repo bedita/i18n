@@ -16,11 +16,9 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\Shell;
 
 use BEdita\I18n\Shell\GettextShell;
-use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\I18n\FrozenTime;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
-use Cake\View\View;
 
 /**
  * {@see \BEdita\I18n\Shell\GettextShell} Test Case
