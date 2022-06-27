@@ -195,6 +195,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @return void
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
+     * @covers ::getLoadedPlugins()
+     * @covers ::getPlugins()
      */
     public function testSetupPaths($appPath, $startPath, $pluginName, $includePlugins, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
