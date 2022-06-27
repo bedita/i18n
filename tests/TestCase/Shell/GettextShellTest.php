@@ -138,7 +138,8 @@ class GettextShellTest extends ConsoleIntegrationTestCase
             'app' => [
                 'tests/test_app/TestApp', // app path
                 null, // start path
-                null, // plugin path
+                null, // plugin name
+                false, // include plugins
                 [
                     sprintf('%s/tests/test_app/TestApp/src', $base),
                     sprintf('%s/tests/test_app/TestApp/config', $base),
@@ -146,13 +147,34 @@ class GettextShellTest extends ConsoleIntegrationTestCase
                 ], // template paths
                 sprintf('%s/tests/test_app/TestApp/src/Locale', $base), // locale path
             ],
+            'appWithPlugins' => [
+                'tests/test_app/TestApp', // app path
+                null, // start path
+                'Dummy', // plugin name
+                true, // include plugins
+                [
+                    sprintf('%s/tests/test_app/TestApp/src', $base),
+                    sprintf('%s/tests/test_app/TestApp/config', $base),
+                    sprintf('%s/tests/test_app/TestApp/src/Template', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
+                    $version === 4 ?
+                        sprintf('%s/tests/test_app/plugins/Dummy/templates', $base) :
+                        sprintf('%s/tests/test_app/plugins/Dummy/src/Template', $base),
+                ], // template paths
+                sprintf('%s/tests/test_app/TestApp/src/Locale', $base), // locale path
+            ],
             'plugin' => [
                 null, // app path
                 sprintf('%s/tests/test_app/TestApp', $base), // start path
                 'Dummy', // plugin name
+                false, // include plugins
                 [
                     sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
                     sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
+                    $version === 4 ?
+                        sprintf('%s/tests/test_app/plugins/Dummy/templates', $base) :
+                        sprintf('%s/tests/test_app/plugins/Dummy/src/Template', $base),
                 ], // template paths
                 $version === 4 ?
                     sprintf('%s/tests/test_app/plugins/Dummy/resources/locales', $base) :
@@ -167,13 +189,14 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string|null $appPath The app file path
      * @param string|null $startPath The start path
      * @param string|null $pluginName The plugin name
+     * @param bool|null $includePlugins Should include plugins
      * @param array $expectedTemplatePaths The expected template paths
      * @param string $expectedLocalePath The expected locale path
      * @return void
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
      */
-    public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
+    public function testSetupPaths($appPath, $startPath, $pluginName, $includePlugins, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
         if (!empty($appPath)) {
             $this->shell->params['app'] = sprintf('%s/%s', getcwd(), $appPath);
@@ -181,15 +204,12 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         if (!empty($startPath)) {
             $this->shell->params['startPath'] = $startPath;
         }
-        if (!empty($pluginName)) {
+        if (!empty($includePlugins)) {
+            $this->loadPlugins([$pluginName]);
+            $this->shell->params['includePlugins'] = true;
+        } elseif (!empty($pluginName)) {
             $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
-            $expectedTemplatePaths = array_merge(
-                $expectedTemplatePaths,
-                array_map(function (string $path): string {
-                    return rtrim($path, '/');
-                }, App::path(View::NAME_TEMPLATE, $pluginName))
-            );
         }
 
         $method = self::getMethod('setupPaths');

@@ -234,12 +234,15 @@ class GettextShell extends Shell
      */
     protected function getPlugins(): array
     {
-        $plugins = App::path('Plugin');
+        $version = version_compare(Configure::version(), '4.0.0', '>=') ? 4 : 3;
+        $pluginsKeyName = $version === 4 ? 'plugins' : 'Plugin';
+        $plugins = App::path($pluginsKeyName);
 
         $loadedPlugins = [];
         foreach ($plugins as $pluginPath) {
             $loadedPlugins = array_merge($loadedPlugins, $this->getLoadedPlugins($pluginPath));
         }
+
 
         return $loadedPlugins;
     }
