@@ -174,28 +174,27 @@ class GettextShell extends Shell
      */
     protected function setupPaths(): void
     {
+        $version = version_compare(Configure::version(), '4.0.0', '>=') ? 4 : 3;
+        $templateKeyName = $version === 4 ? 'templates' : 'Template';
+        $localeKeyName = $version === 4 ? 'locales' : 'Locale';
+
         if ($this->param('plugin')) {
             $plugin = (string)$this->param('plugin');
             $this->templatePaths = array_merge(
                 [Plugin::classPath($plugin), Plugin::configPath($plugin)],
-                App::path('templates', $plugin)
+                App::path($templateKeyName, $plugin)
             );
 
-            $localesPaths = (array)Configure::read('App.paths.locales');
-            foreach ($localesPaths as $path) {
-                if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
-                    $this->localePath = $path;
-                    break;
-                }
-            }
+            $localesPath = (array)App::path($localeKeyName, $plugin);
+            $this->localePath = $localesPath[0];
 
             return;
         }
 
-        $localesPath = App::path('locales');
+        $localesPath = App::path($localeKeyName);
         $templatePaths = array_merge(
             [APP, dirname(APP) . DS . 'config'],
-            App::path('templates')
+            App::path($templateKeyName)
         );
 
         if ($this->param('includePlugins')) {
@@ -204,7 +203,7 @@ class GettextShell extends Shell
                 $templatePaths = array_merge(
                     $templatePaths,
                     [Plugin::classPath($plugin), Plugin::configPath($plugin)],
-                    App::path('templates', $plugin)
+                    App::path($templateKeyName, $plugin)
                 );
             }
         }
