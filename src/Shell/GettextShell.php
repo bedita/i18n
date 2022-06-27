@@ -223,7 +223,9 @@ class GettextShell extends Shell
     {
         $dirs = scandir($path);
 
-        return array_filter($dirs, fn ($file) => Plugin::getCollection()->has($file));
+        return array_filter($dirs, function (string $file): bool {
+            return Plugin::getCollection()->has($file);
+        });
     }
 
     /**
