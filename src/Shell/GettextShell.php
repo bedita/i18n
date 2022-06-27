@@ -178,7 +178,7 @@ class GettextShell extends Shell
             $plugin = (string)$this->param('plugin');
             $this->templatePaths = array_merge(
                 [Plugin::classPath($plugin), Plugin::configPath($plugin)],
-                App::path('Template', $plugin)
+                App::path('templates', $plugin)
             );
 
             $localesPaths = (array)Configure::read('App.paths.locales');
@@ -192,10 +192,10 @@ class GettextShell extends Shell
             return;
         }
 
-        $localesPath = App::path('Locale');
+        $localesPath = App::path('locales');
         $templatePaths = array_merge(
             [APP, dirname(APP) . DS . 'config'],
-            App::path('Template'),
+            App::path('templates'),
         );
 
         if ($this->param('includePlugins')) {
@@ -204,7 +204,7 @@ class GettextShell extends Shell
                 $templatePaths = array_merge(
                     $templatePaths,
                     [Plugin::classPath($plugin), Plugin::configPath($plugin)],
-                    App::path('Template', $plugin)
+                    App::path('templates', $plugin)
                 );
             }
         }

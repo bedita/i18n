@@ -181,31 +181,36 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         if (!empty($pluginName)) {
             $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
-            $expectedTemplatePaths = array_merge($expectedTemplatePaths, App::path(View::NAME_TEMPLATE, $pluginName));
+            $expectedTemplatePaths = array_merge(
+                $expectedTemplatePaths,
+                array_map(function (string $path): string {
+                    return rtrim($path, '/');
+                }, App::path(View::NAME_TEMPLATE, $pluginName))
+            );
         }
+
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
-        $i = 0;
+        $expectedTemplatePaths = array_map(function (string $path): string {
+            return rtrim($path, '/');
+        }, $expectedTemplatePaths);
         $actualPaths = $this->shell->getTemplatePaths();
-        foreach ($actualPaths as &$actual) {
-            if (strlen($actual) !== strlen($expectedTemplatePaths[$i++])) {
-                $actual = substr($actual, 0, -1);
-            }
-        }
+        $actualPaths = array_map(function (string $path): string {
+            return rtrim($path, '/');
+        }, $actualPaths);
         static::assertEquals($expectedTemplatePaths, $actualPaths);
-        $actual = $this->shell->getLocalePath();
-        if (strlen($actual) !== strlen($expectedLocalePath)) {
-            $actual = substr($actual, 0, -1);
-        }
+
+        $expectedLocalePath = rtrim($expectedLocalePath, '/');
+        $actual = rtrim($this->shell->getLocalePath(), '/');
         static::assertEquals($expectedLocalePath, $actual);
     }
 
     /**
-     * Provider for 'testWriteMasterPot'
+     * Provider for 'testWritePotFiles'
      *
      * @return array
      */
-    public function writeMasterPotProvider(): array
+    public function writePotFilesProvider(): array
     {
         return [
             'sample' => [
@@ -266,13 +271,13 @@ msgstr \"\"
     }
 
     /**
-     * Test writeMasterPot
+     * Test writePotFiles
      *
-     * @covers ::writeMasterPot()
-     * @dataProvider writeMasterPotProvider
+     * @covers ::writePotFiles()
+     * @dataProvider writePotFilesProvider
      * @return void
      */
-    public function testWriteMasterPot($expected, $values): void
+    public function testWritePotFiles($expected, $values): void
     {
         $time = new FrozenTime('2022-01-01 00:00:00');
         FrozenTime::setTestNow($time);
@@ -290,9 +295,9 @@ msgstr \"\"
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $poResult);
 
-        // call writeMasterPot using reflection class
+        // call writePotFiles using reflection class
         $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
-        $method = $class->getMethod('writeMasterPot');
+        $method = $class->getMethod('writePotFiles');
         $method->setAccessible(true);
         $result = $method->invokeArgs($this->shell, []);
 
