@@ -16,11 +16,9 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\Shell;
 
 use BEdita\I18n\Shell\GettextShell;
-use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\I18n\FrozenTime;
 use Cake\TestSuite\ConsoleIntegrationTestCase;
-use Cake\View\View;
 
 /**
  * {@see \BEdita\I18n\Shell\GettextShell} Test Case
@@ -67,6 +65,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::msgMerge()
      * @covers ::getPoResult()
      * @covers ::getTemplatePaths()
      * @covers ::getLocalePath()
@@ -76,7 +75,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $this->shell->params['app'] = sprintf('%s/tests/test_app/TestApp', getcwd());
 
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/src/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -96,6 +95,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      *
      * @return void
      * @covers ::update()
+     * @covers ::msgMerge()
      * @covers ::getPoResult()
      * @covers ::getTemplatePaths()
      * @covers ::getLocalePath()
@@ -106,7 +106,7 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         $this->shell->params['ci'] = true;
 
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/src/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -132,28 +132,53 @@ class GettextShellTest extends ConsoleIntegrationTestCase
     public function setupPathsProvider(): array
     {
         $base = getcwd();
+        $version = version_compare(Configure::version(), '4.0.0', '>=') ? 4 : 3;
 
         return [
             'app' => [
                 'tests/test_app/TestApp', // app path
                 null, // start path
-                null, // plugin path
+                null, // plugin name
+                false, // include plugins
                 [
                     sprintf('%s/tests/test_app/TestApp/src', $base),
                     sprintf('%s/tests/test_app/TestApp/config', $base),
-                    sprintf('%s/tests/test_app/TestApp/Template', $base),
+                    sprintf('%s/tests/test_app/TestApp/src/Template', $base),
                 ], // template paths
-                sprintf('%s/tests/test_app/TestApp/Locale', $base), // locale path
+                sprintf('%s/tests/test_app/TestApp/src/Locale', $base), // locale path
+            ],
+            'appWithPlugins' => [
+                'tests/test_app/TestApp', // app path
+                null, // start path
+                'Dummy', // plugin name
+                true, // include plugins
+                [
+                    sprintf('%s/tests/test_app/TestApp/src', $base),
+                    sprintf('%s/tests/test_app/TestApp/config', $base),
+                    sprintf('%s/tests/test_app/TestApp/src/Template', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
+                    sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
+                    $version === 4 ?
+                        sprintf('%s/tests/test_app/plugins/Dummy/templates', $base) :
+                        sprintf('%s/tests/test_app/plugins/Dummy/src/Template', $base),
+                ], // template paths
+                sprintf('%s/tests/test_app/TestApp/src/Locale', $base), // locale path
             ],
             'plugin' => [
                 null, // app path
                 sprintf('%s/tests/test_app/TestApp', $base), // start path
                 'Dummy', // plugin name
+                false, // include plugins
                 [
                     sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
                     sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
+                    $version === 4 ?
+                        sprintf('%s/tests/test_app/plugins/Dummy/templates', $base) :
+                        sprintf('%s/tests/test_app/plugins/Dummy/src/Template', $base),
                 ], // template paths
-                sprintf('%s/tests/test_app/plugins/Dummy/Locale', $base), // locale path
+                $version === 4 ?
+                    sprintf('%s/tests/test_app/plugins/Dummy/resources/locales', $base) :
+                    sprintf('%s/tests/test_app/plugins/Dummy/src/Locale', $base), // locale path
             ],
         ];
     }
@@ -164,13 +189,16 @@ class GettextShellTest extends ConsoleIntegrationTestCase
      * @param string|null $appPath The app file path
      * @param string|null $startPath The start path
      * @param string|null $pluginName The plugin name
+     * @param bool|null $includePlugins Should include plugins
      * @param array $expectedTemplatePaths The expected template paths
      * @param string $expectedLocalePath The expected locale path
      * @return void
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
+     * @covers ::getLoadedPlugins()
+     * @covers ::getPlugins()
      */
-    public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
+    public function testSetupPaths($appPath, $startPath, $pluginName, $includePlugins, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
         if (!empty($appPath)) {
             $this->shell->params['app'] = sprintf('%s/%s', getcwd(), $appPath);
@@ -178,34 +206,36 @@ class GettextShellTest extends ConsoleIntegrationTestCase
         if (!empty($startPath)) {
             $this->shell->params['startPath'] = $startPath;
         }
-        if (!empty($pluginName)) {
+        if (!empty($includePlugins)) {
+            $this->loadPlugins([$pluginName]);
+            $this->shell->params['includePlugins'] = true;
+        } elseif (!empty($pluginName)) {
             $this->loadPlugins([$pluginName]);
             $this->shell->params['plugin'] = $pluginName;
-            $expectedTemplatePaths = array_merge($expectedTemplatePaths, App::path(View::NAME_TEMPLATE, $pluginName));
         }
+
         $method = self::getMethod('setupPaths');
         $method->invokeArgs($this->shell, []);
-        $i = 0;
+        $expectedTemplatePaths = array_map(function (string $path): string {
+            return rtrim($path, '/');
+        }, $expectedTemplatePaths);
         $actualPaths = $this->shell->getTemplatePaths();
-        foreach ($actualPaths as &$actual) {
-            if (strlen($actual) !== strlen($expectedTemplatePaths[$i++])) {
-                $actual = substr($actual, 0, -1);
-            }
-        }
+        $actualPaths = array_map(function (string $path): string {
+            return rtrim($path, '/');
+        }, $actualPaths);
         static::assertEquals($expectedTemplatePaths, $actualPaths);
-        $actual = $this->shell->getLocalePath();
-        if (strlen($actual) !== strlen($expectedLocalePath)) {
-            $actual = substr($actual, 0, -1);
-        }
+
+        $expectedLocalePath = rtrim($expectedLocalePath, '/');
+        $actual = rtrim($this->shell->getLocalePath(), '/');
         static::assertEquals($expectedLocalePath, $actual);
     }
 
     /**
-     * Provider for 'testWriteMasterPot'
+     * Provider for 'testWritePotFiles'
      *
      * @return array
      */
-    public function writeMasterPotProvider(): array
+    public function writePotFilesProvider(): array
     {
         return [
             'sample' => [
@@ -266,19 +296,19 @@ msgstr \"\"
     }
 
     /**
-     * Test writeMasterPot
+     * Test writePotFiles
      *
-     * @covers ::writeMasterPot()
-     * @dataProvider writeMasterPotProvider
+     * @covers ::writePotFiles()
+     * @dataProvider writePotFilesProvider
      * @return void
      */
-    public function testWriteMasterPot($expected, $values): void
+    public function testWritePotFiles($expected, $values): void
     {
         $time = new FrozenTime('2022-01-01 00:00:00');
         FrozenTime::setTestNow($time);
 
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/src/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -290,9 +320,9 @@ msgstr \"\"
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $poResult);
 
-        // call writeMasterPot using reflection class
+        // call writePotFiles using reflection class
         $class = new \ReflectionClass('BEdita\I18n\Shell\GettextShell');
-        $method = $class->getMethod('writeMasterPot');
+        $method = $class->getMethod('writePotFiles');
         $method->setAccessible(true);
         $result = $method->invokeArgs($this->shell, []);
 
@@ -324,7 +354,7 @@ msgstr \"\"
     public function testWritePoFiles(): void
     {
         // set localePath using reflection class
-        $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        $localePath = sprintf('%s/tests/test_app/TestApp/src/Locale', getcwd());
         $reflection = new \ReflectionProperty(get_class($this->shell), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->shell, $localePath);
@@ -596,9 +626,9 @@ msgstr \"\"
     private function cleanFiles(): void
     {
         $files = [
-            sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()),
-            sprintf('%s/tests/test_app/TestApp/Locale/en_US/default.po', getcwd()),
-            sprintf('%s/tests/test_app/TestApp/Locale/it_IT/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/src/Locale/default.pot', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/src/Locale/en_US/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/src/Locale/it_IT/default.po', getcwd()),
         ];
         foreach ($files as $file) {
             if (file_exists($file)) {

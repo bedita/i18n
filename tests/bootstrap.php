@@ -32,7 +32,9 @@ require_once 'vendor/cakephp/cakephp/src/basics.php';
 require_once 'vendor/autoload.php';
 
 define('ROOT', $root . DS . 'tests' . DS . 'test_app' . DS);
-define('APP', ROOT . 'TestApp' . DS);
+define('CAKE_CORE_INCLUDE_PATH', $root . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp');
+define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
+define('APP', ROOT . 'TestApp' . DS . 'src' . DS);
 define('TMP', sys_get_temp_dir() . DS);
 define('LOGS', TMP . 'logs' . DS);
 define('CACHE', TMP . 'cache' . DS);
@@ -44,15 +46,9 @@ Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'utf-8',
     'paths' => [
-        'locales' => [
-            APP . 'Locale' . DS,
-            ROOT . 'plugins' . DS . 'Dummy' . DS . 'Locale' . DS,
-        ],
+        'locales' => [APP . 'Locale' . DS],
         'plugins' => [ROOT . 'plugins' . DS],
-        'templates' => [
-            APP . 'Template' . DS,
-            ROOT . 'plugins' . DS . 'Dummy' . DS . 'Template' . DS,
-        ],
+        'templates' => [APP . 'Template' . DS],
     ],
     'base' => '',
     'webroot' => '/',
