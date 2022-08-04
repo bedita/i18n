@@ -623,6 +623,28 @@ class I18nMiddlewareTest extends TestCase
                     'redirect' => 'https://example.com/credits',
                 ],
             ],
+            'valid redirect starting with "/"' => [
+                [
+                    'location' => '/credits',
+                    'status' => 302,
+                    'cookie' => 'it_IT',
+                ],
+                [
+                    'cookie' => [
+                        'name' => 'i18nLocal',
+                        'create' => true,
+                    ],
+                    'switchLangUrl' => '/lang',
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [
+                    'new' => 'it',
+                    'redirect' => '/credits',
+                ],
+            ],
         ];
     }
 
