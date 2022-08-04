@@ -573,7 +573,6 @@ class I18nMiddlewareTest extends TestCase
                 ],
                 [
                     'new' => 'de',
-                    'redirect' => '/home',
                 ],
             ],
             'no cookie, no session' => [
@@ -586,6 +585,43 @@ class I18nMiddlewareTest extends TestCase
                     'REQUEST_URI' => '/lang',
                 ],
                 [],
+            ],
+            'invalid redirect' => [
+                new BadRequestException('"redirect" query string not valid'),
+                [
+                    'cookie' => ['name' => 'i18nLocal'],
+                    'switchLangUrl' => '/lang',
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [
+                    'new' => 'it',
+                    'redirect' => 'home',
+                ],
+            ],
+            'valid redirect' => [
+                [
+                    'location' => 'https://example.com/credits',
+                    'status' => 302,
+                    'cookie' => 'it_IT',
+                ],
+                [
+                    'cookie' => [
+                        'name' => 'i18nLocal',
+                        'create' => true,
+                    ],
+                    'switchLangUrl' => '/lang',
+                ],
+                [
+                    'HTTP_HOST' => 'example.com',
+                    'REQUEST_URI' => '/lang',
+                ],
+                [
+                    'new' => 'it',
+                    'redirect' => 'https://example.com/credits',
+                ],
             ],
         ];
     }

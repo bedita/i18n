@@ -25,6 +25,7 @@ use Cake\Http\ServerRequest;
 use Cake\I18n\FrozenTime;
 use Cake\I18n\I18n;
 use Cake\Utility\Hash;
+use Cake\Validation\Validation;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -245,10 +246,15 @@ class I18nMiddleware implements MiddlewareInterface
             throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
         }
 
+        $redirect = (string)$request->getQuery('redirect', $request->referer(false));
+        if (strpos($redirect, '/') !== 0 && !Validation::url($redirect, true)) {
+            throw new BadRequestException(__('"redirect" query string not valid'));
+        }
+
         $this->updateSession($request, $locale);
 
         $response = (new Response())
-            ->withLocation((string)$request->referer(false))
+            ->withLocation($redirect)
             ->withDisabledCache()
             ->withStatus(302);
 
