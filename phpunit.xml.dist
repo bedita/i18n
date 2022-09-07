@@ -4,10 +4,6 @@
     <include>
       <directory suffix=".php">./src/</directory>
     </include>
-    <exclude>
-      <file>./src/Console/Installer.php</file>
-      <file>./src/Shell/ConsoleShell.php</file>
-    </exclude>
   </coverage>
   <php>
     <ini name="memory_limit" value="-1"/>
