@@ -156,7 +156,7 @@ class GettextCommandTest extends TestCase
                     sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
                     sprintf('%s/tests/test_app/plugins/Dummy/templates', $base),
                 ], // template paths
-                sprintf('%s/tests/test_app/plugins/Dummy/Locale', $base), // locale path
+                sprintf('%s/tests/test_app/plugins/Dummy/resources/locales', $base), // locale path
             ],
         ];
     }
@@ -175,7 +175,6 @@ class GettextCommandTest extends TestCase
      */
     public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
-        $expectedPoName = 'default.po';
         $options = [];
         if (!empty($appPath)) {
             $options['app'] = sprintf('%s/%s', getcwd(), $appPath);
@@ -185,7 +184,6 @@ class GettextCommandTest extends TestCase
         }
         if (!empty($pluginName)) {
             $options['plugin'] = $pluginName;
-            $expectedPoName = sprintf('%s.po', $pluginName);
         }
         $args = new Arguments([], $options, []);
         $method = self::getMethod('setupPaths');
