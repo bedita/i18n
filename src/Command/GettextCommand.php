@@ -187,6 +187,14 @@ class GettextCommand extends Command
             $this->defaultDomain = $plugin;
             $localePaths = App::path('locales', $plugin);
             $this->localePath = (string)Hash::get($localePaths, '0');
+            if (empty($this->localePath)) {
+                foreach ($localesPaths as $path) {
+                    if (strpos($path, sprintf('%s%s%s', DS, $plugin, DS)) > 0) {
+                        $this->localePath = $path;
+                        break;
+                    }
+                }
+            }
 
             return;
         }
