@@ -73,9 +73,6 @@ class GettextCommandTest extends TestCase
      *
      * @return void
      * @covers ::execute()
-     * @covers ::getPoResult()
-     * @covers ::getTemplatePaths()
-     * @covers ::getLocalePath()
      */
     public function testExecute(): void
     {
@@ -100,9 +97,6 @@ class GettextCommandTest extends TestCase
      *
      * @return void
      * @covers ::execute()
-     * @covers ::getPoResult()
-     * @covers ::getTemplatePaths()
-     * @covers ::getLocalePath()
      */
     public function testUpdateWithCi(): void
     {
@@ -172,6 +166,8 @@ class GettextCommandTest extends TestCase
      * @return void
      * @dataProvider setupPathsProvider
      * @covers ::setupPaths()
+     * @covers ::getTemplatePaths()
+     * @covers ::getLocalePath()
      */
     public function testSetupPaths($appPath, $startPath, $pluginName, array $expectedTemplatePaths, string $expectedLocalePath): void
     {
@@ -471,6 +467,7 @@ msgstr \"\"
      * @return void
      * @dataProvider parseFileProvider
      * @covers ::parseFile()
+     * @covers ::getPoResult()
      */
     public function testParseFile(string $file, string $extension, array $expected): void
     {
