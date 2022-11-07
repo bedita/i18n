@@ -516,6 +516,10 @@ class GettextCommand extends Command
 
             return;
         }
+        // Path to the resources directory defined in cakephp app config/paths.php
+        if (file_exists(RESOURCES)) {
+            $appDir = sprintf('%s %s', $appDir, RESOURCES);
+        }
 
         // do extract translation strings from js files using ttag
         $io->out('Extracting translation string from javascript files using ttag');
