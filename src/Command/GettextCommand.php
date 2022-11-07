@@ -517,7 +517,7 @@ class GettextCommand extends Command
             return;
         }
         // Path to the resources directory defined in cakephp app config/paths.php
-        if (file_exists(RESOURCES)) {
+        if (defined('RESOURCES') && file_exists(RESOURCES)) {
             $appDir = sprintf('%s %s', $appDir, RESOURCES);
         }
 
