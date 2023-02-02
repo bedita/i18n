@@ -647,7 +647,7 @@ class I18nMiddlewareTest extends TestCase
             ],
             'no redirect, default /' => [
                 [
-                    'location' => 'https://example.com/credits',
+                    'location' => '/',
                     'status' => 302,
                     'cookie' => 'it_IT',
                 ],
