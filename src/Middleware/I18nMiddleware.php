@@ -221,6 +221,7 @@ class I18nMiddleware implements MiddlewareInterface
 
     /**
      * Change lang and redirect to referer.
+     * If no referer found, redirect to "/".
      *
      * Require query string `new` and `redirect`
      *
@@ -247,9 +248,10 @@ class I18nMiddleware implements MiddlewareInterface
         }
 
         $redirect = (string)$request->getQuery('redirect', $request->referer(false));
-        if (strpos($redirect, '/') !== 0 && !Validation::url($redirect, true)) {
+        if (!empty($redirect) && strpos($redirect, '/') !== 0 && !Validation::url($redirect, true)) {
             throw new BadRequestException(__('"redirect" query string not valid'));
         }
+        $redirect = !empty($redirect) ? $redirect : '/';
 
         $this->updateSession($request, $locale);
 
