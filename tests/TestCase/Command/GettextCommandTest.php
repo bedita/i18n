@@ -93,6 +93,44 @@ class GettextCommandTest extends TestCase
     }
 
     /**
+     * Test execute method with locales passed as option..
+     *
+     * @return void
+     * @covers ::execute()
+     */
+    public function testExecuteWithLocales(): void
+    {
+        $localePath = APP . 'Locale';
+        Configure::write('App.paths.locales', [$localePath]);
+
+        $this->exec('gettext -l en,it --app ' . APP);
+        $this->assertExitSuccess();
+
+        foreach (['en', 'it'] as $locale) {
+            $content = file_get_contents(sprintf('%s/%s/default.po', $localePath, $locale));
+            static::assertNotEmpty($content);
+        }
+    }
+
+    /**
+     * Test command without any locales.
+     *
+     * @return void
+     */
+    public function testExecuteWithoutLocales(): void
+    {
+        $localePath = APP . 'Locale';
+        Configure::write('App.paths.locales', [$localePath]);
+        Configure::write('I18n', [
+            'locales' => [],
+        ]);
+
+        $this->exec('gettext --app ' . APP);
+        static::assertExitSuccess();
+        $this->assertOutputContains('No locales set, .po files generation skipped');
+    }
+
+    /**
      * Test execute method with ci flag
      *
      * @return void
@@ -326,6 +364,10 @@ msgstr \"\"
         $reflection = new \ReflectionProperty(get_class($this->command), 'localePath');
         $reflection->setAccessible(true);
         $reflection->setValue($this->command, $localePath);
+
+        $reflection = new \ReflectionProperty(get_class($this->command), 'locales');
+        $reflection->setAccessible(true);
+        $reflection->setValue($this->command, ['en_US', 'it_IT']);
 
         // set poResult using reflection class
         $poResult['default'] = [
@@ -598,6 +640,8 @@ msgstr \"\"
             sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()),
             sprintf('%s/tests/test_app/TestApp/Locale/en_US/default.po', getcwd()),
             sprintf('%s/tests/test_app/TestApp/Locale/it_IT/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/it/default.po', getcwd()),
+            sprintf('%s/tests/test_app/TestApp/Locale/en/default.po', getcwd()),
         ];
         foreach ($files as $file) {
             if (file_exists($file)) {
