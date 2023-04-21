@@ -67,6 +67,13 @@ class GettextCommand extends Command
     protected $defaultDomain = 'default';
 
     /**
+     * The locales to generate.
+     *
+     * @var array
+     */
+    protected $locales = [];
+
+    /**
      * @inheritDoc
      */
     public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
@@ -93,6 +100,11 @@ class GettextCommand extends Command
                 'help' => 'Run in CI mode. Exit with error if PO files are changed.',
                 'required' => false,
                 'boolean' => true,
+            ])
+            ->addOption('locales', [
+                'help' => 'Comma separated list of locales to generate. Leave empty to use configuration `I18n.locales`',
+                'short' => 'l',
+                'default' => implode(',', array_keys((array)Configure::read('I18n.locales'))),
             ]);
     }
 
@@ -143,6 +155,7 @@ class GettextCommand extends Command
 
         $io->out('Updating .pot and .po files...');
 
+        $this->locales = array_filter(explode(',', $args->getOption('locales')));
         $this->setupPaths($args);
         foreach ($this->templatePaths as $path) {
             $io->out(sprintf('Search in: %s', $path));
@@ -254,9 +267,14 @@ class GettextCommand extends Command
      */
     private function writePoFiles(ConsoleIo $io): void
     {
+        if (empty($this->locales)) {
+            $io->info('No locales set, .po files generation skipped');
+
+            return;
+        }
+
         $header = $this->header('po');
-        $locales = array_keys((array)Configure::read('I18n.locales', []));
-        foreach ($locales as $loc) {
+        foreach ($this->locales as $loc) {
             $potDir = $this->localePath . DS . $loc;
             if (!file_exists($potDir)) {
                 mkdir($potDir);
