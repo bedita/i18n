@@ -29,7 +29,7 @@ class Ttag
      * @param string|null $plugin The plugin name, if any
      * @return array
      */
-    public static function extract(string $localePath, string|null $plugin = null): array
+    public static function extract(string $localePath, ?string $plugin = null): array
     {
         $extracted = false;
         $info = [];
