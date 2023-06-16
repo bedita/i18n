@@ -4,11 +4,8 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\TestCase\Command;
 
 use BEdita\I18n\Command\GettextCommand;
-use Cake\Console\Arguments;
-use Cake\Console\ConsoleIo;
 use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 use Cake\Core\Configure;
-use Cake\I18n\FrozenTime;
 use Cake\TestSuite\TestCase;
 
 /**
