@@ -24,6 +24,7 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
+use Cake\Utility\Hash;
 
 /**
  * Gettext command.
@@ -168,7 +169,7 @@ class GettextCommand extends Command
         foreach ($result['info'] as $info) {
             $io->out($info);
         }
-        $hasChanges = $result['updated'];
+        $hasChanges = Hash::get($result, 'updated') === true;
 
         $io->out('Extracting ttag translations from javascript files');
         $result = Ttag::extract($this->localePath, $args->getOption('plugin'));
