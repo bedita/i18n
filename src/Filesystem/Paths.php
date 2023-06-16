@@ -63,7 +63,7 @@ class Paths
      * @param array $templatePaths Template paths
      * @param string $localePath Locale path
      * @param string $defaultDomain Default domain
-     * @param array $options Options
+     * @param string $plugin The plugin name
      * @return void
      */
     public static function setupPlugin(
