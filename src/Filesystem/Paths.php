@@ -36,8 +36,7 @@ class Paths
         string &$localePath,
         string &$defaultDomain,
         array $options
-    ): void
-    {
+    ): void {
         if ($options['plugins'] === true) {
             self::setupPlugins($templatePaths, $localePath);
 
@@ -72,8 +71,7 @@ class Paths
         string &$localePath,
         string &$defaultDomain,
         string $plugin
-    ): void
-    {
+    ): void {
         $templatePaths = array_merge(
             [
                 Plugin::classPath($plugin),

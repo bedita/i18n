@@ -15,8 +15,6 @@ declare(strict_types=1);
 
 namespace BEdita\I18n\Filesystem;
 
-use function PHPUnit\Framework\directoryExists;
-
 class File
 {
     /**
