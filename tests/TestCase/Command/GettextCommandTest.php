@@ -159,41 +159,6 @@ class GettextCommandTest extends TestCase
     }
 
     /**
-     * Provider for 'setupPaths'
-     *
-     * @return array
-     */
-    public function setupPathsProvider(): array
-    {
-        $base = getcwd();
-
-        return [
-            'app' => [
-                'tests/test_app/TestApp', // app path
-                null, // start path
-                null, // plugin path
-                [
-                    sprintf('%s/tests/test_app/TestApp/src', $base),
-                    sprintf('%s/tests/test_app/TestApp/config', $base),
-                    sprintf('%s/tests/test_app/TestApp/Template', $base),
-                ], // template paths
-                sprintf('%s/tests/test_app/TestApp/Locale', $base), // locale path
-            ],
-            'plugin' => [
-                null, // app path
-                sprintf('%s/tests/test_app/TestApp', $base), // start path
-                'Dummy', // plugin name
-                [
-                    sprintf('%s/tests/test_app/plugins/Dummy/src', $base),
-                    sprintf('%s/tests/test_app/plugins/Dummy/config', $base),
-                    sprintf('%s/tests/test_app/plugins/Dummy/templates', $base),
-                ], // template paths
-                sprintf('%s/tests/test_app/plugins/Dummy/resources/locales', $base), // locale path
-            ],
-        ];
-    }
-
-    /**
      * Clean files for test.
      *
      * @return void
