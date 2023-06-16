@@ -37,17 +37,17 @@ class Paths
         string &$defaultDomain,
         array $options
     ): void {
-        if ($options['plugins'] === true) {
+        if (Hash::get($options, 'plugins') === true) {
             self::setupPlugins($templatePaths, $localePath);
 
             return;
         }
-        if ($options['plugin'] !== null) {
-            self::setupPlugin($templatePaths, $localePath, $defaultDomain, $options['plugin']);
+        if (Hash::get($options, 'plugin') !== null) {
+            self::setupPlugin($templatePaths, $localePath, $defaultDomain, (string)Hash::get($options, 'plugin'));
 
             return;
         }
-        $app = $options['app'];
+        $app = Hash::get($options, 'app');
         $basePath = $app ?? getcwd();
         $templatePaths = [$basePath . DS . 'src', $basePath . DS . 'config'];
         $templatePaths = array_merge($templatePaths, App::path(View::NAME_TEMPLATE));
