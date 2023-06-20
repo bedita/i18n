@@ -45,7 +45,8 @@ class File
             '/.*\.(php|ctp|thtml|inc|tpl|twig)/i',
         );
         foreach ($files as $file) {
-            $result = $result && self::parseFile($file, $defaultDomain, $translations);
+            $parseResult = self::parseFile($file, $defaultDomain, $translations);
+            $result = $result && $parseResult;
         }
 
         return $result;
