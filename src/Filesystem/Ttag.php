@@ -72,9 +72,8 @@ class Ttag
         string $appDir,
         string $localePath,
         array $locales,
-        string $plugin = null
-    ): bool
-    {
+        ?string $plugin = null
+    ): bool {
         $result = true;
         try {
             // Path to the resources directory defined in cakephp app config/paths.php
