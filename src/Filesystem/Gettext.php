@@ -34,7 +34,7 @@ class Gettext
             $info[] = sprintf('Writing new .pot file: %s', $potFilename);
 
             $file = new \SplFileInfo($potFilename);
-            $pot = $file->openFile('a');
+            $pot = $file->openFile('w');
             $contents = file_get_contents($potFilename);
 
             // remove headers from pot file

@@ -25,11 +25,12 @@ class Ttag
     /**
      * Extract ttag strings from javascript files
      *
+     * @param array $locales The locales
      * @param string $localePath The locale path
      * @param string|null $plugin The plugin name, if any
      * @return array
      */
-    public static function extract(string $localePath, ?string $plugin = null): array
+    public static function extract(array $locales, string $localePath, ?string $plugin = null): array
     {
         $extracted = false;
         $info = [];
@@ -56,8 +57,12 @@ class Ttag
 
         // do extract translation strings from js files using ttag
         $info[] = 'Extracting translation string from javascript files using ttag';
+
         $defaultJs = sprintf('%s/default-js.pot', $localePath);
-        exec(sprintf('%s extract --extractLocation never --o %s --l en %s', $ttag, $defaultJs, $appDir));
+        foreach ($locales as $locale) {
+            $lang = substr($locale, 0, 2);
+            exec(sprintf('%s extract --extractLocation never --o %s --l %s %s', $ttag, $defaultJs, $lang, $appDir));
+        }
 
         // merge default-js.pot and <plugin>.pot|default.pot
         $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';

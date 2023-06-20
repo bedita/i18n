@@ -15,6 +15,10 @@ declare(strict_types=1);
 
 namespace BEdita\I18n\Filesystem;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RegexIterator;
+
 class File
 {
     /**
@@ -28,22 +32,20 @@ class File
     public static function parseDir(string $dir, string $defaultDomain, array &$translations): bool
     {
         $result = true;
-        if (!file_exists($dir)) {
+        if (!is_dir($dir)) {
             return false;
         }
-        $scan = scandir($dir);
-        if ($scan === false) {
-            return false;
-        }
-        $scan = array_diff($scan, ['.', '..']);
-        foreach ($scan as $subdir) {
-            if (is_dir($dir . DS . $subdir)) {
-                $result = $result && self::parseDir($dir . DS . $subdir, $defaultDomain, $translations);
-            }
-        }
-        $files = preg_grep('~\.(php|ctp|thtml|inc|tpl|twig)$~', $scan);
+        $files = new RegexIterator(
+            new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $dir,
+                    RecursiveDirectoryIterator::KEY_AS_PATHNAME | RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
+                )
+            ),
+            '/.*\.(php|ctp|thtml|inc|tpl|twig)/i',
+        );
         foreach ($files as $file) {
-            $result = $result && self::parseFile($dir . DS . $file, $defaultDomain, $translations);
+            $result = $result && self::parseFile($file, $defaultDomain, $translations);
         }
 
         return $result;
