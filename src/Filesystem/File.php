@@ -122,11 +122,7 @@ class File
                     $ctx = self::unquoteString($matches[1][$i]);
                     $str = self::unquoteString($matches[2][$i]);
                 }
-
                 $str = self::fixString($str);
-                if (empty($str)) {
-                    continue;
-                }
 
                 if (!array_key_exists($domain, $translations)) {
                     $translations[$domain] = [];
