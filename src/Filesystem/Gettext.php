@@ -112,11 +112,9 @@ class Gettext
             foreach ($poResult as $res => $contexts) {
                 sort($contexts);
                 foreach ($contexts as $ctx) {
-                    if (!empty($ctx)) {
-                        $lines[] = sprintf('msgctxt "%s"%smsgid "%s"%smsgstr ""', $ctx, "\n", $res, "\n");
-                    } else {
-                        $lines[] = sprintf('msgid "%s"%smsgstr ""', $res, "\n");
-                    }
+                    $msgctxt = sprintf('msgctxt "%s"%smsgid "%s"%smsgstr ""', $ctx, "\n", $res, "\n");
+                    $msgidstr = sprintf('msgid "%s"%smsgstr ""', $res, "\n");
+                    $lines[] = !empty($ctx) ? $msgctxt : $msgidstr;
                 }
             }
 

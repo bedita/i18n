@@ -78,9 +78,8 @@ class Ttag
         try {
             // Path to the resources directory defined in cakephp app config/paths.php
             // Do not add RESOURCES path when it's a plugin
-            if (empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES)) {
-                $appDir = sprintf('%s %s', $appDir, RESOURCES);
-            }
+            $useResources = empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES);
+            $appDir = $useResources ? sprintf('%s %s', $appDir, RESOURCES) : $appDir;
 
             $defaultJs = sprintf('%s/default-js.pot', $localePath);
             foreach ($locales as $locale) {

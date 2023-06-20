@@ -46,4 +46,76 @@ class GettextTest extends TestCase
         static::assertTrue(strpos($actual, 'Plural-Forms: nplurals=2; plural=(n != 1);') > 0);
         static::assertTrue(strpos($actual, 'Content-Type: text/plain; charset=utf-8') > 0);
     }
+
+    /**
+     * Test `writeMasterPot` method.
+     *
+     * @return void
+     * @covers ::writeMasterPot()
+     */
+    public function testWriteMasterPot(): void
+    {
+        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $translations = [
+            'messages' => [
+                [
+                    'Something',
+                    'Translalable',
+                ],
+            ],
+        ];
+        $actual = Gettext::writeMasterPot($localePath, $translations);
+        foreach (['info', 'updated'] as $key) {
+            static::assertArrayHasKey($key, $actual);
+        }
+        static::assertTrue($actual['updated']);
+        if (file_exists($localePath . DS . 'messages.pot')) {
+            unlink($localePath . DS . 'messages.pot');
+        }
+    }
+
+    /**
+     * Test `writePoFiles` method on empty locales.
+     *
+     * @return void
+     * @covers ::writePoFiles()
+     */
+    public function testWritePoFilesEmptyLocales(): void
+    {
+        $locales = [];
+        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $translations = [];
+        $actual = Gettext::writePoFiles($locales, $localePath, $translations);
+        static::assertArrayHasKey('info', $actual);
+    }
+
+    /**
+     * Test `writePoFiles` method.
+     *
+     * @return void
+     * @covers ::writePoFiles()
+     */
+    public function testWritePoFiles(): void
+    {
+        $locales = ['en_US', 'it_IT'];
+        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $translations = [
+            'messages' => [
+                [
+                    'Something',
+                    'Translalable',
+                ],
+            ],
+        ];
+        $actual = Gettext::writePoFiles($locales, $localePath, $translations);
+        static::assertArrayHasKey('info', $actual);
+        foreach ($locales as $locale) {
+            $localeFile = $localePath . DS . $locale . DS . 'messages.po';
+            static::assertTrue(file_exists($localeFile));
+            unlink($localeFile);
+        }
+        if (file_exists($localePath . DS . 'messages.pot')) {
+            unlink($localePath . DS . 'messages.pot');
+        }
+    }
 }
