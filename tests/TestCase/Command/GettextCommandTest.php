@@ -151,7 +151,7 @@ class GettextCommandTest extends TestCase
         }
 
         // call method again
-        $this->exec('gettext --app ' . $appPath . ' --ci');
+        $this->exec('gettext --app ' . $appPath);
         static::assertExitSuccess();
     }
 
