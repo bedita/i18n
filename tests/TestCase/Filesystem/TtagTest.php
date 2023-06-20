@@ -28,6 +28,11 @@ class TtagTest extends TestCase
         static::assertIsArray($actual);
         static::assertArrayHasKey('extracted', $actual);
         static::assertArrayHasKey('info', $actual);
+
+        $actual = Ttag::extract($locales, $localePath, 'Dummy');
+        static::assertIsArray($actual);
+        static::assertArrayHasKey('extracted', $actual);
+        static::assertArrayHasKey('info', $actual);
     }
 
     /**
@@ -42,6 +47,7 @@ class TtagTest extends TestCase
         $localePath = __DIR__ . '/../../test_dir';
         $appDir = __DIR__ . '/../../test_app/TestApp';
         $ttag = 'node_modules/ttag-cli/bin/ttag';
+        define('RESOURCES', __DIR__ . '/../../TestApp');
         $actual = Ttag::doExtract($ttag, $appDir, $localePath, $locales);
         static::assertFalse($actual);
     }
