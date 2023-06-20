@@ -41,35 +41,35 @@ class GettextCommand extends Command
      *
      * @var array
      */
-    protected $poResult = [];
+    private $poResult = [];
 
     /**
      * The template paths
      *
      * @var array
      */
-    protected $templatePaths = [];
+    private $templatePaths = [];
 
     /**
      * The locale path
      *
      * @var string
      */
-    protected $localePath = '';
+    private $localePath = '';
 
     /**
      * The name of default domain if not specified. Used for pot and po file names.
      *
      * @var string
      */
-    protected $defaultDomain = 'default';
+    private $defaultDomain = 'default';
 
     /**
      * The locales to generate.
      *
      * @var array
      */
-    protected $locales = [];
+    private $locales = [];
 
     /**
      * @inheritDoc
@@ -109,36 +109,6 @@ class GettextCommand extends Command
                 'short' => 'l',
                 'default' => implode(',', array_keys((array)Configure::read('I18n.locales'))),
             ]);
-    }
-
-    /**
-     * Get po result.
-     *
-     * @return array
-     */
-    public function getPoResult(): array
-    {
-        return $this->poResult;
-    }
-
-    /**
-     * Get templatePaths.
-     *
-     * @return array
-     */
-    public function getTemplatePaths(): array
-    {
-        return $this->templatePaths;
-    }
-
-    /**
-     * Get localePath
-     *
-     * @return string
-     */
-    public function getLocalePath(): string
-    {
-        return $this->localePath;
     }
 
     /**
