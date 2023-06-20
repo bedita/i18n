@@ -29,4 +29,20 @@ class TtagTest extends TestCase
         static::assertArrayHasKey('extracted', $actual);
         static::assertArrayHasKey('info', $actual);
     }
+
+    /**
+     * Test `doExtract` method.
+     *
+     * @return void
+     * @covers ::doExtract()
+     */
+    public function testDoExtract(): void
+    {
+        $locales = ['en_US'];
+        $localePath = __DIR__ . '/../../test_dir';
+        $appDir = __DIR__ . '/../../test_app/TestApp';
+        $ttag = 'node_modules/ttag-cli/bin/ttag';
+        $actual = Ttag::doExtract($ttag, $appDir, $localePath, $locales);
+        static::assertFalse($actual);
+    }
 }

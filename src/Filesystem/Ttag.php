@@ -32,6 +32,7 @@ class Ttag
      */
     public static function extract(array $locales, string $localePath, ?string $plugin = null): array
     {
+        $skip = false;
         $extracted = false;
         $info = [];
 
@@ -39,41 +40,69 @@ class Ttag
         $ttag = 'node_modules/ttag-cli/bin/ttag';
         if (!file_exists($ttag)) {
             $info[] = sprintf('Skip javascript parsing - %s command not found', $ttag);
-
-            return compact('extracted', 'info');
+            $skip = true;
         }
+
         // check template folder exists
         $appDir = !empty($plugin) ? Plugin::templatePath($plugin) : Hash::get(App::path(View::NAME_TEMPLATE), 0);
         if (!file_exists($appDir)) {
             $info[] = sprintf('Skip javascript parsing - %s folder not found', $appDir);
-
-            return compact('extracted', 'info');
-        }
-        // Path to the resources directory defined in cakephp app config/paths.php
-        // Do not add RESOURCES path when it's a plugin
-        if (empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES)) {
-            $appDir = sprintf('%s %s', $appDir, RESOURCES);
+            $skip = true;
         }
 
-        // do extract translation strings from js files using ttag
-        $info[] = 'Extracting translation string from javascript files using ttag';
-
-        $defaultJs = sprintf('%s/default-js.pot', $localePath);
-        foreach ($locales as $locale) {
-            $lang = substr($locale, 0, 2);
-            exec(sprintf('%s extract --extractLocation never --o %s --l %s %s', $ttag, $defaultJs, $lang, $appDir));
+        if (!$skip) {
+            $extracted = self::doExtract($ttag, $appDir, $localePath, $locales);
         }
-
-        // merge default-js.pot and <plugin>.pot|default.pot
-        $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';
-        $default = sprintf('%s/%s', $localePath, $potFile);
-        exec(sprintf('msgcat --use-first %s %s -o %s', $default, $defaultJs, $default));
-
-        // remove default-js.pot
-        unlink($defaultJs);
-
-        $extracted = true;
 
         return compact('extracted', 'info');
+    }
+
+    /**
+     * Perform ttag extract
+     *
+     * @param string $ttag Ttag command
+     * @param string $appDir Path to the app directory
+     * @param string $localePath Path to the locale directory
+     * @param array $locales The locales
+     * @param string|null $plugin The plugin name, if any
+     * @return bool
+     */
+    public static function doExtract(
+        string $ttag,
+        string $appDir,
+        string $localePath,
+        array $locales,
+        string $plugin = null
+    ): bool
+    {
+        $result = true;
+        try {
+            // Path to the resources directory defined in cakephp app config/paths.php
+            // Do not add RESOURCES path when it's a plugin
+            if (empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES)) {
+                $appDir = sprintf('%s %s', $appDir, RESOURCES);
+            }
+
+            // do extract translation strings from js files using ttag
+            $info[] = 'Extracting translation string from javascript files using ttag';
+
+            $defaultJs = sprintf('%s/default-js.pot', $localePath);
+            foreach ($locales as $locale) {
+                $lang = substr($locale, 0, 2);
+                exec(sprintf('%s extract --extractLocation never --o %s --l %s %s', $ttag, $defaultJs, $lang, $appDir));
+            }
+
+            // merge default-js.pot and <plugin>.pot|default.pot
+            $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';
+            $default = sprintf('%s/%s', $localePath, $potFile);
+            exec(sprintf('msgcat --use-first %s %s -o %s', $default, $defaultJs, $default));
+
+            // remove default-js.pot
+            unlink($defaultJs);
+        } catch (\Exception) {
+            $result = false;
+        }
+
+        return $result;
     }
 }
