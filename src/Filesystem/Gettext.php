@@ -17,10 +17,22 @@ namespace BEdita\I18n\Filesystem;
 
 use Cake\I18n\FrozenTime;
 
+/**
+ * Gettext utilities.
+ *
+ * This class contains methods to analyze and create po/pot files.
+ * It is used by the shell tasks.
+ */
 class Gettext
 {
     /**
-     * Analyze po file and translate it
+     * Analyze po file and translate it.
+     * Returns an array with the following keys:
+     *
+     * - numItems: number of items
+     * - numNotTranslated: number of not translated items
+     * - translated: number of translated items
+     * - percent: percentage of translated items
      *
      * @param string $filename The po file name
      * @return array
@@ -38,16 +50,14 @@ class Gettext
             }
         }
         $translated = $numItems - $numNotTranslated;
-        $percent = 0;
-        if ($numItems > 0) {
-            $percent = number_format($translated * 100. / $numItems, 1);
-        }
+        $percent = $numItems === 0 ? 0 : number_format($translated * 100. / $numItems, 1);
 
         return compact('numItems', 'numNotTranslated', 'translated', 'percent');
     }
 
     /**
-     * Header lines for po/pot file
+     * Header lines for po/pot file.
+     * Returns the header string.
      *
      * @param string $type The file type (can be 'po', 'pot')
      * @return string
@@ -86,7 +96,11 @@ class Gettext
     }
 
     /**
-     * Write `master.pot` file
+     * Write `master.pot` file with all translations.
+     * Returns an array with the following keys:
+     *
+     * - info: array of info messages
+     * - updated: boolean, true if file has been updated
      *
      * @return array
      */
@@ -129,7 +143,10 @@ class Gettext
     }
 
     /**
-     * Write `.po` files
+     * Write `.po` files for each locale.
+     * Returns an array with the following keys:
+     *
+     * - info: array of info messages
      *
      * @return array
      */

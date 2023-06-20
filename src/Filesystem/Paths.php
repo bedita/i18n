@@ -20,10 +20,18 @@ use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
 
+/**
+ * Paths utility class.
+ *
+ * Setup template and locale paths.
+ */
 class Paths
 {
     /**
-     * Setup template and locale paths
+     * Setup template and locale paths.
+     * If `plugins` option is true, setup paths for all plugins.
+     * If `plugin` option is set, setup paths for that plugin.
+     * Otherwise setup paths for the app.
      *
      * @param array $templatePaths Template paths
      * @param string $localePath Locale path
@@ -58,7 +66,7 @@ class Paths
     }
 
     /**
-     * Setup template paths and locale path for a plugin
+     * Setup template paths and locale path for a plugin.
      *
      * @param array $templatePaths Template paths
      * @param string $localePath Locale path
@@ -84,7 +92,7 @@ class Paths
     }
 
     /**
-     * Setup template paths and locale path for all plugins
+     * Setup template paths and locale path for all plugins.
      *
      * @param array $templatePaths Template paths
      * @param string $localePath Locale path

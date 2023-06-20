@@ -19,10 +19,15 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
 
+/**
+ * File utilities.
+ */
 class File
 {
     /**
-     * Parse a directory
+     * Parse a directory, look for files and rips gettext strings (@see parseFile).
+     * Files with extensions .php, .ctp, .thtml, .inc, .tpl, .twig are parsed.
+     * Returns true if all files are parsed correctly, false otherwise.
      *
      * @param string $dir The directory
      * @param string $defaultDomain The default domain
@@ -53,7 +58,8 @@ class File
     }
 
     /**
-     * Parse file and rips gettext strings
+     * Parse file and rips gettext strings.
+     * Returns true if file is parsed correctly, false otherwise.
      *
      * @param string $file The file name
      * @param string $defaultDomain The default domain
@@ -142,7 +148,7 @@ class File
     }
 
     /**
-     * Remove leading and trailing quotes from string
+     * Remove leading and trailing quotes from string.
      *
      * @param string $str The string
      * @return string The new string
@@ -153,7 +159,7 @@ class File
     }
 
     /**
-     * "fix" string - strip slashes, escape and convert new lines to \n
+     * "fix" string - strip slashes, escape and convert new lines to \n.
      *
      * @param string $str The string
      * @return string The new string

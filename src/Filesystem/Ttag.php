@@ -20,10 +20,20 @@ use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
 
+/**
+ * Ttag utility class.
+ *
+ * Extract ttag strings from javascript files.
+ * Requires ttag-cli to be installed.
+ */
 class Ttag
 {
     /**
-     * Extract ttag strings from javascript files
+     * Extract ttag strings from javascript files.
+     * Returns an array with two keys:
+     *
+     * - extracted: true if extraction was successful, false otherwise
+     * - info: an array of strings with info messages
      *
      * @param array $locales The locales
      * @param string $localePath The locale path
@@ -57,7 +67,8 @@ class Ttag
     }
 
     /**
-     * Perform ttag extract
+     * Perform ttag extract.
+     * Returns true if extraction was successful, false otherwise.
      *
      * @param string $ttag Ttag command
      * @param string $appDir Path to the app directory
