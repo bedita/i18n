@@ -33,7 +33,6 @@ class Ttag
     public static function extract(array $locales, string $localePath, ?string $plugin = null): array
     {
         $skip = false;
-        $extracted = false;
         $info = [];
 
         // check ttag command exists
