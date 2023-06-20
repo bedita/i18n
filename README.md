@@ -261,6 +261,7 @@ Command options:
 --verbose, -v   Enable verbose output.
 --app, -a       The app path, for i18n update.
 --plugin, -p    The plugin path, for i18n update.
+--plugins       Apply on all plugins.
 ```
 
 You may invoke this command on a different application or plugin path via `--app` or `--plugin` options.
