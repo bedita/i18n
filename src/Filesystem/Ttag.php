@@ -98,7 +98,7 @@ class Ttag
 
             // remove default-js.pot
             unlink($defaultJs);
-        } catch (\Exception) {
+        } catch (\Throwable $e) {
             $result = false;
         }
 
