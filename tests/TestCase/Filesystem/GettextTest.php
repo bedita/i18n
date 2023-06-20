@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
  */
 class GettextTest extends TestCase
 {
+    public const LOCALE_PATH = APP . 'Locale';
+
     /**
      * Test `analyzePoFile` method
      *
@@ -55,7 +57,10 @@ class GettextTest extends TestCase
      */
     public function testWriteMasterPot(): void
     {
-        $localePath = __DIR__ . '/../../TestApp/Locale';
+        if (file_exists(self::LOCALE_PATH . DS . 'messages.pot')) {
+            $file = fopen(self::LOCALE_PATH . DS . 'messages.pot', 'w');
+            fclose($file);
+        }
         $translations = [
             'messages' => [
                 [
@@ -64,13 +69,13 @@ class GettextTest extends TestCase
                 ],
             ],
         ];
-        $actual = Gettext::writeMasterPot($localePath, $translations);
+        $actual = Gettext::writeMasterPot(self::LOCALE_PATH, $translations);
         foreach (['info', 'updated'] as $key) {
             static::assertArrayHasKey($key, $actual);
         }
         static::assertTrue($actual['updated']);
-        if (file_exists($localePath . DS . 'messages.pot')) {
-            unlink($localePath . DS . 'messages.pot');
+        if (file_exists(self::LOCALE_PATH . DS . 'messages.pot')) {
+            unlink(self::LOCALE_PATH . DS . 'messages.pot');
         }
     }
 
@@ -83,7 +88,7 @@ class GettextTest extends TestCase
     public function testWritePoFilesEmptyLocales(): void
     {
         $locales = [];
-        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $localePath = self::LOCALE_PATH;
         $translations = [];
         $actual = Gettext::writePoFiles($locales, $localePath, $translations);
         static::assertArrayHasKey('info', $actual);
@@ -98,7 +103,7 @@ class GettextTest extends TestCase
     public function testWritePoFilesEmptyPotFolder(): void
     {
         $locales = ['es_ES'];
-        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $localePath = self::LOCALE_PATH;
         $translations = [
             'messages' => [
                 [
@@ -131,7 +136,7 @@ class GettextTest extends TestCase
     public function testWritePoFiles(): void
     {
         $locales = ['en_US', 'it_IT'];
-        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $localePath = self::LOCALE_PATH;
         $translations = [
             'messages' => [
                 [
