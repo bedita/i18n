@@ -50,9 +50,9 @@ class Ttag
             $skip = true;
         }
 
-        if (!$skip) {
-            $extracted = self::doExtract($ttag, $appDir, $localePath, $locales);
-        }
+        // do extract translation strings from js files using ttag
+        $info[] = 'Extracting translation string from javascript files using ttag' . ($skip ? ' (skipped)' : '');
+        $extracted = $skip ? false : self::doExtract($ttag, (string)$appDir, $localePath, $locales);
 
         return compact('extracted', 'info');
     }
@@ -81,9 +81,6 @@ class Ttag
             if (empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES)) {
                 $appDir = sprintf('%s %s', $appDir, RESOURCES);
             }
-
-            // do extract translation strings from js files using ttag
-            $info[] = 'Extracting translation string from javascript files using ttag';
 
             $defaultJs = sprintf('%s/default-js.pot', $localePath);
             foreach ($locales as $locale) {

@@ -142,7 +142,7 @@ class GettextCommand extends Command
         $hasChanges = Hash::get($result, 'updated') === true;
 
         $io->out('Extracting ttag translations from javascript files');
-        $result = Ttag::extract($this->locales, $this->localePath, $args->getOption('plugin'));
+        $result = Ttag::extract($this->locales, $this->localePath, (string)$args->getOption('plugin'));
         foreach ($result['info'] as $info) {
             $io->out($info);
         }
