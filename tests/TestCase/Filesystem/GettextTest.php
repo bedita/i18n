@@ -90,6 +90,39 @@ class GettextTest extends TestCase
     }
 
     /**
+     * Test `writePoFiles` method on empty pot folder.
+     *
+     * @return void
+     * @covers ::writePoFiles()
+     */
+    public function testWritePoFilesEmptyPotFolder(): void
+    {
+        $locales = ['es_ES'];
+        $localePath = __DIR__ . '/../../TestApp/Locale';
+        $translations = [
+            'messages' => [
+                [
+                    'Something',
+                    'Translalable',
+                ],
+            ],
+        ];
+        $actual = Gettext::writePoFiles($locales, $localePath, $translations);
+        static::assertArrayHasKey('info', $actual);
+        foreach ($locales as $locale) {
+            $localeFile = $localePath . DS . $locale . DS . 'messages.po';
+            static::assertTrue(file_exists($localeFile));
+            unlink($localeFile);
+        }
+        if (file_exists($localePath . DS . 'messages.pot')) {
+            unlink($localePath . DS . 'messages.pot');
+        }
+        if (file_exists($localePath . DS . $locales[0])) {
+            rmdir($localePath . DS . $locales[0]);
+        }
+    }
+
+    /**
      * Test `writePoFiles` method.
      *
      * @return void
