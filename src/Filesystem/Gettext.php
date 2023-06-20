@@ -20,6 +20,72 @@ use Cake\I18n\FrozenTime;
 class Gettext
 {
     /**
+     * Analyze po file and translate it
+     *
+     * @param string $filename The po file name
+     * @return array
+     */
+    public static function analyzePoFile($filename): array
+    {
+        $lines = file($filename);
+        $numItems = $numNotTranslated = 0;
+        foreach ($lines as $k => $l) {
+            if (strpos($l, 'msgid "') === 0) {
+                $numItems++;
+            }
+            if (strpos($l, 'msgstr ""') === 0 && (!isset($lines[$k + 1]) || strpos($lines[$k + 1], '"') !== 0)) {
+                $numNotTranslated++;
+            }
+        }
+        $translated = $numItems - $numNotTranslated;
+        $percent = 0;
+        if ($numItems > 0) {
+            $percent = number_format($translated * 100. / $numItems, 1);
+        }
+
+        return compact('numItems', 'numNotTranslated', 'translated', 'percent');
+    }
+
+    /**
+     * Header lines for po/pot file
+     *
+     * @param string $type The file type (can be 'po', 'pot')
+     * @return string
+     */
+    public static function header(string $type = 'po'): string
+    {
+        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
+        $contents = [
+            'po' => [
+                'Project-Id-Version' => 'BEdita 4',
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'PO-Revision-Date' => '',
+                'Last-Translator' => '',
+                'Language-Team' => 'BEdita I18N & I10N Team',
+                'Language' => '',
+                'MIME-Version' => '1.0',
+                'Content-Transfer-Encoding' => '8bit',
+                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ],
+            'pot' => [
+                'Project-Id-Version' => 'BEdita 4',
+                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'MIME-Version' => '1.0',
+                'Content-Transfer-Encoding' => '8bit',
+                'Language-Team' => 'BEdita I18N & I10N Team',
+                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ],
+        ];
+        foreach ($contents[$type] as $k => $v) {
+            $result .= sprintf('"%s: %s \n"', $k, $v) . "\n";
+        }
+
+        return $result;
+    }
+
+    /**
      * Write `master.pot` file
      *
      * @return array
@@ -107,71 +173,5 @@ class Gettext
         }
 
         return compact('info');
-    }
-
-    /**
-     * Analyze po file and translate it
-     *
-     * @param string $filename The po file name
-     * @return array
-     */
-    public static function analyzePoFile($filename): array
-    {
-        $lines = file($filename);
-        $numItems = $numNotTranslated = 0;
-        foreach ($lines as $k => $l) {
-            if (strpos($l, 'msgid "') === 0) {
-                $numItems++;
-            }
-            if (strpos($l, 'msgstr ""') === 0 && (!isset($lines[$k + 1]) || strpos($lines[$k + 1], '"') !== 0)) {
-                $numNotTranslated++;
-            }
-        }
-        $translated = $numItems - $numNotTranslated;
-        $percent = 0;
-        if ($numItems > 0) {
-            $percent = number_format($translated * 100. / $numItems, 1);
-        }
-
-        return compact('numItems', 'numNotTranslated', 'translated', 'percent');
-    }
-
-    /**
-     * Header lines for po/pot file
-     *
-     * @param string $type The file type (can be 'po', 'pot')
-     * @return string
-     */
-    public static function header(string $type = 'po'): string
-    {
-        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
-        $contents = [
-            'po' => [
-                'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-                'PO-Revision-Date' => '',
-                'Last-Translator' => '',
-                'Language-Team' => 'BEdita I18N & I10N Team',
-                'Language' => '',
-                'MIME-Version' => '1.0',
-                'Content-Transfer-Encoding' => '8bit',
-                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-                'Content-Type' => 'text/plain; charset=utf-8',
-            ],
-            'pot' => [
-                'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-                'MIME-Version' => '1.0',
-                'Content-Transfer-Encoding' => '8bit',
-                'Language-Team' => 'BEdita I18N & I10N Team',
-                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-                'Content-Type' => 'text/plain; charset=utf-8',
-            ],
-        ];
-        foreach ($contents[$type] as $k => $v) {
-            $result .= sprintf('"%s: %s \n"', $k, $v) . "\n";
-        }
-
-        return $result;
     }
 }
