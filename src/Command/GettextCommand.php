@@ -81,8 +81,9 @@ class GettextCommand extends Command
                 'Create or update i18n po/pot files',
                 '',
                 '`bin/cake gettext`: update files for current app',
-                '`bin/cake gettext -app <app path>`: update files for the app',
-                '`bin/cake gettext -plugin <plugin name>`: update files for the plugin',
+                '`bin/cake gettext --app <app path>`: update files for the app',
+                '`bin/cake gettext --plugin <plugin name>`: update files for the plugin',
+                '`bin/cake gettext --plugins`: update files for all the plugins',
             ])
             ->addOption('app', [
                 'help' => 'The app path, for i18n update.',
