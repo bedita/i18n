@@ -120,6 +120,8 @@ class GettextCommand extends Command
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {
+        $io->out('Start');
+
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         $msg = empty($resCmd[0]) ? 'ERROR: msgmerge not available. Please install gettext utilities.' : 'OK: msgmerge found';
@@ -160,10 +162,6 @@ class GettextCommand extends Command
 
         $io->out('Done');
 
-        if ($args->getOption('ci') && $hasChanges) {
-            return GettextCommand::CODE_CHANGES;
-        }
-
-        return GettextCommand::CODE_SUCCESS;
+        return $args->getOption('ci') && $hasChanges ? GettextCommand::CODE_CHANGES : GettextCommand::CODE_SUCCESS;
     }
 }
