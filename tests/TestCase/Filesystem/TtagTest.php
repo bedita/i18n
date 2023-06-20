@@ -18,6 +18,7 @@ class TtagTest extends TestCase
      *
      * @return void
      * @covers ::extract()
+     * @covers ::doExtract()
      */
     public function testExtract(): void
     {
