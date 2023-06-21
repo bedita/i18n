@@ -114,7 +114,6 @@ class Gettext
             $info[] = sprintf('Writing new .pot file: %s', $potFilename);
 
             $file = new \SplFileInfo($potFilename);
-            $pot = $file->openFile('w');
             $contents = file_get_contents($potFilename);
 
             // remove headers from pot file
@@ -134,6 +133,7 @@ class Gettext
 
             $result = implode("\n\n", $lines);
             if ($contents !== $result) {
+                $pot = $file->openFile('w');
                 $pot->fwrite(sprintf("%s\n%s\n", self::header('pot'), $result));
                 $updated = true;
             }
