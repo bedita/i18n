@@ -73,6 +73,10 @@ class GettextCommandTest extends TestCase
      */
     public function testExecute(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()));
+        $f->openFile('w');
+
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         Configure::write('App.paths.locales', [$localePath]);
@@ -97,6 +101,10 @@ class GettextCommandTest extends TestCase
      */
     public function testExecuteWithLocales(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()));
+        $f->openFile('w');
+
         $localePath = APP . 'Locale';
         Configure::write('App.paths.locales', [$localePath]);
 
@@ -116,6 +124,10 @@ class GettextCommandTest extends TestCase
      */
     public function testExecuteWithoutLocales(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()));
+        $f->openFile('w');
+
         $localePath = APP . 'Locale';
         Configure::write('App.paths.locales', [$localePath]);
         Configure::write('I18n', [
@@ -135,6 +147,10 @@ class GettextCommandTest extends TestCase
      */
     public function testUpdateWithCi(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/default.pot', getcwd()));
+        $f->openFile('w');
+
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
         Configure::write('App.paths.locales', [$localePath]);

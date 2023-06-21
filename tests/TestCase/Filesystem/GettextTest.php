@@ -57,10 +57,9 @@ class GettextTest extends TestCase
      */
     public function testWriteMasterPot(): void
     {
-        if (file_exists(self::LOCALE_PATH . DS . 'messages.pot')) {
-            $file = fopen(self::LOCALE_PATH . DS . 'messages.pot', 'w');
-            fclose($file);
-        }
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/messages.pot', getcwd()));
+        $f->openFile('w');
         $translations = [
             'messages' => [
                 [
@@ -87,6 +86,9 @@ class GettextTest extends TestCase
      */
     public function testWritePoFilesEmptyLocales(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/messages.pot', getcwd()));
+        $f->openFile('w');
         $locales = [];
         $localePath = self::LOCALE_PATH;
         $translations = [];
@@ -102,6 +104,9 @@ class GettextTest extends TestCase
      */
     public function testWritePoFilesEmptyPotFolder(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/messages.pot', getcwd()));
+        $f->openFile('w');
         $locales = ['es_ES'];
         $localePath = self::LOCALE_PATH;
         $translations = [
@@ -135,6 +140,9 @@ class GettextTest extends TestCase
      */
     public function testWritePoFiles(): void
     {
+        // create empty pot file
+        $f = new \SplFileInfo(sprintf('%s/tests/test_app/TestApp/Locale/messages.pot', getcwd()));
+        $f->openFile('w');
         $locales = ['en_US', 'it_IT'];
         $localePath = self::LOCALE_PATH;
         $translations = [
