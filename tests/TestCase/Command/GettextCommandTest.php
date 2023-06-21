@@ -75,6 +75,9 @@ class GettextCommandTest extends TestCase
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
         $potFilename = sprintf('%s/default.pot', $localePath);
         if (!file_exists($potFilename)) {
             file_put_contents($potFilename, '');
@@ -103,6 +106,9 @@ class GettextCommandTest extends TestCase
     {
         $localePath = APP . 'Locale';
         Configure::write('App.paths.locales', [$localePath]);
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
         $potFilename = sprintf('%s/default.pot', $localePath);
         if (!file_exists($potFilename)) {
             file_put_contents($potFilename, '');
@@ -129,6 +135,9 @@ class GettextCommandTest extends TestCase
         Configure::write('I18n', [
             'locales' => [],
         ]);
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
         $potFilename = sprintf('%s/default.pot', $localePath);
         if (!file_exists($potFilename)) {
             file_put_contents($potFilename, '');
@@ -149,6 +158,9 @@ class GettextCommandTest extends TestCase
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
         Configure::write('App.paths.locales', [$localePath]);
         $potFilename = sprintf('%s/default.pot', $localePath);
         if (!file_exists($potFilename)) {
