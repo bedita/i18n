@@ -75,6 +75,13 @@ class GettextCommandTest extends TestCase
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
+        $potFilename = sprintf('%s/default.pot', $localePath);
+        if (!file_exists($potFilename)) {
+            file_put_contents($potFilename, '');
+        }
         Configure::write('App.paths.locales', [$localePath]);
 
         // call the method
@@ -99,6 +106,13 @@ class GettextCommandTest extends TestCase
     {
         $localePath = APP . 'Locale';
         Configure::write('App.paths.locales', [$localePath]);
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
+        $potFilename = sprintf('%s/default.pot', $localePath);
+        if (!file_exists($potFilename)) {
+            file_put_contents($potFilename, '');
+        }
 
         $this->exec('gettext -l en,it --app ' . APP);
         $this->assertExitSuccess();
@@ -121,6 +135,13 @@ class GettextCommandTest extends TestCase
         Configure::write('I18n', [
             'locales' => [],
         ]);
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
+        $potFilename = sprintf('%s/default.pot', $localePath);
+        if (!file_exists($potFilename)) {
+            file_put_contents($potFilename, '');
+        }
 
         $this->exec('gettext --app ' . APP);
         static::assertExitSuccess();
@@ -137,7 +158,14 @@ class GettextCommandTest extends TestCase
     {
         // set localePath using reflection class
         $localePath = sprintf('%s/tests/test_app/TestApp/Locale', getcwd());
+        if (!file_exists($localePath)) {
+            mkdir($localePath, 0777, true);
+        }
         Configure::write('App.paths.locales', [$localePath]);
+        $potFilename = sprintf('%s/default.pot', $localePath);
+        if (!file_exists($potFilename)) {
+            file_put_contents($potFilename, '');
+        }
 
         // call the method
         $appPath = sprintf('%s/tests/test_app/TestApp', getcwd());

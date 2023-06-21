@@ -57,10 +57,6 @@ class GettextTest extends TestCase
      */
     public function testWriteMasterPot(): void
     {
-        if (file_exists(self::LOCALE_PATH . DS . 'messages.pot')) {
-            $file = fopen(self::LOCALE_PATH . DS . 'messages.pot', 'w');
-            fclose($file);
-        }
         $translations = [
             'messages' => [
                 [

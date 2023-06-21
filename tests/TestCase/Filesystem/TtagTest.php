@@ -22,8 +22,9 @@ class TtagTest extends TestCase
      */
     public function testExtract(): void
     {
+        $testDir = sprintf('%s/tests/test_dir', getcwd());
         $locales = ['en_US'];
-        $localePath = __DIR__ . '/../../test_dir';
+        $localePath = $testDir;
         $plugin = null;
         $actual = Ttag::extract($locales, $localePath, $plugin);
         static::assertIsArray($actual);
@@ -44,11 +45,13 @@ class TtagTest extends TestCase
      */
     public function testDoExtract(): void
     {
+        $testAppDir = sprintf('%s/tests/test_app/TestApp', getcwd());
+        $testDir = sprintf('%s/tests/test_dir', getcwd());
         $locales = ['en_US'];
-        $localePath = __DIR__ . '/../../test_dir';
-        $appDir = __DIR__ . '/../../test_app/TestApp';
+        $localePath = $testDir;
+        $appDir = $testAppDir;
         $ttag = 'node_modules/ttag-cli/bin/ttag';
-        define('RESOURCES', __DIR__ . '/../../TestApp');
+        define('RESOURCES', $appDir);
         $actual = Ttag::doExtract($ttag, $appDir, $localePath, $locales);
         static::assertFalse($actual);
     }
