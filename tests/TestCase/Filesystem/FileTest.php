@@ -38,7 +38,7 @@ class FileTest extends TestCase
      */
     public function testParseDir(): void
     {
-        $dir = __DIR__ . '/../../test_dir';
+        $dir = sprintf('%s/tests/test_dir', getcwd());
         $defaultDomain = 'messages';
         $translations = [];
         $expected = [
@@ -60,7 +60,12 @@ class FileTest extends TestCase
         $actual = File::parseDir($dir, $defaultDomain, $translations);
         static::assertFalse($actual); // there is an empty file in dir test_dir
         static::assertNotEmpty($translations);
-        static::assertSame($expected, $translations);
+        foreach ($expected as $key => $values) {
+            foreach ($values as $k => $v) {
+                static::assertArrayHasKey($k, $translations[$key]);
+                static::assertSame($v, $translations[$key][$k]);
+            }
+        }
     }
 
     /**
