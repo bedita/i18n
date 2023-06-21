@@ -23,9 +23,6 @@ class TtagTest extends TestCase
     public function testExtract(): void
     {
         $testDir = sprintf('%s/tests/test_dir', getcwd());
-        // create empty pot file
-        $f = new \SplFileInfo(sprintf('%s/default.pot', $testDir));
-        $f->openFile('w');
         $locales = ['en_US'];
         $localePath = $testDir;
         $plugin = null;
@@ -50,9 +47,6 @@ class TtagTest extends TestCase
     {
         $testAppDir = sprintf('%s/tests/test_app/TestApp', getcwd());
         $testDir = sprintf('%s/tests/test_dir', getcwd());
-        // create empty pot file
-        $f = new \SplFileInfo(sprintf('%s/default.pot', $testDir));
-        $f->openFile('w');
         $locales = ['en_US'];
         $localePath = $testDir;
         $appDir = $testAppDir;

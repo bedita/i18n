@@ -112,9 +112,7 @@ class Gettext
         foreach ($translations as $domain => $poResult) {
             $potFilename = sprintf('%s/%s.pot', $localePath, $domain);
             $info[] = sprintf('Writing new .pot file: %s', $potFilename);
-
-            $file = new \SplFileInfo($potFilename);
-            $contents = file_get_contents($potFilename);
+            $contents = file_exists($potFilename) ? file_get_contents($potFilename) : '';
 
             // remove headers from pot file
             $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
@@ -133,8 +131,7 @@ class Gettext
 
             $result = implode("\n\n", $lines);
             if ($contents !== $result) {
-                $pot = $file->openFile('w');
-                $pot->fwrite(sprintf("%s\n%s\n", self::header('pot'), $result));
+                file_put_contents($potFilename, sprintf("%s\n%s\n", self::header('pot'), $result));
                 $updated = true;
             }
         }
