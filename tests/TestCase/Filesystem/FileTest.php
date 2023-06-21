@@ -60,12 +60,7 @@ class FileTest extends TestCase
         $actual = File::parseDir($dir, $defaultDomain, $translations);
         static::assertFalse($actual); // there is an empty file in dir test_dir
         static::assertNotEmpty($translations);
-        foreach ($expected as $key => $values) {
-            foreach ($values as $k => $v) {
-                static::assertArrayHasKey($k, $translations[$key]);
-                static::assertSame($v, $translations[$key][$k]);
-            }
-        }
+        static::assertEquals($expected, $translations);
     }
 
     /**
