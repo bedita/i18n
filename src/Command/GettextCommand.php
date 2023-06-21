@@ -15,18 +15,16 @@ declare(strict_types=1);
 
 namespace BEdita\I18n\Command;
 
+use BEdita\I18n\Filesystem\File;
+use BEdita\I18n\Filesystem\Gettext;
+use BEdita\I18n\Filesystem\Paths;
+use BEdita\I18n\Filesystem\Ttag;
 use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Core\App;
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
-use Cake\Filesystem\File;
-use Cake\Filesystem\Folder;
-use Cake\I18n\FrozenTime;
 use Cake\Utility\Hash;
-use Cake\View\View;
 
 /**
  * Gettext command.
@@ -43,35 +41,35 @@ class GettextCommand extends Command
      *
      * @var array
      */
-    protected $poResult = [];
+    private $poResult = [];
 
     /**
      * The template paths
      *
      * @var array
      */
-    protected $templatePaths = [];
+    private $templatePaths = [];
 
     /**
      * The locale path
      *
      * @var string
      */
-    protected $localePath = null;
+    private $localePath = '';
 
     /**
      * The name of default domain if not specified. Used for pot and po file names.
      *
      * @var string
      */
-    protected $defaultDomain = 'default';
+    private $defaultDomain = 'default';
 
     /**
      * The locales to generate.
      *
      * @var array
      */
-    protected $locales = [];
+    private $locales = [];
 
     /**
      * @inheritDoc
@@ -83,8 +81,9 @@ class GettextCommand extends Command
                 'Create or update i18n po/pot files',
                 '',
                 '`bin/cake gettext`: update files for current app',
-                '`bin/cake gettext -app <app path>`: update files for the app',
-                '`bin/cake gettext -plugin <plugin name>`: update files for the plugin',
+                '`bin/cake gettext --app <app path>`: update files for the app',
+                '`bin/cake gettext --plugin <plugin name>`: update files for the plugin',
+                '`bin/cake gettext --plugins`: update files for all the plugins',
             ])
             ->addOption('app', [
                 'help' => 'The app path, for i18n update.',
@@ -95,6 +94,11 @@ class GettextCommand extends Command
                 'help' => 'The plugin name, for i18n update.',
                 'short' => 'p',
                 'required' => false,
+            ])
+            ->addOption('plugins', [
+                'help' => 'All plugins',
+                'required' => false,
+                'boolean' => true,
             ])
             ->addOption('ci', [
                 'help' => 'Run in CI mode. Exit with error if PO files are changed.',
@@ -109,36 +113,6 @@ class GettextCommand extends Command
     }
 
     /**
-     * Get po result.
-     *
-     * @return array
-     */
-    public function getPoResult(): array
-    {
-        return $this->poResult;
-    }
-
-    /**
-     * Get templatePaths.
-     *
-     * @return array
-     */
-    public function getTemplatePaths(): array
-    {
-        return $this->templatePaths;
-    }
-
-    /**
-     * Get localePath
-     *
-     * @return string
-     */
-    public function getLocalePath(): string
-    {
-        return $this->localePath;
-    }
-
-    /**
      * Update gettext po files.
      *
      * @param \Cake\Console\Arguments $args The command arguments.
@@ -147,410 +121,48 @@ class GettextCommand extends Command
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {
+        $io->out('Start');
+
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
-        if (empty($resCmd[0])) {
-            $io->abort('ERROR: msgmerge not available. Please install gettext utilities.');
-        }
+        $msg = empty($resCmd[0]) ? 'ERROR: msgmerge not available. Please install gettext utilities.' : 'OK: msgmerge found';
+        $method = empty($resCmd[0]) ? 'abort' : 'out';
+        $io->{$method}($msg);
 
         $io->out('Updating .pot and .po files...');
-
         $this->locales = array_filter(explode(',', $args->getOption('locales')));
-        $this->setupPaths($args);
+        Paths::setup($this->templatePaths, $this->localePath, $this->defaultDomain, $args->getOptions());
         foreach ($this->templatePaths as $path) {
             $io->out(sprintf('Search in: %s', $path));
-            $this->parseDir($path);
+            File::parseDir($path, $this->defaultDomain, $this->poResult);
         }
 
         $io->out('Creating master .pot file');
-        $hasChanges = $this->writeMasterPot($io);
-        $this->ttagExtract($args, $io);
+        $result = Gettext::writeMasterPot($this->localePath, $this->poResult);
+        foreach ($result['info'] as $info) {
+            $io->out($info);
+        }
+        $hasChanges = Hash::get($result, 'updated') === true;
+
+        $io->out('Extracting ttag translations from javascript files');
+        $result = Ttag::extract($this->locales, $this->localePath, (string)$args->getOption('plugin'));
+        foreach ($result['info'] as $info) {
+            $io->out($info);
+        }
+        $io->out(sprintf('Ttag extracted: %s', $result['extracted']));
 
         $io->hr();
         $io->out('Merging master .pot with current .po files');
         $io->hr();
 
-        $this->writePoFiles($io);
+        $io->out('Writing po files');
+        $result = Gettext::writePoFiles($this->locales, $this->localePath, $this->poResult);
+        foreach ($result['info'] as $info) {
+            $io->out($info);
+        }
 
         $io->out('Done');
 
-        if ($args->getOption('ci') && $hasChanges) {
-            return GettextCommand::CODE_CHANGES;
-        }
-
-        return GettextCommand::CODE_SUCCESS;
-    }
-
-    /**
-     * Setup template paths and locale path
-     *
-     * @param \Cake\Console\Arguments $args The command arguments.
-     * @return void
-     */
-    private function setupPaths(Arguments $args): void
-    {
-        $plugin = $args->getOption('plugin');
-        $localesPaths = (array)App::path('locales');
-        if ($plugin && is_string($plugin)) {
-            $paths = [
-                Plugin::classPath($plugin),
-                Plugin::configPath($plugin),
-            ];
-            $this->templatePaths = array_merge($paths, App::path(View::NAME_TEMPLATE, $plugin));
-            $this->defaultDomain = $plugin;
-            $localePaths = App::path('locales', $plugin);
-            $this->localePath = (string)Hash::get($localePaths, '0');
-
-            return;
-        }
-        $app = $args->getOption('app');
-        $basePath = $app ?? getcwd();
-        $this->templatePaths = [$basePath . DS . 'src', $basePath . DS . 'config'];
-        $this->templatePaths = array_merge($this->templatePaths, App::path(View::NAME_TEMPLATE));
-        $this->templatePaths = array_filter($this->templatePaths, function ($path) {
-            return strpos($path, 'plugins') === false;
-        });
-        $this->localePath = (string)Hash::get($localesPaths, 0);
-    }
-
-    /**
-     * Write `master.pot` file
-     *
-     * @param \Cake\Console\ConsoleIo $io The console io
-     * @return bool True if file was updated, false otherwise
-     */
-    private function writeMasterPot(ConsoleIo $io): bool
-    {
-        $updated = false;
-
-        foreach ($this->poResult as $domain => $poResult) {
-            $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
-            $io->out(sprintf('Writing new .pot file: %s', $potFilename));
-            $pot = new File($potFilename, true);
-
-            $contents = $pot->read();
-
-            // remove headers from pot file
-            $contents = preg_replace('/^msgid ""\nmsgstr ""/', '', $contents);
-            $contents = trim(preg_replace('/^"([^"]*?)"$/m', '', $contents));
-
-            $lines = [];
-            ksort($poResult);
-            foreach ($poResult as $res => $contexts) {
-                sort($contexts);
-                foreach ($contexts as $ctx) {
-                    if (!empty($ctx)) {
-                        $lines[] = sprintf('msgctxt "%s"%smsgid "%s"%smsgstr ""', $ctx, "\n", $res, "\n");
-                    } else {
-                        $lines[] = sprintf('msgid "%s"%smsgstr ""', $res, "\n");
-                    }
-                }
-            }
-
-            $result = implode("\n\n", $lines);
-            if ($contents !== $result) {
-                $pot->write(sprintf("%s\n%s\n", $this->header('pot'), $result));
-                $updated = true;
-            }
-
-            $pot->close();
-        }
-
-        return $updated;
-    }
-
-    /**
-     * Write `.po` files
-     *
-     * @param \Cake\Console\ConsoleIo $io The console io
-     * @return void
-     */
-    private function writePoFiles(ConsoleIo $io): void
-    {
-        if (empty($this->locales)) {
-            $io->info('No locales set, .po files generation skipped');
-
-            return;
-        }
-
-        $header = $this->header('po');
-        foreach ($this->locales as $loc) {
-            $potDir = $this->localePath . DS . $loc;
-            if (!file_exists($potDir)) {
-                mkdir($potDir);
-            }
-            $io->out(sprintf('Language: %s', $loc));
-
-            foreach (array_keys($this->poResult) as $domain) {
-                $potFilename = sprintf('%s/%s.pot', $this->localePath, $domain);
-                $poFile = sprintf('%s/%s.po', $potDir, $domain);
-                if (!file_exists($poFile)) {
-                    $newPoFile = new File($poFile, true);
-                    $newPoFile->write($header);
-                    $newPoFile->close();
-                }
-                $io->out(sprintf('Merging %s', $poFile));
-                $mergeCmd = sprintf('msgmerge --backup=off -N -U %s %s', $poFile, $potFilename);
-                exec($mergeCmd);
-                $this->analyzePoFile($poFile, $io);
-                $io->hr();
-            }
-        }
-    }
-
-    /**
-     * Header lines for po/pot file
-     *
-     * @param string $type The file type (can be 'po', 'pot')
-     * @return string
-     * @codeCoverageIgnore
-     */
-    private function header(string $type = 'po'): string
-    {
-        $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
-        $contents = [
-            'po' => [
-                'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-                'PO-Revision-Date' => '',
-                'Last-Translator' => '',
-                'Language-Team' => 'BEdita I18N & I10N Team',
-                'Language' => '',
-                'MIME-Version' => '1.0',
-                'Content-Transfer-Encoding' => '8bit',
-                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-                'Content-Type' => 'text/plain; charset=utf-8',
-            ],
-            'pot' => [
-                'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
-                'MIME-Version' => '1.0',
-                'Content-Transfer-Encoding' => '8bit',
-                'Language-Team' => 'BEdita I18N & I10N Team',
-                'Plural-Forms' => 'nplurals=2; plural=(n != 1);',
-                'Content-Type' => 'text/plain; charset=utf-8',
-            ],
-        ];
-        foreach ($contents[$type] as $k => $v) {
-            $result .= sprintf('"%s: %s \n"', $k, $v) . "\n";
-        }
-
-        return $result;
-    }
-
-    /**
-     * Analyze po file and translate it
-     *
-     * @param string $filename The po file name
-     * @param \Cake\Console\ConsoleIo $io The console io
-     * @return void
-     */
-    private function analyzePoFile($filename, ConsoleIo $io): void
-    {
-        $lines = file($filename);
-        $numItems = $numNotTranslated = 0;
-        foreach ($lines as $k => $l) {
-            if (strpos($l, 'msgid "') === 0) {
-                $numItems++;
-            }
-            if (strpos($l, 'msgstr ""') === 0) {
-                if (!isset($lines[$k + 1])) {
-                    $numNotTranslated++;
-                } elseif (strpos($lines[$k + 1], '"') !== 0) {
-                    $numNotTranslated++;
-                }
-            }
-        }
-        $translated = $numItems - $numNotTranslated;
-        $percent = 0;
-        if ($numItems > 0) {
-            $percent = number_format($translated * 100. / $numItems, 1);
-        }
-        $io->out(sprintf('Translated %d of %d items - %s %%', $translated, $numItems, $percent));
-    }
-
-    /**
-     * Remove leading and trailing quotes from string
-     *
-     * @param string $str The string
-     * @return string The new string
-     */
-    private function unquoteString($str): string
-    {
-        return substr($str, 1, -1);
-    }
-
-    /**
-     * "fix" string - strip slashes, escape and convert new lines to \n
-     *
-     * @param string $str The string
-     * @return string The new string
-     */
-    private function fixString($str): string
-    {
-        $str = stripslashes($str);
-        $str = str_replace('"', '\"', $str);
-        $str = str_replace("\n", '\n', $str);
-        $str = str_replace('|||||', "'", $str); // special sequence used in parseContent to temporarily replace "\'"
-
-        return $str;
-    }
-
-    /**
-     * Parse file and rips gettext strings
-     *
-     * @param string $file The file name
-     * @param string $extension The file extension
-     * @return void
-     */
-    private function parseFile($file, $extension)
-    {
-        if (!in_array($extension, ['php', 'twig'])) {
-            return;
-        }
-        $content = file_get_contents($file);
-        if (empty($content)) {
-            return;
-        }
-
-        $functions = [
-            '__' => 0, // __( string $singular , ... $args )
-            '__n' => 0, // __n( string $singular , string $plural , integer $count , ... $args )
-            '__d' => 1, // __d( string $domain , string $msg , ... $args )
-            '__dn' => 1, // __dn( string $domain , string $singular , string $plural , integer $count , ... $args )
-            '__x' => 1, // __x( string $context , string $singular , ... $args )
-            '__xn' => 1, // __xn( string $context , string $singular , string $plural , integer $count , ... $args )
-            '__dx' => 2, // __dx( string $domain , string $context , string $msg , ... $args )
-            '__dxn' => 2, // __dxn( string $domain , string $context , string $singular , string $plural , integer $count , ... $args )
-        ];
-
-        // temporarily replace "\'" with "|||||", fixString will replace "|||||" with "\'"
-        // this fixes wrongly matched data in the following regexp
-        $content = str_replace("\'", '|||||', $content);
-
-        $options = [
-            'open_parenthesis' => preg_quote('('),
-            'quote' => preg_quote("'"),
-            'double_quote' => preg_quote('"'),
-        ];
-
-        foreach ($functions as $fname => $singularPosition) {
-            $capturePath = "'[^']*'";
-            $doubleQuoteCapture = str_replace("'", $options['double_quote'], $capturePath);
-            $quoteCapture = str_replace("'", $options['quote'], $capturePath);
-
-            // phpcs:disable
-            $rgxp = '/' . $fname . '\s*' . $options['open_parenthesis'] . str_repeat('((?:' . $doubleQuoteCapture . ')|(?:' . $quoteCapture . '))\s*[,)]\s*', $singularPosition + 1) . '/';
-            // phpcs:enable
-
-            $matches = [];
-            preg_match_all($rgxp, $content, $matches);
-
-            $limit = count($matches[0]);
-            for ($i = 0; $i < $limit; $i++) {
-                $domain = $this->defaultDomain;
-                $ctx = '';
-                $str = $this->unquoteString($matches[1][$i]);
-
-                if (strpos($fname, '__d') === 0) {
-                    $domain = $this->unquoteString($matches[1][$i]);
-
-                    if (strpos($fname, '__dx') === 0) {
-                        $ctx = $this->unquoteString($matches[2][$i]);
-                        $str = $this->unquoteString($matches[3][$i]);
-                    } else {
-                        $str = $this->unquoteString($matches[2][$i]);
-                    }
-                } elseif (strpos($fname, '__x') === 0) {
-                    $ctx = $this->unquoteString($matches[1][$i]);
-                    $str = $this->unquoteString($matches[2][$i]);
-                }
-
-                $str = $this->fixString($str);
-                if (empty($str)) {
-                    continue;
-                }
-
-                if (!array_key_exists($domain, $this->poResult)) {
-                    $this->poResult[$domain] = [];
-                }
-
-                if (!array_key_exists($str, $this->poResult[$domain])) {
-                    $this->poResult[$domain][$str] = [''];
-                }
-
-                if (!in_array($ctx, $this->poResult[$domain][$str])) {
-                    $this->poResult[$domain][$str][] = $ctx;
-                }
-            }
-        }
-    }
-
-    /**
-     * Parse a directory
-     *
-     * @param string $dir The directory
-     * @return void
-     */
-    private function parseDir($dir): void
-    {
-        $folder = new Folder($dir);
-        $tree = $folder->tree($dir, false);
-        foreach ($tree as $files) {
-            foreach ($files as $file) {
-                if (!is_dir($file)) {
-                    $f = new File($file);
-                    $info = $f->info();
-                    if (isset($info['extension'])) {
-                        $this->parseFile($file, $info['extension']);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Extract translations from javascript files using ttag, if available.
-     *
-     * @param \Cake\Console\Arguments $args The command arguments.
-     * @param \Cake\Console\ConsoleIo $io The console io
-     * @return void
-     * @codeCoverageIgnore
-     */
-    private function ttagExtract(Arguments $args, ConsoleIo $io): void
-    {
-        // check ttag command exists
-        $ttag = 'node_modules/ttag-cli/bin/ttag';
-        if (!file_exists($ttag)) {
-            $io->out(sprintf('Skip javascript parsing - %s command not found', $ttag));
-
-            return;
-        }
-        // check template folder exists
-        $plugin = $args->getOption('plugin');
-        $appDir = !empty($plugin) && is_string($plugin) ? Plugin::templatePath($plugin) : Hash::get(App::path(View::NAME_TEMPLATE), 0);
-        if (!file_exists($appDir)) {
-            $io->out(sprintf('Skip javascript parsing - %s folder not found', $appDir));
-
-            return;
-        }
-        // Path to the resources directory defined in cakephp app config/paths.php
-        // Do not add RESOURCES path when it's a plugin
-        if (empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES)) {
-            $appDir = sprintf('%s %s', $appDir, RESOURCES);
-        }
-
-        // do extract translation strings from js files using ttag
-        $io->out('Extracting translation string from javascript files using ttag');
-        $defaultJs = sprintf('%s/default-js.pot', $this->localePath);
-        exec(sprintf('%s extract --extractLocation never --o %s --l en %s', $ttag, $defaultJs, $appDir));
-
-        // merge default-js.pot and <plugin>.pot|default.pot
-        $potFile = !empty($plugin) && is_string($plugin) ? sprintf('%s.pot', $plugin) : 'default.pot';
-        $default = sprintf('%s/%s', $this->localePath, $potFile);
-        exec(sprintf('msgcat --use-first %s %s -o %s', $default, $defaultJs, $default));
-
-        // remove default-js.pot
-        unlink($defaultJs);
+        return $args->getOption('ci') && $hasChanges ? GettextCommand::CODE_CHANGES : GettextCommand::CODE_SUCCESS;
     }
 }
