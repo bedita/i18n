@@ -61,7 +61,7 @@ class Ttag
 
         // do extract translation strings from js files using ttag
         $info[] = 'Extracting translation string from javascript files using ttag' . ($skip ? ' (skipped)' : '');
-        $extracted = $skip ? false : self::doExtract($ttag, (string)$appDir, $localePath, $locales);
+        $extracted = $skip ? false : self::doExtract($ttag, (string)$appDir, $localePath, $locales, $plugin);
 
         return compact('extracted', 'info');
     }
