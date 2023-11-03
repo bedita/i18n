@@ -474,7 +474,7 @@ class I18nHelperTest extends TestCase
                 ],
             ],
             'meta' => [
-                '<link href="http://localhost/en/help" rel="alternate" hreflang="en"/><link href="http://localhost/it/help" rel="alternate" hreflang="it"/>',
+                '<link href="http://localhost/en/help" rel="alternate" hreflang="en"><link href="http://localhost/it/help" rel="alternate" hreflang="it">',
                 [
                     'REQUEST_URI' => '/en/help',
                     'PHP_SELF' => '/',
