@@ -17,11 +17,10 @@ namespace BEdita\I18n\Test\Core;
 use BEdita\I18n\Core\I18nTrait;
 use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * {@see \BEdita\I18n\Core\I18nTrait} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Core\I18nTrait
+ * Test class for I18nTrait
  */
 class I18nTraitTest extends TestCase
 {
@@ -30,9 +29,9 @@ class I18nTraitTest extends TestCase
     /**
      * The object using trait
      *
-     * @var object
+     * @var object|null
      */
-    protected $subject = null;
+    protected ?object $subject = null;
 
     /**
      * @inheritDoc
@@ -41,7 +40,9 @@ class I18nTraitTest extends TestCase
     {
         parent::setUp();
 
-        $this->subject = $this->getObjectForTrait(I18nTrait::class);
+        $this->subject = new class {
+            use I18nTrait;
+        };
 
         Configure::write('I18n', [
             'locales' => [
@@ -75,7 +76,7 @@ class I18nTraitTest extends TestCase
      *
      * @return array
      */
-    public function getLangNameProvider(): array
+    public static function getLangNameProvider(): array
     {
         return [
             'default' => [
@@ -99,9 +100,8 @@ class I18nTraitTest extends TestCase
      * @param string|null $expected The expected lang
      * @param string|null $lang The lang in input
      * @return void
-     * @dataProvider getLangNameProvider
-     * @covers ::getLangName()
      */
+    #[DataProvider('getLangNameProvider')]
     public function testGetLangName($expected, $lang): void
     {
         $result = $this->subject->getLangName($lang);

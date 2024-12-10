@@ -41,35 +41,35 @@ class GettextCommand extends Command
      *
      * @var array
      */
-    private $poResult = [];
+    private array $poResult = [];
 
     /**
      * The template paths
      *
      * @var array
      */
-    private $templatePaths = [];
+    private array $templatePaths = [];
 
     /**
      * The locale path
      *
      * @var string
      */
-    private $localePath = '';
+    private string $localePath = '';
 
     /**
      * The name of default domain if not specified. Used for pot and po file names.
      *
      * @var string
      */
-    private $defaultDomain = 'default';
+    private string $defaultDomain = 'default';
 
     /**
      * The locales to generate.
      *
      * @var array
      */
-    private $locales = [];
+    private array $locales = [];
 
     /**
      * @inheritDoc
@@ -117,9 +117,9 @@ class GettextCommand extends Command
      *
      * @param \Cake\Console\Arguments $args The command arguments.
      * @param \Cake\Console\ConsoleIo $io The console io
-     * @return null|void|int The exit code or null for success
+     * @return int The exit code
      */
-    public function execute(Arguments $args, ConsoleIo $io)
+    public function execute(Arguments $args, ConsoleIo $io): int
     {
         $io->out('Start');
 

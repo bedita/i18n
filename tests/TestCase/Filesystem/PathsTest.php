@@ -4,12 +4,11 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\Filesystem;
 
 use BEdita\I18n\Filesystem\Paths;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * {@see \BEdita\I18n\Filesystem\Paths} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Filesystem\Paths
+ * Test class for Paths
  */
 class PathsTest extends TestCase
 {
@@ -18,7 +17,7 @@ class PathsTest extends TestCase
      *
      * @return array
      */
-    public function setupProvider(): array
+    public static function setupProvider(): array
     {
         $baseDir = getcwd();
 
@@ -70,12 +69,10 @@ class PathsTest extends TestCase
      * Test `setup` method
      *
      * @param array $options Options.
+     * @param array $expected Expected values.
      * @return void
-     * @covers ::setup()
-     * @covers ::setupPlugin()
-     * @covers ::setupPlugins()
-     * @dataProvider setupProvider()
      */
+    #[DataProvider('setupProvider')]
     public function testSetup(array $options, array $expected): void
     {
         $templatePaths = [];

@@ -20,34 +20,33 @@ use Cake\Http\ServerRequestFactory;
 use Cake\Routing\Router;
 use Cake\TestSuite\TestCase;
 use Cake\View\View;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * {@see \BEdita\I18n\View\Helper\I18nHelper} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\View\Helper\I18nHelper
+ * Test class for I18nHelper
  */
 class I18nHelperTest extends TestCase
 {
     /**
      * The instance of `BEdita\I18n\View\Helper\I18nHelper`
      *
-     * @var \BEdita\I18n\View\Helper\I18nHelper
+     * @var \BEdita\I18n\View\Helper\I18nHelper|null
      */
-    protected $I18n = null;
+    protected ?I18nHelper $I18n = null;
 
     /**
      * Test view
      *
-     * @var \Cake\View\View
+     * @var \Cake\View\View|null
      */
-    protected $View = null;
+    protected ?View $View = null;
 
     /**
      * Test `object`
      *
      * @var array
      */
-    protected $object = [
+    protected array $object = [
         'id' => 999,
         'attributes' => [
             'title' => 'Sample',
@@ -61,7 +60,7 @@ class I18nHelperTest extends TestCase
      *
      * @var array
      */
-    protected $included = [
+    protected array $included = [
         [
             'id' => 99999,
             'type' => 'translations',
@@ -126,7 +125,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function changeUrlLangProvider(): array
+    public static function changeUrlLangProvider(): array
     {
         return [
             'noChange' => [
@@ -182,14 +181,11 @@ class I18nHelperTest extends TestCase
      * @param string $expected The string expected
      * @param array $server The server vars
      * @param string $lang The language to change
-     * @param string $switchUrl The switch language url
+     * @param string|null $switchUrl The switch language url
      * @return void
-     * @dataProvider changeUrlLangProvider
-     * @covers ::changeUrlLang()
-     * @covers ::newLangUrl()
-     * @covers ::isI18nPath()
      */
-    public function testChangeUrlLang($expected, array $server, $lang, $switchUrl = null): void
+    #[DataProvider('changeUrlLangProvider')]
+    public function testChangeUrlLang(string $expected, array $server, string $lang, ?string $switchUrl = null): void
     {
         if (!empty($server)) {
             $request = ServerRequestFactory::fromGlobals($server);
@@ -205,13 +201,31 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function fieldProvider(): array
+    public static function fieldProvider(): array
     {
-        $objectStructured = (array)$this->object;
+        $objectStructured = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
         $objectBase = (array)$objectStructured['attributes'];
         $objectBase['id'] = $objectStructured['id'];
-
-        $included = $this->included;
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'object_id' => 999,
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
 
         return [
             'empty object' => [
@@ -267,9 +281,8 @@ class I18nHelperTest extends TestCase
      * @param array $included The included translations data
      * @param string|null $expected The expected translation
      * @return void
-     * @dataProvider fieldProvider()
-     * @covers ::field()
      */
+    #[DataProvider('fieldProvider')]
     public function testField(array $object, string $attribute, string $lang, bool $defaultNull, array $included, ?string $expected): void
     {
         $actual = $this->I18n->field($object, $attribute, $lang, $defaultNull, $included);
@@ -280,7 +293,6 @@ class I18nHelperTest extends TestCase
      * Test `field(array $object, array $included, string $attribute, string $lang, bool $defaultNull = false)` method
      *
      * @return void
-     * @covers ::field()
      */
     public function testFieldIncludedFromView(): void
     {
@@ -293,8 +305,6 @@ class I18nHelperTest extends TestCase
      * Test `field` method with embedded relationships
      *
      * @return void
-     * @covers ::field()
-     * @covers ::getTranslatedField()
      */
     public function testFieldEmbedded(): void
     {
@@ -332,10 +342,29 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function existsProvider(): array
+    public static function existsProvider(): array
     {
-        $object = $this->object;
-        $included = $this->included;
+        $object = [
+            'id' => 999,
+            'attributes' => [
+                'title' => 'Sample',
+                'description' => 'A dummy example',
+                'lang' => 'en',
+            ],
+        ];
+        $included = [
+            [
+                'id' => 99999,
+                'type' => 'translations',
+                'attributes' => [
+                    'object_id' => 999,
+                    'lang' => 'it',
+                    'translated_fields' => [
+                        'title' => 'Esempio',
+                    ],
+                ],
+            ],
+        ];
 
         return [
             'empty object' => [
@@ -378,10 +407,8 @@ class I18nHelperTest extends TestCase
      * @param array|null $included The included translations data
      * @param bool $expected The expected result (true => exists, false => does not exist)
      * @return void
-     * @dataProvider existsProvider()
-     * @covers ::exists()
-     * @covers ::getTranslatedField()
      */
+    #[DataProvider('existsProvider')]
     public function testExists(array $object, string $attribute, ?string $lang, ?array $included, bool $expected): void
     {
         if ($lang == null) {
@@ -392,10 +419,9 @@ class I18nHelperTest extends TestCase
     }
 
     /**
-     * Test `exists(array $object, array $included, string $attribute, string $lang)` method
+     * Test `exists` method
      *
      * @return void
-     * @covers ::exists()
      */
     public function testExistsIncludedFromView(): void
     {
@@ -409,8 +435,6 @@ class I18nHelperTest extends TestCase
      * Test `exists()` method
      *
      * @return void
-     * @covers ::exists()
-     * @covers ::getTranslatedField()
      */
     public function testDefaultExists(): void
     {
@@ -424,8 +448,6 @@ class I18nHelperTest extends TestCase
      * Test internal translation cache
      *
      * @return void
-     * @covers ::field()
-     * @covers ::getTranslatedField()
      */
     public function testCache(): void
     {
@@ -443,8 +465,6 @@ class I18nHelperTest extends TestCase
      * Test `reset()` method
      *
      * @return void
-     * @covers ::reset()
-     * @covers ::getTranslatedField()
      */
     public function testCacheReset(): void
     {
@@ -464,7 +484,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function metaHreflangProvider(): array
+    public static function metaHreflangProvider(): array
     {
         return [
             'empty' => [
@@ -489,10 +509,9 @@ class I18nHelperTest extends TestCase
      * @param string $expected The expected output.
      * @param array $server Request configuration.
      * @return void
-     * @dataProvider metaHreflangProvider
-     * @covers ::metaHreflang()
      */
-    public function testMetaHreflang($expected, $server): void
+    #[DataProvider('metaHreflangProvider')]
+    public function testMetaHreflang(string $expected, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $method = method_exists(Router::class, 'setRequest') ? 'setRequest' : 'pushRequest';
@@ -506,7 +525,6 @@ class I18nHelperTest extends TestCase
      * Test that `metaHreflang()` returns an empty string if no request was set.
      *
      * @return void
-     * @covers ::metaHreflang()
      */
     public function testMetaHreflangMissingRequest(): void
     {
@@ -518,7 +536,7 @@ class I18nHelperTest extends TestCase
      *
      * @return array
      */
-    public function buildUrlProvider(): array
+    public static function buildUrlProvider(): array
     {
         return [
             'default' => [
@@ -549,10 +567,9 @@ class I18nHelperTest extends TestCase
      * @param string $path URL path.
      * @param string $lang Current lang code.
      * @return void
-     * @dataProvider buildUrlProvider
-     * @covers ::buildUrl()
      */
-    public function testBuildUrl($expected, $path, $lang = 'en'): void
+    #[DataProvider('buildUrlProvider')]
+    public function testBuildUrl(string $expected, mixed $path, string $lang = 'en'): void
     {
         Configure::write('I18n.lang', $lang);
 

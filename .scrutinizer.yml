@@ -9,7 +9,7 @@ filter:
 build:
   image: default-jammy
   environment:
-    node: v18
+    node: v22
   nodes:
     analysis:
       environment:

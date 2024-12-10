@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+// phpcs:ignoreFile
+
+use BEdita\I18n\I18nPlugin;
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
@@ -28,20 +31,25 @@ $root = $findRoot(__FILE__);
 unset($findRoot);
 chdir($root);
 
-require_once 'vendor/cakephp/cakephp/src/basics.php';
 require_once 'vendor/autoload.php';
 
 define('ROOT', $root . DS . 'tests' . DS . 'test_app' . DS);
 define('APP', ROOT . 'TestApp' . DS);
-define('TMP', sys_get_temp_dir() . DS);
-define('LOGS', TMP . 'logs' . DS);
-define('CACHE', TMP . 'cache' . DS);
 define('CONFIG', ROOT . 'config' . DS);
+define('TMP', sys_get_temp_dir() . DS);
+define('CACHE', TMP . 'cache' . DS);
+define('LOGS', TMP . 'logs' . DS);
+
+//used by Cake\Command\HelpCommand
+define('CORE_PATH', $root . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS);
+
+// Enable strict_variables Twig configuration
+Configure::write('Bake.twigStrictVariables', true);
 
 Configure::write('debug', true);
-
 Configure::write('App', [
-    'namespace' => 'TestApp',
+    'debug' => true,
+    'namespace' => 'App',
     'encoding' => 'utf-8',
     'paths' => [
         'locales' => [
@@ -78,4 +86,4 @@ ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 Router::reload();
 Router::fullBaseUrl('http://localhost');
 
-Plugin::getCollection()->add(new \BEdita\I18n\Plugin(['middleware' => true]));
+Plugin::getCollection()->add(new I18nPlugin(['middleware' => true]));
