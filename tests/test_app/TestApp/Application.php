@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace BEdita\I18n\Test\App;
 
 use BEdita\I18n\I18nPlugin;
-use BEdita\I18n\Middleware\I18nMiddleware;
 use Cake\Http\BaseApplication;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\Middleware\RoutingMiddleware;
@@ -38,8 +37,9 @@ class Application extends BaseApplication
      */
     public function middleware($middlewareQueue): MiddlewareQueue
     {
-        $middlewareQueue->add(new I18nMiddleware());
-        $middlewareQueue->add(new RoutingMiddleware($this));
+        $middlewareQueue = $middlewareQueue->add(new RoutingMiddleware($this));
+        $plugin = $this->getPlugins()->get('BEdita/I18n');
+        $middlewareQueue = $plugin->middleware($middlewareQueue);
 
         return $middlewareQueue;
     }
