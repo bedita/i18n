@@ -126,10 +126,8 @@ class GettextCommand extends Command
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         $msg = empty($resCmd[0]) ? 'ERROR: msgmerge not available. Please install gettext utilities.' : 'OK: msgmerge found';
-        $io->out($msg);
-        if (empty($resCmd[0])) {
-            return Command::CODE_ERROR;
-        }
+        $method = empty($resCmd[0]) ? 'abort' : 'out';
+        $io->{$method}($msg);
 
         $io->out('Updating .pot and .po files...');
         $this->locales = array_filter(explode(',', $args->getOption('locales')));
