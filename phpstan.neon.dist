@@ -4,5 +4,10 @@ parameters:
   paths:
     - src
     - tests
+  excludePaths:
+    - tests/files
+    - tests/test_app
+    - tests/test_dir
   level: 4
-  checkMissingIterableValueType: false
+  ignoreErrors:
+    - missingType.iterableValue

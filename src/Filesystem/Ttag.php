@@ -19,6 +19,7 @@ use Cake\Core\App;
 use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
+use Exception;
 use Throwable;
 
 /**
@@ -88,7 +89,7 @@ class Ttag
         $result = true;
         try {
             if (!file_exists($ttag)) {
-                throw new Throwable(sprintf('Ttag command not found: %s', $ttag));
+                throw new Exception(sprintf('Ttag command not found: %s', $ttag));
             }
             // Path to the resources directory defined in cakephp app config/paths.php
             // Do not add RESOURCES path when it's a plugin
