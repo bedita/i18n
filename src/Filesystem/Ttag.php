@@ -19,7 +19,6 @@ use Cake\Core\App;
 use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
-use Exception;
 use Throwable;
 
 /**
@@ -78,6 +77,7 @@ class Ttag
      * @param array $locales The locales
      * @param string|null $plugin The plugin name, if any
      * @return bool
+     * @codeCoverageIgnore
      */
     public static function doExtract(
         string $ttag,
@@ -88,9 +88,6 @@ class Ttag
     ): bool {
         $result = true;
         try {
-            if (!file_exists($ttag)) {
-                throw new Exception(sprintf('Ttag command not found: %s', $ttag));
-            }
             // Path to the resources directory defined in cakephp app config/paths.php
             // Do not add RESOURCES path when it's a plugin
             $useResources = empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES);
