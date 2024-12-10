@@ -9,5 +9,3 @@ parameters:
     - tests/test_app
     - tests/test_dir
   level: 4
-  ignoreErrors:
-    - missingType.iterableValue
