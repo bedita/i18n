@@ -28,6 +28,14 @@ class Application extends BaseApplication
     /**
      * @inheritDoc
      */
+    public function bootstrapCli(): void
+    {
+        $this->addPlugin(I18nPlugin::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function middleware($middlewareQueue): MiddlewareQueue
     {
         $middlewareQueue->add(new I18nMiddleware());

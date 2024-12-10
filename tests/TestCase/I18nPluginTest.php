@@ -35,9 +35,8 @@ class I18nPluginTest extends TestCase
     public function testMiddleware(): void
     {
         $app = new Application(CONFIG);
+        $app->bootstrap();
         $queue = $app->middleware(new MiddlewareQueue());
-        $queue = $app->pluginMiddleware($queue);
-
         if (!($queue instanceof Iterator)) {
             $queue = new ArrayIterator(array_map([$queue, 'get'], range(0, count($queue) - 1)));
         }
