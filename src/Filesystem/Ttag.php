@@ -19,6 +19,7 @@ use Cake\Core\App;
 use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
+use Throwable;
 
 /**
  * Ttag utility class.
@@ -86,6 +87,9 @@ class Ttag
     ): bool {
         $result = true;
         try {
+            if (!file_exists($ttag)) {
+                throw new Throwable(sprintf('Ttag command not found: %s', $ttag));
+            }
             // Path to the resources directory defined in cakephp app config/paths.php
             // Do not add RESOURCES path when it's a plugin
             $useResources = empty($plugin) && defined('RESOURCES') && file_exists(RESOURCES);
@@ -104,7 +108,7 @@ class Ttag
 
             // remove default-js.pot
             unlink($defaultJs);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $result = false;
         }
 

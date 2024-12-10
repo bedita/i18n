@@ -15,7 +15,8 @@ declare(strict_types=1);
 
 namespace BEdita\I18n\Filesystem;
 
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
+use SplFileInfo;
 
 /**
  * Gettext utilities.
@@ -37,7 +38,7 @@ class Gettext
      * @param string $filename The po file name
      * @return array
      */
-    public static function analyzePoFile($filename): array
+    public static function analyzePoFile(string $filename): array
     {
         $lines = file($filename);
         $numItems = $numNotTranslated = 0;
@@ -68,7 +69,7 @@ class Gettext
         $contents = [
             'po' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'POT-Creation-Date' => DateTime::now()->format('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -80,7 +81,7 @@ class Gettext
             ],
             'pot' => [
                 'Project-Id-Version' => 'BEdita 4',
-                'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
+                'POT-Creation-Date' => DateTime::now()->format('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',
                 'Language-Team' => 'BEdita I18N & I10N Team',
@@ -167,7 +168,7 @@ class Gettext
                 $potFilename = sprintf('%s/%s.pot', $localePath, $domain);
                 $poFile = sprintf('%s/%s.po', $potDir, $domain);
                 if (!file_exists($poFile)) {
-                    $newPoFile = new \SplFileInfo($poFile);
+                    $newPoFile = new SplFileInfo($poFile);
                     $newPoFile->openFile('w')->fwrite($header);
                 }
                 $info[] = sprintf('Merging %s', $poFile);

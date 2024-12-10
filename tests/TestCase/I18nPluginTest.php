@@ -16,24 +16,21 @@ namespace BEdita\I18n\Test\TestCase;
 
 use ArrayIterator;
 use BEdita\I18n\Middleware\I18nMiddleware;
+use BEdita\I18n\Test\App\Application;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use Cake\TestSuite\TestCase;
 use Iterator;
-use TestApp\Application;
 
 /**
- * {@see BEdita\I18n\Plugin} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Plugin
+ * Test class for I18nPlugin
  */
-class PluginTest extends TestCase
+class I18nPluginTest extends TestCase
 {
     /**
-     * Test `console` method
+     * Test `middleware` method
      *
      * @return void
-     * @covers ::middleware()
      */
     public function testMiddleware(): void
     {

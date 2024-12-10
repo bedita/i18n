@@ -18,11 +18,10 @@ use BEdita\I18n\Core\I18nTrait;
 use BEdita\I18n\Routing\Route\I18nRoute;
 use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * {@see \BEdita\I18n\Routing\Route\I18nRoute} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Routing\Route\I18nRoute
+ * Test class for I18nRoute
  */
 class I18nRouteTest extends TestCase
 {
@@ -66,7 +65,7 @@ class I18nRouteTest extends TestCase
      *
      * @return array
      */
-    public function templateProvider(): array
+    public static function templateProvider(): array
     {
         return [
             'root' => [
@@ -126,12 +125,8 @@ class I18nRouteTest extends TestCase
      * @param string $expected The expected template for the route
      * @param string $template The initial template
      * @return void
-     * @dataProvider templateProvider
-     * @covers ::__construct()
-     * @covers ::buildTemplate()
-     * @covers ::setPlaceholder()
-     * @covers ::getSearchPattern()
      */
+    #[DataProvider('templateProvider')]
     public function testBuildTemplate(string $expected, string $template): void
     {
         $route = new I18nRoute($template);
@@ -143,7 +138,7 @@ class I18nRouteTest extends TestCase
      *
      * @return array
      */
-    public function langPatternsProvider(): array
+    public static function langPatternsProvider(): array
     {
         return [
             'noOptions' => [
@@ -165,9 +160,8 @@ class I18nRouteTest extends TestCase
      * @param string $expected The expected pattern for 'lang'
      * @param array $options The options for constructor.
      * @return void
-     * @dataProvider langPatternsProvider
-     * @covers ::__construct()
      */
+    #[DataProvider('langPatternsProvider')]
     public function testLangPatterns(string $expected, array $options): void
     {
         $route = new I18nRoute('/', [], $options);
@@ -178,7 +172,6 @@ class I18nRouteTest extends TestCase
      * Test that if missing 'lang' param match() method return current lang in path.
      *
      * @return void
-     * @covers ::match()
      */
     public function testMatchUseCurrentLang(): void
     {
@@ -199,7 +192,6 @@ class I18nRouteTest extends TestCase
      * Test that passing a different lang match() method return it in path
      *
      * @return void
-     * @covers ::match()
      */
     public function testMatchUseCustomLang(): void
     {
@@ -222,7 +214,6 @@ class I18nRouteTest extends TestCase
      * Test that passing an invalid lang match() method return false
      *
      * @return void
-     * @covers ::match()
      */
     public function testMatchInvalidLang(): void
     {

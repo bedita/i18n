@@ -14,37 +14,62 @@ declare(strict_types=1);
  */
 namespace BEdita\I18n;
 
+use BEdita\I18n\Command\GettextCommand;
 use BEdita\I18n\Middleware\I18nMiddleware;
+use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
 use Cake\Core\Configure;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\Middleware\RoutingMiddleware;
 
 /**
- * Plugin class for BEdita\WebTools.
+ * I18n plugin class.
  */
-class Plugin extends BasePlugin
+class I18nPlugin extends BasePlugin
 {
+    /**
+     * Plugin name.
+     *
+     * @var string|null
+     */
+    protected ?string $name = 'I18n';
+
     /**
      * Do bootstrapping or not
      *
      * @var bool
      */
-    protected $bootstrapEnabled = false;
+    protected bool $bootstrapEnabled = false;
 
     /**
      * Load routes or not
      *
      * @var bool
      */
-    protected $routesEnabled = false;
+    protected bool $routesEnabled = false;
 
     /**
      * Enable middleware
      *
      * @var bool
      */
-    protected $middlewareEnabled = false;
+    protected bool $middlewareEnabled = true;
+
+    /**
+     * @var array<string>
+     * @psalm-var array<class-string<\Cake\Console\BaseCommand>>
+     */
+    protected array $i18nCommandsList = [
+        'gettext' => GettextCommand::class,
+    ];
+
+    /**
+     * @inheritDoc
+     */
+    public function console(CommandCollection $commands): CommandCollection
+    {
+        return $commands->addMany($this->i18nCommandsList);
+    }
 
     /**
      * Setup the I8nMiddleware.
@@ -52,7 +77,7 @@ class Plugin extends BasePlugin
      * @param \Cake\Http\MiddlewareQueue $middlewareQueue The middleware queue to setup.
      * @return \Cake\Http\MiddlewareQueue The updated middleware queue.
      */
-    public function middleware($middlewareQueue): MiddlewareQueue
+    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
         $middlewareQueue = parent::middleware($middlewareQueue);
 

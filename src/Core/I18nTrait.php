@@ -74,7 +74,7 @@ trait I18nTrait
      * @param string $lang The abbreviated lang
      * @return string|null
      */
-    public function getLangName($lang = null): ?string
+    public function getLangName(?string $lang = null): ?string
     {
         if (empty($lang)) {
             $lang = Configure::read('I18n.default');

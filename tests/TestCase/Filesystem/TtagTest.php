@@ -7,9 +7,7 @@ use BEdita\I18n\Filesystem\Ttag;
 use PHPUnit\Framework\TestCase;
 
 /**
- * {@see \BEdita\I18n\Filesystem\Ttag} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Filesystem\Ttag
+ * Test class for Ttag
  */
 class TtagTest extends TestCase
 {
@@ -17,8 +15,6 @@ class TtagTest extends TestCase
      * Test `extract` method.
      *
      * @return void
-     * @covers ::extract()
-     * @covers ::doExtract()
      */
     public function testExtract(): void
     {
@@ -41,7 +37,6 @@ class TtagTest extends TestCase
      * Test `doExtract` method.
      *
      * @return void
-     * @covers ::doExtract()
      */
     public function testDoExtract(): void
     {

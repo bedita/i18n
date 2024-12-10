@@ -7,9 +7,7 @@ use BEdita\I18n\Filesystem\File;
 use PHPUnit\Framework\TestCase;
 
 /**
- * {@see \BEdita\I18n\Filesystem\File} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Filesystem\File
+ * Test class for File
  */
 class FileTest extends TestCase
 {
@@ -17,7 +15,6 @@ class FileTest extends TestCase
      * Test `parseDir` method with invalid directory
      *
      * @return void
-     * @covers ::parseDir()
      */
     public function testParseDirInvalid(): void
     {
@@ -33,8 +30,6 @@ class FileTest extends TestCase
      * Files to find: php|ctp|thtml|inc|tpl|twig
      *
      * @return void
-     * @covers ::parseDir()
-     * @covers ::parseFile()
      */
     public function testParseDir(): void
     {
@@ -67,7 +62,6 @@ class FileTest extends TestCase
      * Test `parseFile` method with invalid file
      *
      * @return void
-     * @covers ::parseFile()
      */
     public function testParseFileNotExists(): void
     {
@@ -82,7 +76,6 @@ class FileTest extends TestCase
      * Test `parseFile` method with empty file
      *
      * @return void
-     * @covers ::parseFile()
      */
     public function testParseFileEmpty(): void
     {
@@ -97,7 +90,6 @@ class FileTest extends TestCase
      * Test `parseFile` method with valid file
      *
      * @return void
-     * @covers ::parseFile()
      */
     public function testParseFile(): void
     {
@@ -128,7 +120,6 @@ class FileTest extends TestCase
      * Test `unquoteString` method
      *
      * @return void
-     * @covers ::unquoteString()
      */
     public function testUnquoteString(): void
     {
@@ -142,7 +133,6 @@ class FileTest extends TestCase
      * Test `fixString` method
      *
      * @return void
-     * @covers ::fixString()
      */
     public function testFixString(): void
     {

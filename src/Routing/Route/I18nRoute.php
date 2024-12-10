@@ -36,9 +36,9 @@ class I18nRoute extends Route
     /**
      * The placeholder to use in route template.
      *
-     * @var string
+     * @var string|null
      */
-    protected $placeholder = null;
+    protected ?string $placeholder = null;
 
     /**
      * @inheritDoc

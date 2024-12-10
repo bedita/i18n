@@ -9,20 +9,11 @@ use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
 
 /**
- * {@see \BEdita\I18n\Command\GettextCommand} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Command\GettextCommand
+ * GettextCommand
  */
 class GettextCommandTest extends TestCase
 {
     use ConsoleIntegrationTestTrait;
-
-    /**
-     * The command used in test
-     *
-     * @var \BEdita\I18n\Command\GettextCommand
-     */
-    protected $command = null;
 
     /**
      * setUp method
@@ -38,8 +29,7 @@ class GettextCommandTest extends TestCase
             ],
         ]);
         parent::setUp();
-        $this->useCommandRunner();
-        $this->command = new GettextCommand();
+        $this->setAppNamespace('BEdita\I18n\Test\App');
         $this->cleanFiles();
     }
 
@@ -56,7 +46,6 @@ class GettextCommandTest extends TestCase
      * Test buildOptionParser method
      *
      * @return void
-     * @covers ::buildOptionParser()
      */
     public function testBuildOptionParser(): void
     {
@@ -69,7 +58,6 @@ class GettextCommandTest extends TestCase
      * Test execute method
      *
      * @return void
-     * @covers ::execute()
      */
     public function testExecute(): void
     {
@@ -100,7 +88,6 @@ class GettextCommandTest extends TestCase
      * Test execute method with locales passed as option..
      *
      * @return void
-     * @covers ::execute()
      */
     public function testExecuteWithLocales(): void
     {
@@ -152,7 +139,6 @@ class GettextCommandTest extends TestCase
      * Test execute method with ci flag
      *
      * @return void
-     * @covers ::execute()
      */
     public function testUpdateWithCi(): void
     {
