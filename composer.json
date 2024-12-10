@@ -1,6 +1,6 @@
 {
     "name": "bedita/i18n",
-    "description": "Internationalization plugin for BEdita 4 & CakePHP",
+    "description": "Internationalization plugin for BEdita & CakePHP",
     "type": "cakephp-plugin",
     "license": "LGPL-3.0-or-later",
     "support": {
