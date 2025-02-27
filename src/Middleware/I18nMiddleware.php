@@ -216,7 +216,7 @@ class I18nMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $expire = DateTime::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
+        $expire = new DateTime($this->getConfig('cookie.expire', '+1 year'));
 
         return $response->withCookie(new Cookie($name, $locale, $expire));
     }
