@@ -153,7 +153,7 @@ class File
      * @param string $str The string
      * @return string The new string
      */
-    public static function unquoteString($str): string
+    public static function unquoteString(string $str): string
     {
         return substr($str, 1, -1);
     }
@@ -164,7 +164,7 @@ class File
      * @param string $str The string
      * @return string The new string
      */
-    public static function fixString($str): string
+    public static function fixString(string $str): string
     {
         $str = stripslashes($str);
         $str = str_replace('"', '\"', $str);

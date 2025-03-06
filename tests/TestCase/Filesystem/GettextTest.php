@@ -7,9 +7,7 @@ use BEdita\I18n\Filesystem\Gettext;
 use PHPUnit\Framework\TestCase;
 
 /**
- * {@see \BEdita\I18n\Filesystem\Gettext} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Filesystem\Gettext
+ * Test class for Gettext
  */
 class GettextTest extends TestCase
 {
@@ -19,7 +17,6 @@ class GettextTest extends TestCase
      * Test `analyzePoFile` method
      *
      * @return void
-     * @covers ::analyzePoFile()
      */
     public function testAnalyzePoFile(): void
     {
@@ -34,7 +31,6 @@ class GettextTest extends TestCase
      * Test `header` method
      *
      * @return void
-     * @covers ::header()
      */
     public function testHeader(): void
     {
@@ -53,7 +49,6 @@ class GettextTest extends TestCase
      * Test `writeMasterPot` method.
      *
      * @return void
-     * @covers ::writeMasterPot()
      */
     public function testWriteMasterPot(): void
     {
@@ -79,7 +74,6 @@ class GettextTest extends TestCase
      * Test `writePoFiles` method on empty locales.
      *
      * @return void
-     * @covers ::writePoFiles()
      */
     public function testWritePoFilesEmptyLocales(): void
     {
@@ -94,7 +88,6 @@ class GettextTest extends TestCase
      * Test `writePoFiles` method on empty pot folder.
      *
      * @return void
-     * @covers ::writePoFiles()
      */
     public function testWritePoFilesEmptyPotFolder(): void
     {
@@ -127,7 +120,6 @@ class GettextTest extends TestCase
      * Test `writePoFiles` method.
      *
      * @return void
-     * @covers ::writePoFiles()
      */
     public function testWritePoFiles(): void
     {

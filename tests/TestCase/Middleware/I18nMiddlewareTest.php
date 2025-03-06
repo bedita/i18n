@@ -24,14 +24,15 @@ use Cake\Http\ServerRequestFactory;
 use Cake\I18n\I18n;
 use Cake\TestSuite\TestCase;
 use Cake\Utility\Hash;
+use Exception;
+use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * {@see \BEdita\I18n\Middleware\I18nMiddleware} Test Case
- *
- * @coversDefaultClass \BEdita\I18n\Middleware\I18nMiddleware
+ * Test class for I18nMiddleware
  */
 class I18nMiddlewareTest extends TestCase
 {
@@ -40,7 +41,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @var \Psr\Http\Server\RequestHandlerInterface
      */
-    protected $requestHandler;
+    protected RequestHandlerInterface $requestHandler;
 
     /**
      * @inheritDoc
@@ -94,7 +95,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function statusProvider(): array
+    public static function statusProvider(): array
     {
         return [
             'noConfig' => [
@@ -150,11 +151,9 @@ class I18nMiddlewareTest extends TestCase
      * @param array $conf The configuration passed to middleware
      * @param array $server The server vars
      * @return void
-     * @dataProvider statusProvider
-     * @covers ::__construct()
-     * @covers ::process()
      */
-    public function testStatus($expected, array $conf, array $server): void
+    #[DataProvider('statusProvider')]
+    public function testStatus(int $expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $middleware = new I18nMiddleware($conf);
@@ -168,7 +167,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function redirectPathProvider(): array
+    public static function redirectPathProvider(): array
     {
         return [
             'rootPath' => [
@@ -264,10 +263,9 @@ class I18nMiddlewareTest extends TestCase
      * @param array $conf The configuration passed to middleware
      * @param array $server The server vars
      * @return void
-     * @dataProvider redirectPathProvider
-     * @covers ::process()
      */
-    public function testRedirectPath($expected, array $conf, array $server): void
+    #[DataProvider('redirectPathProvider')]
+    public function testRedirectPath(string $expected, array $conf, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
         $middleware = new I18nMiddleware($conf);
@@ -282,7 +280,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function setupLocaleProvider(): array
+    public static function setupLocaleProvider(): array
     {
         return [
             'useDefault' => [
@@ -321,11 +319,8 @@ class I18nMiddlewareTest extends TestCase
      * @param array $expected The expected values (locale and lang)
      * @param array $server The server vars
      * @return void
-     * @dataProvider setupLocaleProvider
-     * @covers ::detectLocale()
-     * @covers ::readSession()
-     * @covers ::setupLocale()
      */
+    #[DataProvider('setupLocaleProvider')]
     public function testSetupLocale(array $expected, array $server): void
     {
         $request = ServerRequestFactory::fromGlobals($server);
@@ -340,7 +335,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that an exception is raised if missing required conf.
      *
      * @return void
-     * @covers ::setupLocale()
      */
     public function testSetupLocaleMissingConfig(): void
     {
@@ -359,9 +353,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that if middleware is not configured properly the locale cookie is ignored.
      *
      * @return void
-     * @covers ::detectLocale()
-     * @covers ::setupLocale()
-     * @covers ::getResponseWithCookie()
      */
     public function testNotUseCookie(): void
     {
@@ -382,9 +373,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that if middleware is configured properly the locale is set by cookie
      *
      * @return void
-     * @covers ::detectLocale()
-     * @covers ::setupLocale()
-     * @covers ::getResponseWithCookie()
      */
     public function testReadFromCookie(): void
     {
@@ -398,7 +386,7 @@ class I18nMiddlewareTest extends TestCase
         $middleware = new I18nMiddleware([
             'cookie' => ['name' => $cookieName],
         ]);
-        $response = $middleware->process($request, $this->requestHandler);
+        $middleware->process($request, $this->requestHandler);
 
         static::assertEquals('it_IT', I18n::getLocale());
     }
@@ -407,9 +395,6 @@ class I18nMiddlewareTest extends TestCase
      * Test cookie creation.
      *
      * @return void
-     * @covers ::detectLocale()
-     * @covers ::setupLocale()
-     * @covers ::getResponseWithCookie()
      */
     public function testCreateCookie(): void
     {
@@ -443,9 +428,6 @@ class I18nMiddlewareTest extends TestCase
      * Test change expire cookie.
      *
      * @return void
-     * @covers ::detectLocale()
-     * @covers ::setupLocale()
-     * @covers ::getResponseWithCookie()
      */
     public function testChangeExpireCookie(): void
     {
@@ -479,7 +461,7 @@ class I18nMiddlewareTest extends TestCase
      *
      * @return array
      */
-    public function changeLangProvider(): array
+    public static function changeLangProvider(): array
     {
         return [
             'ok' => [
@@ -576,7 +558,7 @@ class I18nMiddlewareTest extends TestCase
                 ],
             ],
             'no cookie, no session' => [
-                new \LogicException('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`'),
+                new LogicException('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`'),
                 [
                     'switchLangUrl' => '/lang',
                 ],
@@ -677,15 +659,11 @@ class I18nMiddlewareTest extends TestCase
      * @param array $server The server vars
      * @param array $query The query string
      * @return void
-     * @dataProvider changeLangProvider
-     * @covers ::changeLangAndRedirect()
-     * @covers ::process()
-     * @covers ::updateSession()
-     * @covers ::getSessionKey()
      */
-    public function testChangeLangAndRedirect($expected, $conf, $server, $query): void
+    #[DataProvider('changeLangProvider')]
+    public function testChangeLangAndRedirect(mixed $expected, array $conf, array $server, array $query): void
     {
-        $isException = $expected instanceof \Exception;
+        $isException = $expected instanceof Exception;
         if ($isException) {
             $this->expectException(get_class($expected));
             $this->expectExceptionCode($expected->getCode());
@@ -717,8 +695,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that the session was updated with locale detected from request.
      *
      * @return void
-     * @covers ::process()
-     * @covers ::updateSession()
      */
     public function testSessionFallback(): void
     {
@@ -742,11 +718,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that locale is set reading from session.
      *
      * @return void
-     * @covers ::process()
-     * @covers ::detectLocale()
-     * @covers ::readSession()
-     * @covers ::updateSession()
-     * @covers ::getResponseWithCookie()
      */
     public function testGetLocaleFromSession(): void
     {
@@ -770,10 +741,6 @@ class I18nMiddlewareTest extends TestCase
      * Test that locale is set reading from cookie when cookie and session are both configured.
      *
      * @return void
-     * @covers ::process()
-     * @covers ::detectLocale()
-     * @covers ::updateSession()
-     * @covers ::getResponseWithCookie()
      */
     public function testGetLocaleFromCookie(): void
     {

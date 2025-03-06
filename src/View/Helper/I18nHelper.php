@@ -33,7 +33,7 @@ class I18nHelper extends Helper
     /**
      * @inheritDoc
      */
-    public $helpers = ['Html', 'Url'];
+    public array $helpers = ['Html', 'Url'];
 
     /**
      * Translation data per object and lang (internal cache).
@@ -46,16 +46,16 @@ class I18nHelper extends Helper
      *
      * @var array|null
      */
-    protected $translation = null;
+    protected ?array $translation = null;
 
     /**
      * Return the current URL replacing current lang with new lang passed.
      *
      * @param string $newLang The new lang you want in URL.
-     * @param string $switchUrl The switch lang URL defined for this app, if any.
+     * @param string|null $switchUrl The switch lang URL defined for this app, if any.
      * @return string
      */
-    public function changeUrlLang($newLang, $switchUrl = null): string
+    public function changeUrlLang(string $newLang, ?string $switchUrl = null): string
     {
         $request = Router::getRequest();
         if (empty($request)) {
@@ -88,7 +88,7 @@ class I18nHelper extends Helper
      * @param string $query The current URL query.
      * @return string|null The new lang url or null if no lang prefix was found
      */
-    protected function newLangUrl($newLang, $path, $query): ?string
+    protected function newLangUrl(string $newLang, string $path, string $query): ?string
     {
         if (!$this->isI18nPath($path)) {
             return null;
@@ -277,7 +277,7 @@ class I18nHelper extends Helper
      * @param array $options Array of options.
      * @return string Full I18n URL.
      */
-    public function buildUrl($path, $options = []): string
+    public function buildUrl(mixed $path, array $options = []): string
     {
         if (is_string($path) && !$this->isI18nPath($path)) {
             $path = sprintf('/%s%s', $this->getLang(), $path);

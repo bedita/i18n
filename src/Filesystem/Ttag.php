@@ -19,6 +19,7 @@ use Cake\Core\App;
 use Cake\Core\Plugin;
 use Cake\Utility\Hash;
 use Cake\View\View;
+use Throwable;
 
 /**
  * Ttag utility class.
@@ -76,6 +77,7 @@ class Ttag
      * @param array $locales The locales
      * @param string|null $plugin The plugin name, if any
      * @return bool
+     * @codeCoverageIgnore
      */
     public static function doExtract(
         string $ttag,
@@ -104,7 +106,7 @@ class Ttag
 
             // remove default-js.pot
             unlink($defaultJs);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $result = false;
         }
 

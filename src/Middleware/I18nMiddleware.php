@@ -22,11 +22,13 @@ use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\I18n\I18n;
 use Cake\Utility\Hash;
 use Cake\Validation\Validation;
 use Laminas\Diactoros\Response\RedirectResponse;
+use Locale;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -58,7 +60,7 @@ class I18nMiddleware implements MiddlewareInterface
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'match' => [],
         'startWith' => [],
         'switchLangUrl' => null,
@@ -127,7 +129,7 @@ class I18nMiddleware implements MiddlewareInterface
                 $lang = $localeLang;
             } else {
                 // try with primary language
-                $primary = \Locale::getPrimaryLanguage($locale);
+                $primary = Locale::getPrimaryLanguage($locale);
                 if (Hash::get($this->getLanguages(), $primary)) {
                     $lang = $primary;
                 }
@@ -168,14 +170,14 @@ class I18nMiddleware implements MiddlewareInterface
             return $locale;
         }
 
-        return (string)\Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
+        return (string)Locale::acceptFromHttp($request->getHeaderLine('Accept-Language'));
     }
 
     /**
      * Setup locale and language code from passed `$locale`.
      * If `$locale` is not found in configuraion then use the default.
      *
-     * @param string $locale Detected HTTP locale.
+     * @param string|null $locale Detected HTTP locale.
      * @return void
      */
     protected function setupLocale(?string $locale): void
@@ -189,7 +191,7 @@ class I18nMiddleware implements MiddlewareInterface
 
         if (empty($lang) || $locale === false) {
             throw new InternalErrorException(
-                __('Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"')
+                'Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"'
             );
         }
 
@@ -214,7 +216,7 @@ class I18nMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $expire = FrozenTime::createFromTimestamp(strtotime($this->getConfig('cookie.expire', '+1 year')));
+        $expire = new DateTime($this->getConfig('cookie.expire', '+1 year'));
 
         return $response->withCookie(new Cookie($name, $locale, $expire));
     }
@@ -232,24 +234,24 @@ class I18nMiddleware implements MiddlewareInterface
     protected function changeLangAndRedirect(ServerRequest $request): ResponseInterface
     {
         if (!$this->getConfig('cookie.name') && !$this->getSessionKey()) {
-            throw new \LogicException(
-                __('I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`')
+            throw new LogicException(
+                'I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`'
             );
         }
 
         $new = (string)$request->getQuery('new');
         if (empty($new)) {
-            throw new BadRequestException(__('Missing required "new" query string'));
+            throw new BadRequestException('Missing required "new" query string');
         }
 
         $locale = array_search($new, $this->getLocales());
         if ($locale === false) {
-            throw new BadRequestException(__('Lang "{0}" not supported', [$new]));
+            throw new BadRequestException(sprintf('Lang "%s" not supported', $new));
         }
 
         $redirect = (string)$request->getQuery('redirect', $request->referer(false));
         if (!empty($redirect) && strpos($redirect, '/') !== 0 && !Validation::url($redirect, true)) {
-            throw new BadRequestException(__('"redirect" query string not valid'));
+            throw new BadRequestException('"redirect" query string not valid');
         }
         $redirect = !empty($redirect) ? $redirect : '/';
 
