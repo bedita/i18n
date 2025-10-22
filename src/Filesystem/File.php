@@ -44,8 +44,8 @@ class File
             new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator(
                     $dir,
-                    RecursiveDirectoryIterator::KEY_AS_PATHNAME | RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
-                )
+                    RecursiveDirectoryIterator::KEY_AS_PATHNAME | RecursiveDirectoryIterator::CURRENT_AS_PATHNAME,
+                ),
             ),
             '/.*\.(php|ctp|thtml|inc|tpl|twig)/i',
         );

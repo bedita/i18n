@@ -96,7 +96,7 @@ class I18nPlugin extends BasePlugin
          */
         $middlewareQueue->insertBefore(
             RoutingMiddleware::class,
-            new I18nMiddleware((array)Configure::read('I18n', []))
+            new I18nMiddleware((array)Configure::read('I18n', [])),
         );
 
         return $middlewareQueue;

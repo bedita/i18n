@@ -43,7 +43,7 @@ class Paths
         array &$templatePaths,
         string &$localePath,
         string &$defaultDomain,
-        array $options
+        array $options,
     ): void {
         if (Hash::get($options, 'plugins') === true) {
             self::setupPlugins($templatePaths, $localePath);
@@ -78,14 +78,14 @@ class Paths
         array &$templatePaths,
         string &$localePath,
         string &$defaultDomain,
-        string $plugin
+        string $plugin,
     ): void {
         $templatePaths = array_merge(
             [
                 Plugin::classPath($plugin),
                 Plugin::configPath($plugin),
             ],
-            App::path(View::NAME_TEMPLATE, $plugin)
+            App::path(View::NAME_TEMPLATE, $plugin),
         );
         $defaultDomain = $plugin;
         $localePath = (string)Hash::get((array)App::path('locales', $plugin), '0');
@@ -103,21 +103,23 @@ class Paths
         $pluginsPaths = App::path('plugins');
         $plugins = array_reduce(
             $pluginsPaths,
-            fn (array $acc, string $path) => array_merge(
+            fn(array $acc, string $path) => array_merge(
                 $acc,
                 array_filter(
                     (array)scandir($path),
-                    fn ($file) => is_string($file) && !in_array($file, ['.', '..']) && Plugin::getCollection()->has($file)
-                )
+                    fn($file) => is_string($file)
+                        && !in_array($file, ['.', '..'])
+                        && Plugin::getCollection()->has($file),
+                ),
             ),
-            []
+            [],
         );
         $templatePathsTmp = App::path('templates');
         $templatePathsTmp[] = APP;
         $templatePathsTmp[] = dirname(APP) . DS . 'config';
         $templatePathsTmp = array_reduce(
             $plugins,
-            fn (array $acc, string $plugin) => array_merge(
+            fn(array $acc, string $plugin) => array_merge(
                 $acc,
                 App::path('templates', $plugin),
                 [
@@ -125,7 +127,7 @@ class Paths
                     dirname(Plugin::classPath($plugin)) . DS . 'config',
                 ],
             ),
-            $templatePathsTmp
+            $templatePathsTmp,
         );
         $templatePaths = $templatePathsTmp;
         $localesPaths = (array)App::path('locales');
