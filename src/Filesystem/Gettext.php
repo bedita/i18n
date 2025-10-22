@@ -102,6 +102,8 @@ class Gettext
      * - info: array of info messages
      * - updated: boolean, true if file has been updated
      *
+     * @param string $localePath Locale path
+     * @param array $translations Translations
      * @return array
      */
     public static function writeMasterPot(string $localePath, array $translations): array
@@ -145,6 +147,9 @@ class Gettext
      *
      * - info: array of info messages
      *
+     * @param array $locales Locales
+     * @param string $localePath Locale path
+     * @param array $translations Translations
      * @return array
      */
     public static function writePoFiles(array $locales, string $localePath, array &$translations): array
