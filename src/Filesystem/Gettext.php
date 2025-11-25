@@ -67,7 +67,7 @@ class Gettext
         $result = sprintf('msgid ""%smsgstr ""%s', "\n", "\n");
         $contents = [
             'po' => [
-                'Project-Id-Version' => 'BEdita 4',
+                'Project-Id-Version' => 'BEdita',
                 'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'PO-Revision-Date' => '',
                 'Last-Translator' => '',
@@ -79,7 +79,7 @@ class Gettext
                 'Content-Type' => 'text/plain; charset=utf-8',
             ],
             'pot' => [
-                'Project-Id-Version' => 'BEdita 4',
+                'Project-Id-Version' => 'BEdita',
                 'POT-Creation-Date' => FrozenTime::now()->format('Y-m-d H:i:s'),
                 'MIME-Version' => '1.0',
                 'Content-Transfer-Encoding' => '8bit',

@@ -41,7 +41,7 @@ class GettextTest extends TestCase
         $actual = Gettext::header();
         static::assertTrue(strpos($actual, 'msgid ""') === 0);
         static::assertTrue(strpos($actual, 'msgstr ""') > 0);
-        static::assertTrue(strpos($actual, 'Project-Id-Version: BEdita 4') > 0);
+        static::assertTrue(strpos($actual, 'Project-Id-Version: BEdita') > 0);
         static::assertTrue(strpos($actual, 'Language-Team: BEdita I18N & I10N Team') > 0);
         static::assertTrue(strpos($actual, 'MIME-Version: 1.0') > 0);
         static::assertTrue(strpos($actual, 'Content-Transfer-Encoding: 8bit') > 0);
