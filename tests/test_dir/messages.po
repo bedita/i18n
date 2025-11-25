@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: BEdita 4 \n"
+"Project-Id-Version: BEdita \n"
 "POT-Creation-Date: 2023-06-20 11:06:15 \n"
 "PO-Revision-Date:  \n"
 "Last-Translator:  \n"

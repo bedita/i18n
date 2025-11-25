@@ -1,4 +1,4 @@
-# I18n plugin for BEdita4 & CakePHP
+# I18n plugin for BEdita & CakePHP
 
 [![Github Actions](https://github.com/bedita/i18n/workflows/php/badge.svg)](https://github.com/bedita/i18n/actions?query=workflow%3Aphp)
 [![codecov](https://codecov.io/gh/bedita/i18n/branch/master/graph/badge.svg)](https://codecov.io/gh/bedita/i18n)
@@ -9,7 +9,7 @@
 
 ## Installation
 
-You can install this BEdita4/CakePHP plugin using [composer](http://getcomposer.org) like this:
+You can install this BEdita/CakePHP plugin using [composer](http://getcomposer.org) like this:
 
 ```bash
 composer require bedita/i18n
