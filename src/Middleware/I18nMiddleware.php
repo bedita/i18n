@@ -191,7 +191,7 @@ class I18nMiddleware implements MiddlewareInterface
 
         if (empty($lang) || $locale === false) {
             throw new InternalErrorException(
-                'Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"'
+                'Something was wrong with I18n configuration. Check "I18n.locales" and "I18n.default"',
             );
         }
 
@@ -235,7 +235,7 @@ class I18nMiddleware implements MiddlewareInterface
     {
         if (!$this->getConfig('cookie.name') && !$this->getSessionKey()) {
             throw new LogicException(
-                'I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`'
+                'I18nMiddleware misconfigured. `switchLangUrl` requires `cookie.name` or `sessionKey`',
             );
         }
 

@@ -84,7 +84,7 @@ class Ttag
         string $appDir,
         string $localePath,
         array $locales,
-        ?string $plugin = null
+        ?string $plugin = null,
     ): bool {
         $result = true;
         try {

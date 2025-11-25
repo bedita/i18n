@@ -180,7 +180,7 @@ class Gettext
                     'Translated %d of %d items - %s %%',
                     $analysis['translated'],
                     $analysis['numItems'],
-                    $analysis['percent']
+                    $analysis['percent'],
                 );
                 $info[] = '---------------------';
             }

@@ -164,14 +164,14 @@ class I18nHelper extends Helper
         string $attribute,
         ?string $lang = null,
         bool $defaultNull = false,
-        array $included = []
+        array $included = [],
     ): ?string {
         $defaultValue = null;
         if (!$defaultNull) {
             $defaultValue = Hash::get(
                 $object,
                 sprintf('attributes.%s', $attribute),
-                Hash::get($object, sprintf('%s', $attribute))
+                Hash::get($object, sprintf('%s', $attribute)),
             );
         }
         if (empty($included) && !empty($this->_View->get('included'))) {
@@ -243,7 +243,7 @@ class I18nHelper extends Helper
             $translations = Hash::combine(
                 $object['relationships']['translations']['data'],
                 '{n}.attributes.lang',
-                '{n}.attributes.translated_fields'
+                '{n}.attributes.translated_fields',
             );
 
             return Hash::get($translations, sprintf('%s.%s', $lang, $attribute));
@@ -261,7 +261,7 @@ class I18nHelper extends Helper
                 $translations,
                 'translations.{n}.lang',
                 'translations.{n}.translated_fields',
-                'translations.{n}.object_id'
+                'translations.{n}.object_id',
             );
         }
 

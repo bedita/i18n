@@ -103,7 +103,7 @@ class I18nHelperTest extends TestCase
         $routeBuilder->connect(
             '/test',
             ['controller' => 'TestApp', 'action' => 'test'],
-            ['_name' => 'test']
+            ['_name' => 'test'],
         );
         Router::setRouteCollection(Router::getRouteCollection());
     }

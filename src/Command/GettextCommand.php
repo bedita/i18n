@@ -106,7 +106,8 @@ class GettextCommand extends Command
                 'boolean' => true,
             ])
             ->addOption('locales', [
-                'help' => 'Comma separated list of locales to generate. Leave empty to use configuration `I18n.locales`',
+                'help' => 'Comma separated list of locales to generate. ' .
+                    'Leave empty to use configuration `I18n.locales`',
                 'short' => 'l',
                 'default' => implode(',', array_keys((array)Configure::read('I18n.locales'))),
             ]);
@@ -125,7 +126,8 @@ class GettextCommand extends Command
 
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
-        $msg = empty($resCmd[0]) ? 'ERROR: msgmerge not available. Please install gettext utilities.' : 'OK: msgmerge found';
+        $errorMsg = 'ERROR: msgmerge not available. Please install gettext utilities.';
+        $msg = empty($resCmd[0]) ? $errorMsg : 'OK: msgmerge found';
         $method = empty($resCmd[0]) ? 'abort' : 'out';
         $io->{$method}($msg);
 
