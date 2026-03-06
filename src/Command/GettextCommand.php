@@ -127,8 +127,7 @@ class GettextCommand extends Command
         $resCmd = [];
         exec('which msgmerge 2>&1', $resCmd);
         $errorMsg = 'ERROR: msgmerge not available. Please install gettext utilities.';
-        $okMsg = 'OK: msgmerge found';
-        $msg = empty($resCmd[0]) ? $errorMsg : $okMsg;
+        $msg = empty($resCmd[0]) ? $errorMsg : 'OK: msgmerge found';
         $method = empty($resCmd[0]) ? 'abort' : 'out';
         $io->{$method}($msg);
 

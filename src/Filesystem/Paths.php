@@ -107,7 +107,9 @@ class Paths
                 $acc,
                 array_filter(
                     (array)scandir($path),
-                    fn($f) => is_string($f) && !in_array($f, ['.', '..']) && Plugin::getCollection()->has($f),
+                    fn($file) => is_string($file)
+                        && !in_array($file, ['.', '..'])
+                        && Plugin::getCollection()->has($file),
                 ),
             ),
             [],
