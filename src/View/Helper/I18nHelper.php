@@ -23,6 +23,7 @@ use Cake\View\Helper;
 /**
  * Helper to handle i18n things in view.
  *
+ * @extends \Cake\View\Helper<\Cake\View\View>
  * @property \Cake\View\Helper\HtmlHelper $Html The HtmlHelper
  * @property \Cake\View\Helper\UrlHelper $Url The UrlHelper
  */
