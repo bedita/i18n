@@ -177,7 +177,7 @@ class I18nRouteTest extends TestCase
     {
         $route = new I18nRoute(
             '/gustavo/help',
-            ['controller' => 'GustavoSupporto', 'action' => 'help']
+            ['controller' => 'GustavoSupporto', 'action' => 'help'],
         );
 
         $result = $route->match([
@@ -197,7 +197,7 @@ class I18nRouteTest extends TestCase
     {
         $route = new I18nRoute(
             '/gustavo/help',
-            ['controller' => 'GustavoSupporto', 'action' => 'help']
+            ['controller' => 'GustavoSupporto', 'action' => 'help'],
         );
 
         $result = $route->match([
@@ -219,7 +219,7 @@ class I18nRouteTest extends TestCase
     {
         $route = new I18nRoute(
             '/gustavo/help',
-            ['controller' => 'GustavoSupporto', 'action' => 'help']
+            ['controller' => 'GustavoSupporto', 'action' => 'help'],
         );
 
         $result = $route->match([
