@@ -9,9 +9,7 @@
     findUnusedCode="false"
 >
     <issueHandlers>
-        <ClassMustBeFinal errorLevel="suppress" />
         <MissingOverrideAttribute errorLevel="suppress" />
-        <ImplicitToStringCast errorLevel="suppress" />
         <UndefinedConstant errorLevel="suppress" />
     </issueHandlers>
     <projectFiles>
